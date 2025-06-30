@@ -10,8 +10,12 @@ import img6 from "../../assets/about-ssb-images/img6.jpeg";
 import img7 from "../../assets/about-ssb-images/img7.jpeg";
 import img8 from "../../assets/about-ssb-images/img8.jpeg";
 import trio from "../../assets/about-ssb-images/trio.png";
-import ssba from "../../assets/ssb-images/ssb-a.jpg"
+import ssba from "../../assets/ssb-images/ssb-a.jpg";
 import ssbb from "../../assets/ssb-images/ssbb.jpg";
+import ssbbg from "../../assets/ssb-images/ssbbg.jpeg";
+import ssbk from "../../assets/ssb-images/ssbk.jpg";
+import ssbc from "../../assets/ssb-images/ssbc.jpg"
+import ssbv from "../../assets/ssb-images/ssbv.jpg"
 import Footer from "../Footer/Footer.jsx";
 function AboutSSB() {
   const images = [popImg, img2, img3, img4, img5, img6, img7, img8];
@@ -221,12 +225,16 @@ function AboutSSB() {
       <div
         style={{
           backgroundColor: "#EDF9FF",
-          paddingBottom: "15px"
+          paddingBottom: "15px",
         }}
       >
-        <div style={{
-          // marginBottom: "2"
-        }}>
+        <div
+          style={
+            {
+              // marginBottom: "2"
+            }
+          }
+        >
           <h1
             style={{
               fontSize: "60px",
@@ -242,18 +250,22 @@ function AboutSSB() {
           >
             SSB Centres
           </h1>
-        </div> 
-        <div className="ssb-grid"
-        style={{
-          // marginTop: "1px"
-        }}>
+        </div>
+        <div
+          className="ssb-grid"
+          style={
+            {
+              // marginTop: "1px"
+            }
+          }
+        >
           {[
             { name: "SSB Allahabad", src: ssba },
             { name: "SSB Bhopal", src: ssbb },
-            { name: "SSB Bangalore", src: ssba },
-            { name: "SSB Kapurthala", src: ssba },
-            { name: "SSB Coimbatore", src: ssba },
-            { name: "SSB Varanasi", src: ssba },
+            { name: "SSB Bangalore", src: ssbbg },
+            { name: "SSB Kapurthala", src: ssbk },
+            { name: "SSB Coimbatore", src: ssbc },
+            { name: "SSB Varanasi", src: ssbv },
           ].map((item, index) => (
             <div className="ssb-card" key={index}>
               <img src={item.src} alt={item.name} className="ssb-img" />
@@ -262,9 +274,8 @@ function AboutSSB() {
           ))}
         </div>
       </div>
-        
+
       <Footer />
-      
     </>
   );
 }
