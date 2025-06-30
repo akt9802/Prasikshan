@@ -1,6 +1,7 @@
 import React from "react";
 import "../../App.css";
 import { Link } from "react-router-dom";
+import AboutSSB from "../About/AboutSSB.jsx";
 function Header() {
   return (
     <div
@@ -31,7 +32,7 @@ function Header() {
         }}
       >
         <Link to="/">Home</Link>
-        <Link to="/">About SSB</Link>
+        <Link to="/aboutssb">About SSB</Link>
         <Link to="/">Mock Interviews</Link>
         <Link to="/">Contact Us</Link>
         <div style={{ alignItems: "center" }}>
