@@ -22,7 +22,12 @@ function Header() {
         zIndex: 50,
       }}
     >
-      <div>
+      <div
+        style={{
+          cursor: "pointer",
+        }}
+        onClick={() => navigate("/")}
+      >
         <h1 className="font-bold">Prasikshan</h1>
       </div>
       <div
@@ -40,7 +45,7 @@ function Header() {
             style={{
               backgroundColor: "#00FF11",
               borderRadius: "5px",
-              color: "#FFFFF0",
+              color: "black",
             }}
             className="px-5 py-1.5 font-semibold"
             onClick={() => navigate("/alltest")}
