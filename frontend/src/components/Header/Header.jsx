@@ -1,8 +1,9 @@
 import React from "react";
 import "../../App.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AboutSSB from "../About/AboutSSB.jsx";
 function Header() {
+  const navigate = useNavigate();
   return (
     <div
       style={{
@@ -33,8 +34,7 @@ function Header() {
       >
         <Link to="/">Home</Link>
         <Link to="/aboutssb">About SSB</Link>
-        <Link to="/">Mock Interviews</Link>
-        <Link to="/">Contact Us</Link>
+        <Link to="/contactus">Contact Us</Link>
         <div style={{ alignItems: "center" }}>
           <button
             style={{
@@ -43,6 +43,7 @@ function Header() {
               color: "#FFFFF0",
             }}
             className="px-5 py-1.5 font-semibold"
+            onClick={() => navigate("/alltest")}
           >
             Start Now
           </button>
