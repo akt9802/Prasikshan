@@ -3,8 +3,12 @@ import homeimage from "../../assets/home-image-logo.jpg";
 import { Typewriter } from "react-simple-typewriter";
 import SmallCardHome from "./small-card-home";
 import Footer from "../Footer/Footer.jsx";
+
+import { useNavigate } from "react-router-dom";
+
 function Home() {
   const [userCount, setuserCount] = useState(0);
+  const navigate = useNavigate();
   return (
     <>
       <div className="relative w-full h-185 overflow-hidden">
@@ -219,11 +223,13 @@ function Home() {
               fontWeight: 700,
               fontFamily: "Poppins",
               transition: "transform 0.2s ease-in-out", // smooth transition
+              cursor: "pointer",
             }}
             onMouseEnter={(e) =>
               (e.currentTarget.style.transform = "scale(1.05)")
             }
             onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+            onClick={() => navigate("/fivequestion")}
           >
             5 Question
           </button>
@@ -239,11 +245,13 @@ function Home() {
               fontWeight: 700,
               border: "3px solid black",
               transition: "transform 0.2s ease-in-out", // smooth hover transition
+              cursor: "pointer",
             }}
             onMouseEnter={(e) =>
               (e.currentTarget.style.transform = "scale(1.05)")
             }
             onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+            onClick={() => navigate("/tenquestion")}
           >
             10 Question
           </button>

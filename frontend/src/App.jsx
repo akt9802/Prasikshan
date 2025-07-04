@@ -5,6 +5,10 @@ import Home from "./components/Home/Home.jsx";
 import AboutSSB from "./components/About/AboutSSB.jsx";
 import Alltest from "./components/Alltest/Alltest.jsx";
 import ContactUs from "./components/Contactus/ContactUs.jsx";
+import FiveQuestion from "./components/Home/FiveQuestion.jsx";
+import DisplayFiveQuestion from "./components/Home/DisplayFiveQuestion.jsx";
+import TenQuestion from "./components/Home/TenQuestion.jsx";
+import DisplayTenQuestion from "./components/Home/DisplayTenQuestion.jsx";
 
 function App() {
   return (
@@ -14,6 +18,16 @@ function App() {
         <Route path="/aboutssb" element={<AboutSSB />} />
         <Route path="/alltest" element={<Alltest />} />
         <Route path="/contactus" element={<ContactUs />} />
+        <Route path="/fivequestion" element={<FiveQuestion />} />
+        <Route
+          path="/fivequestion/displayfivequestion"
+          element={<DisplayFiveQuestion />}
+        />
+        <Route path="/tenquestion" element={<TenQuestion />} />
+        <Route
+          path="/tenquestion/displaytenquestion"
+          element={<DisplayTenQuestion />}
+        />
       </Route>
     </Routes>
   );
