@@ -1,7 +1,9 @@
 import Footer from "../Footer/Footer.jsx";
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 function Alltest() {
+  const navigate = useNavigate();
   return (
     <>
       <div
@@ -75,6 +77,7 @@ function Alltest() {
                   borderRadius: "5px",
                   cursor: "pointer",
                 }}
+                onClick={() => navigate("/alltest/oir")}
               >
                 Practice Now
               </button>

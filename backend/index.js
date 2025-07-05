@@ -23,6 +23,8 @@ if (process.env.NODE_ENV === "development") {
 // Router import
 const questionRouter = require("./Router/questionRouter.js");
 app.use("/question", questionRouter);
+const oirQuestionRouter = require("./Router/oirQuestionRouter.js");
+app.use("/alltest", oirQuestionRouter);
 
 // Serve React build in production
 if (process.env.NODE_ENV === "production") {
@@ -32,7 +34,6 @@ if (process.env.NODE_ENV === "production") {
     res.sendFile(path.join(__dirname, "client/build", "index.html"));
   });
 } else {
-  // Development test route
   app.get("/", (req, res) => {
     res.json({ message: "App is running fine (DEV)" });
   });
@@ -44,9 +45,9 @@ async function main() {
     app.listen(PORT, () => {
       console.log(`App is running at PORT: ${PORT}`);
     });
-    console.log("✅ Connected to MongoDB");
+    console.log("Connected to MongoDB");
   } catch (err) {
-    console.error("❌ Failed to connect to MongoDB:", err);
+    console.error("Failed to connect to MongoDB:", err);
     process.exit(1);
   }
 }

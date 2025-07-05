@@ -8,7 +8,12 @@ export default defineConfig({
   server: {
     proxy: {
       "/question": {
-        target: "http://localhost:3000", // your Express backend
+        target: "http://localhost:3000",
+        changeOrigin: true,
+        secure: false,
+      },
+      "/alltest": {
+        target: "http://localhost:3000",
         changeOrigin: true,
         secure: false,
       },
