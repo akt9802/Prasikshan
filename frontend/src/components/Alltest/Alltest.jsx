@@ -522,7 +522,7 @@ function Alltest() {
           </div>
         </div>
 
-        {/* LECTURETTE DIV */}
+        {/* PI DIV */}
         <div
           id="pi"
           style={{
@@ -583,6 +583,7 @@ function Alltest() {
                   borderRadius: "5px",
                   cursor: "pointer",
                 }}
+                onClick={() => navigate("/alltest/pi")}
               >
                 Practice Now
               </button>

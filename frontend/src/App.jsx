@@ -16,6 +16,7 @@ import TATinstruction from "./components/TAT/TATinstruction.jsx";
 import WATinstruction from "./components/WAT/WATinstruction.jsx";
 import SATinstruction from "./components/SAT/SATinstruction.jsx";
 import LECTURETTEinstruction from "./components/LECTURETTE/LECTURETTEinstruction.jsx";
+import PIinstuction from "./components/PersonalInterview/PIinstuction.jsx";
 
 function App() {
   return (
@@ -46,6 +47,7 @@ function App() {
         <Route path="/alltest/wat" element={<WATinstruction />} />
         <Route path="/alltest/sat" element={<SATinstruction />} />
         <Route path="/alltest/lecturette" element={<LECTURETTEinstruction />} />
+        <Route path="/alltest/pi" element={<PIinstuction />} />
       </Route>
     </Routes>
   );

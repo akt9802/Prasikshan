@@ -62,7 +62,7 @@ function SATinstruction() {
                 cursor: "pointer",
               }}
             >
-              Start Quiz
+              Try Now
             </button>
           </div>
         </div>
