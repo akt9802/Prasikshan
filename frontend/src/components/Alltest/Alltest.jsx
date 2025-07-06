@@ -162,6 +162,7 @@ function Alltest() {
                   borderRadius: "5px",
                   cursor: "pointer",
                 }}
+                onClick={() => navigate("/alltest/ppdt")}
               >
                 Practice Now
               </button>
@@ -245,6 +246,7 @@ function Alltest() {
                   borderRadius: "5px",
                   cursor: "pointer",
                 }}
+                onClick={() => navigate("/alltest/tat")}
               >
                 Practice Now
               </button>
@@ -328,6 +330,7 @@ function Alltest() {
                   borderRadius: "5px",
                   cursor: "pointer",
                 }}
+                onClick={() => navigate("/alltest/wat")}
               >
                 Practice Now
               </button>
@@ -411,6 +414,7 @@ function Alltest() {
                   borderRadius: "5px",
                   cursor: "pointer",
                 }}
+                onClick={() => navigate("/alltest/sat")}
               >
                 Practice Now
               </button>
@@ -430,89 +434,6 @@ function Alltest() {
               decision-making, presence of mind, and how one reacts under
               pressure. Responses reflect the candidate’s practical thinking and
               sense of responsibility.
-            </p>
-          </div>
-        </div>
-
-        {/* GPE DIV */}
-        <div
-          id="gpe"
-          style={{
-            backgroundColor: "#EDF9FF",
-            padding: "30px",
-            display: "flex",
-            alignItems: "center",
-            border: "2px solid black",
-            borderRadius: "8px",
-          }}
-        >
-          <div
-            style={{
-              width: "250px",
-              height: "150px",
-              border: "3px solid #888",
-              padding: "40px 40px",
-              fontSize: "50px",
-              fontWeight: 800,
-              fontFamily: "Montserrat, sans-serif",
-              marginRight: "30px",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              // color: "transparent",
-            }}
-          >
-            GPE
-          </div>
-
-          <div style={{ flex: 1 }}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "start",
-                marginBottom: "10px",
-              }}
-            >
-              <h2
-                style={{
-                  margin: 0,
-                  fontFamily: "Poppins, sans-serif",
-                  fontWeight: 300,
-                  fontSize: "30px",
-                }}
-              >
-                Group Planning Exercise
-              </h2>
-              <button
-                style={{
-                  padding: "6px 12px",
-                  fontWeight: "bold",
-                  backgroundColor: "#000",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "5px",
-                  cursor: "pointer",
-                }}
-              >
-                Practice Now
-              </button>
-            </div>
-
-            <p
-              style={{
-                margin: 0,
-                fontSize: "20px",
-                lineHeight: "1.3",
-                color: "#333",
-                fontFamily: "Montserrat, sans-serif",
-              }}
-            >
-              In the Group Planning Exercise (GPE), candidates are given a
-              problem scenario, often on a map, involving emergencies or tasks.
-              They first write individual solutions, then discuss as a group to
-              form a common plan. It tests planning, analytical thinking, and
-              teamwork.
             </p>
           </div>
         </div>
@@ -577,6 +498,7 @@ function Alltest() {
                   borderRadius: "5px",
                   cursor: "pointer",
                 }}
+                onClick={() => navigate("/alltest/lecturette")}
               >
                 Practice Now
               </button>

@@ -97,7 +97,9 @@ function AboutSSB() {
         }}
       >
         <div className="ssb-container">
-          <h1 className="ssb-heading">SSB 5-Day Selection Process</h1>
+          <h1 className="ssb-heading" style={{
+            paddingBottom: "10px"
+          }}>SSB 5-Day Selection Process</h1>
           <div className="ssb-timeline">
             {/* Day 1 */}
             <div className="ssb-row">

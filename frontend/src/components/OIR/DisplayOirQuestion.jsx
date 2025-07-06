@@ -9,7 +9,7 @@ function DisplayOirQuestion() {
   const [loading, setLoading] = useState(true);
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(20 * 60); 
+  const [timeLeft, setTimeLeft] = useState(20 * 60); // 20 minutes
 
   const navigate = useNavigate();
 
@@ -37,7 +37,7 @@ function DisplayOirQuestion() {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          handleSubmit(); 
+          handleSubmit(); // Auto-submit when time runs out
           return 0;
         }
         return prev - 1;
@@ -78,8 +78,8 @@ function DisplayOirQuestion() {
     setSubmitted(true);
   };
 
-  const handleGoHome = () => {
-    navigate("/");
+  const handleGoAllTest = () => {
+    navigate("/alltest");
   };
 
   if (loading) {
@@ -91,50 +91,61 @@ function DisplayOirQuestion() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <main className="flex-grow space-y-6 py-10 bg-gradient-to-b from-blue-100 to-blue-300">
-        {/* Timer */}
-        <div className="flex justify-center mb-6">
-          <p className="text-2xl font-bold text-red-600">
-            ⏳ Time Left: {formatTime(timeLeft)}
-          </p>
+    <div className="relative flex flex-col min-h-screen">
+      {/* Floating Timer */}
+      <div className="fixed top-20 right-5 bg-white border border-gray-300 shadow-xl rounded-full px-6 py-3 flex items-center space-x-2 z-50">
+        <span className="text-lg font-semibold text-gray-700">⏳</span>
+        <span className="text-xl font-bold text-red-600">
+          {formatTime(timeLeft)}
+        </span>
+      </div>
+
+      {/* Main Content */}
+      <main className="flex-grow py-10 px-4 bg-gradient-to-b from-blue-100 to-blue-300">
+        <div className="max-w-3xl mx-auto space-y-6">
+          {questions.map((q, index) => (
+            <div
+              key={q._id}
+              className="bg-white shadow rounded-lg p-5 transition transform hover:scale-[1.02]"
+            >
+              <MCQquestion
+                question={`Q${index + 1}: ${q.question}`}
+                options={q.options}
+                name={`question${index + 1}`}
+                selectedAnswer={answers[q._id]}
+                correctAnswer={submitted ? q.answer : null}
+                onChange={(e) => handleAnswerChange(q._id, e.target.value)}
+              />
+            </div>
+          ))}
+
+          {!submitted && (
+            <div className="flex justify-center mt-8">
+              <button
+                onClick={handleSubmit}
+                className="bg-green-500 text-white px-8 py-3 rounded-full hover:bg-green-600 transform hover:scale-105 transition duration-300"
+              >
+                Submit Answers
+              </button>
+            </div>
+          )}
+
+          {submitted && (
+            <div className="flex flex-col items-center mt-8 space-y-4">
+              <p className="text-xl font-semibold text-green-700">
+                🎉 You scored {score} out of {questions.length}
+              </p>
+              <button
+                onClick={handleGoAllTest}
+                className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 transition duration-300"
+              >
+                Go back to All Test
+              </button>
+            </div>
+          )}
         </div>
-
-        {questions.map((q, index) => (
-          <MCQquestion
-            key={q._id}
-            question={`Q${index + 1}: ${q.question}`}
-            options={q.options}
-            name={`question${index + 1}`}
-            selectedAnswer={answers[q._id]}
-            correctAnswer={submitted ? q.answer : null}
-            onChange={(e) => handleAnswerChange(q._id, e.target.value)}
-          />
-        ))}
-
-        {!submitted ? (
-          <div className="flex justify-center mt-8 space-x-4">
-            <button
-              onClick={handleSubmit}
-              className="bg-green-500 text-white px-6 py-2 rounded-md hover:bg-green-600 transition duration-300"
-            >
-              Submit
-            </button>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center mt-8 space-y-4">
-            <p className="text-xl font-semibold text-green-700">
-              🎉 You scored {score} out of {questions.length}
-            </p>
-            <button
-              onClick={handleGoHome}
-              className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 transition duration-300"
-            >
-              Go Back to Home
-            </button>
-          </div>
-        )}
       </main>
+
       <Footer />
     </div>
   );

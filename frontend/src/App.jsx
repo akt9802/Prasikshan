@@ -11,6 +11,11 @@ import TenQuestion from "./components/Home/TenQuestion.jsx";
 import DisplayTenQuestion from "./components/Home/DisplayTenQuestion.jsx";
 import OirInstruction from "./components/OIR/OirInstruction.jsx";
 import DisplayOirQuestion from "./components/OIR/DisplayOirQuestion.jsx";
+import PPDTinstruction from "./components/PPDT/PPDTinstruction.jsx";
+import TATinstruction from "./components/TAT/TATinstruction.jsx";
+import WATinstruction from "./components/WAT/WATinstruction.jsx";
+import SATinstruction from "./components/SAT/SATinstruction.jsx";
+import LECTURETTEinstruction from "./components/LECTURETTE/LECTURETTEinstruction.jsx";
 
 function App() {
   return (
@@ -31,7 +36,16 @@ function App() {
           element={<DisplayTenQuestion />}
         />
         <Route path="/alltest/oir" element={<OirInstruction />} />
-        <Route path="/alltest/oir/displayoirquestions" element={<DisplayOirQuestion />} />
+        <Route
+          path="/alltest/oir/displayoirquestions"
+          element={<DisplayOirQuestion />}
+        />
+
+        <Route path="/alltest/ppdt" element={<PPDTinstruction />} />
+        <Route path="/alltest/tat" element={<TATinstruction />} />
+        <Route path="/alltest/wat" element={<WATinstruction />} />
+        <Route path="/alltest/sat" element={<SATinstruction />} />
+        <Route path="/alltest/lecturette" element={<LECTURETTEinstruction />} />
       </Route>
     </Routes>
   );
