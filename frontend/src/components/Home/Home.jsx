@@ -7,7 +7,7 @@ import Footer from "../Footer/Footer.jsx";
 import { useNavigate } from "react-router-dom";
 
 function Home() {
-  const [userCount, setuserCount] = useState(0);
+  // const [userCount, setuserCount] = useState(0);
   const navigate = useNavigate();
   return (
     <>
@@ -76,7 +76,7 @@ function Home() {
           </div>
 
           {/* User Count */}
-          <div
+          {/* <div
             className="flex items-center justify-center ml-10"
             style={{
               height: "55px",
@@ -86,7 +86,7 @@ function Home() {
             }}
           >
             <h3>{userCount} Users</h3>
-          </div>
+          </div> */}
         </div>
       </div>
 
