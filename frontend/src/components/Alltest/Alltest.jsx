@@ -354,7 +354,7 @@ function Alltest() {
           </div>
         </div>
 
-        {/* SAT DIV */}
+        {/* SRT DIV */}
         <div
           id="sat"
           style={{
@@ -382,7 +382,7 @@ function Alltest() {
               // color: "transparent",
             }}
           >
-            SAT
+            SRT
           </div>
 
           <div style={{ flex: 1 }}>

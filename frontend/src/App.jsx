@@ -14,10 +14,14 @@ import DisplayOirQuestion from "./components/OIR/DisplayOirQuestion.jsx";
 import PPDTinstruction from "./components/PPDT/PPDTinstruction.jsx";
 import TATinstruction from "./components/TAT/TATinstruction.jsx";
 import WATinstruction from "./components/WAT/WATinstruction.jsx";
-import SATinstruction from "./components/SAT/SATinstruction.jsx";
+import SRTinstruction from "./components/SRT/SRTinstruction.jsx";
 import LECTURETTEinstruction from "./components/LECTURETTE/LECTURETTEinstruction.jsx";
 import PIinstuction from "./components/PersonalInterview/PIinstuction.jsx";
 import DisplayPPDTQuestion from "./components/PPDT/DisplayPPDTQuestion.jsx";
+import DisplayWatQuestion from "./components/WAT/DisplayWatQuestion.jsx";
+import DisplaySrtQuestion from "./components/SRT/DisplaySrtQuestion.jsx";
+import DisplayLecturetteQuestion from "./components/LECTURETTE/DisplayLecturetteQuestion.jsx";
+import DisplayPiQuestion from "./components/PersonalInterview/DisplayPiQuestion.jsx";
 
 function App() {
   return (
@@ -46,13 +50,29 @@ function App() {
         <Route path="/alltest/ppdt" element={<PPDTinstruction />} />
         <Route path="/alltest/tat" element={<TATinstruction />} />
         <Route path="/alltest/wat" element={<WATinstruction />} />
-        <Route path="/alltest/sat" element={<SATinstruction />} />
+        <Route path="/alltest/sat" element={<SRTinstruction />} />
         <Route path="/alltest/lecturette" element={<LECTURETTEinstruction />} />
         <Route path="/alltest/pi" element={<PIinstuction />} />
 
         <Route
-          path="/alltest/oir/displayppdtquestion"
+          path="/alltest/ppdt/displayppdtquestion"
           element={<DisplayPPDTQuestion />}
+        />
+        <Route
+          path="/alltest/wat/displaywatquestions"
+          element={<DisplayWatQuestion />}
+        />
+        <Route
+          path="/alltest/srt/displaysrtquestions"
+          element={<DisplaySrtQuestion />}
+        />
+        <Route
+          path="/alltest/lecturette/DisplayLecturetteQuestion"
+          element={<DisplayLecturetteQuestion />}
+        />
+        <Route
+          path="/alltest/pi/displaypiquestions"
+          element={<DisplayPiQuestion />}
         />
       </Route>
     </Routes>

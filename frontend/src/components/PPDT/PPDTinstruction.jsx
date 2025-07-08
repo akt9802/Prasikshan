@@ -58,7 +58,7 @@ function PPDTinstruction() {
           <div className="flex justify-center mt-6">
             <button
               className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-md shadow-md transition duration-300 ease-in-out"
-              onClick={() => navigate("/alltest/oir/displayppdtquestion")}
+              onClick={() => navigate("/alltest/ppdt/displayppdtquestion")}
               style={{
                 cursor: "pointer",
               }}

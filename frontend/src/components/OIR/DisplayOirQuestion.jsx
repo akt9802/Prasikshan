@@ -92,8 +92,8 @@ function DisplayOirQuestion() {
 
   return (
     <div className="relative flex flex-col min-h-screen">
-      {/* Floating Timer */}
-      <div className="fixed top-20 right-5 bg-white border border-gray-300 shadow-xl rounded-full px-6 py-3 flex items-center space-x-2 z-50">
+      {/* Floating Timer (LEFT side now) */}
+      <div className="fixed top-20 left-5 bg-white border border-gray-300 shadow-xl rounded-full px-6 py-3 flex items-center space-x-2 z-50">
         <span className="text-lg font-semibold text-gray-700">⏳</span>
         <span className="text-xl font-bold text-red-600">
           {formatTime(timeLeft)}

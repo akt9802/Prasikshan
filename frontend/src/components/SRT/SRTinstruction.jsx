@@ -1,14 +1,14 @@
 import Footer from "../Footer/Footer.jsx";
 import React from "react";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 function SATinstruction() {
-  //   const navigate = useNavigate();
+    const navigate = useNavigate();
   return (
     <>
       <div className="flex justify-center items-center min-h-[calc(100vh-180px)] bg-gradient-to-b from-blue-100 to-blue-300">
         <div className="bg-blue-100 border border-gray-300 p-6 rounded-md w-full max-w-6xl">
           <h1 className="text-2xl font-bold text-center mb-4">
-            Instructions [SAT]
+            Instructions [SRT]
           </h1>
           <div
             className="bg-white border border-gray-300 rounded-md p-4"
@@ -57,7 +57,7 @@ function SATinstruction() {
           <div className="flex justify-center mt-6">
             <button
               className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-md shadow-md transition duration-300 ease-in-out"
-              //   onClick={() => navigate("/alltest/oir/displayoirquestions")}
+                onClick={() => navigate("/alltest/srt/displaysrtquestions")}
               style={{
                 cursor: "pointer",
               }}

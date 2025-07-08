@@ -1,8 +1,8 @@
 import Footer from "../Footer/Footer.jsx";
 import React from "react";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 function LECTURETTEinstruction() {
-  //   const navigate = useNavigate();
+    const navigate = useNavigate();
   return (
     <>
       <div className="flex justify-center items-center min-h-[calc(100vh-180px)] bg-gradient-to-b from-blue-100 to-blue-300">
@@ -60,7 +60,7 @@ function LECTURETTEinstruction() {
           <div className="flex justify-center mt-6">
             <button
               className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-md shadow-md transition duration-300 ease-in-out"
-              //   onClick={() => navigate("/alltest/oir/displayoirquestions")}
+                onClick={() => navigate("/alltest/lecturette/DisplayLecturetteQuestion")}
               style={{
                 cursor: "pointer",
               }}

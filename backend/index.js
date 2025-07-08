@@ -14,7 +14,7 @@ app.use(express.json());
 if (process.env.NODE_ENV === "development") {
   app.use(
     cors({
-      origin: "http://localhost:5173", // React dev server
+      origin: "http://localhost:5173", 
       credentials: true,
     })
   );
@@ -27,6 +27,14 @@ const oirQuestionRouter = require("./Router/oirQuestionRouter.js");
 app.use("/alltest", oirQuestionRouter);
 const ppdtQuestionRouter = require("./Router/ppdtQuestionRouter.js");
 app.use("/alltest", ppdtQuestionRouter);
+const watQuestionRouter = require("./Router/watQuestionRouter.js");
+app.use("/alltest", watQuestionRouter);
+const srtQuestionRouter = require("./Router/srtQuestionRouter.js");
+app.use("/alltest", srtQuestionRouter);
+const lecturetteRouter = require("./Router/lecturetteRouter.js");
+app.use("/alltest", lecturetteRouter);
+const piRouter = require("./Router/piRouter.js");
+app.use("/alltest", piRouter);
 
 // Serve React build in production
 if (process.env.NODE_ENV === "production") {
