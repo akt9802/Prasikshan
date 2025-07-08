@@ -17,6 +17,7 @@ import WATinstruction from "./components/WAT/WATinstruction.jsx";
 import SATinstruction from "./components/SAT/SATinstruction.jsx";
 import LECTURETTEinstruction from "./components/LECTURETTE/LECTURETTEinstruction.jsx";
 import PIinstuction from "./components/PersonalInterview/PIinstuction.jsx";
+import DisplayPPDTQuestion from "./components/PPDT/DisplayPPDTQuestion.jsx";
 
 function App() {
   return (
@@ -48,6 +49,11 @@ function App() {
         <Route path="/alltest/sat" element={<SATinstruction />} />
         <Route path="/alltest/lecturette" element={<LECTURETTEinstruction />} />
         <Route path="/alltest/pi" element={<PIinstuction />} />
+
+        <Route
+          path="/alltest/oir/displayppdtquestion"
+          element={<DisplayPPDTQuestion />}
+        />
       </Route>
     </Routes>
   );

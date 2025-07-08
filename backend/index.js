@@ -25,6 +25,8 @@ const questionRouter = require("./Router/questionRouter.js");
 app.use("/question", questionRouter);
 const oirQuestionRouter = require("./Router/oirQuestionRouter.js");
 app.use("/alltest", oirQuestionRouter);
+const ppdtQuestionRouter = require("./Router/ppdtQuestionRouter.js");
+app.use("/alltest", ppdtQuestionRouter);
 
 // Serve React build in production
 if (process.env.NODE_ENV === "production") {

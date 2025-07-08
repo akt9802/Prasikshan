@@ -598,11 +598,13 @@ function Alltest() {
                 fontFamily: "Montserrat, sans-serif",
               }}
             >
-              The Lecturette is an individual speaking task where candidates
-              choose a topic, prepare for 3 minutes, and speak for 3 minutes
-              before the group. It assesses clarity of thought, confidence, and
-              communication skills. The test evaluates how well a candidate
-              presents ideas and handles pressure.
+              The Personal Interview is an interactive session between the
+              candidate and the Interviewing Officer. It assesses the
+              candidate’s personality, social adaptability, confidence, and
+              Officer-Like Qualities (OLQs) through questions about their
+              background, academics, hobbies, and current affairs. The interview
+              evaluates the candidate’s honesty, presence of mind, and ability
+              to communicate effectively under pressure.
             </p>
           </div>
         </div>
