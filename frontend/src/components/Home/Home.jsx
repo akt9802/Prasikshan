@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import homeimage from "../../assets/home-image-logo.jpg";
 import { Typewriter } from "react-simple-typewriter";
 import SmallCardHome from "./small-card-home";
@@ -11,55 +11,38 @@ function Home() {
   const navigate = useNavigate();
   return (
     <>
-      <div className="relative w-full h-185 overflow-hidden">
+      <div className="relative w-full h-[600px] md:h-[700px] lg:h-[750px] overflow-hidden">
         <img
           src={homeimage}
           alt=""
           className="w-full h-full object-cover object-center"
           style={{ imageRendering: "auto" }}
         />
-        <div className="absolute inset-0 flex items-center justify-evenly gap-20 w-full h-full">
+        <div className="absolute inset-0 flex flex-col md:flex-row items-center justify-evenly gap-8 w-full h-full p-4">
           {/* Headings */}
-          <div className="flex flex-col items-start justify-center flex-1 ml-20">
+          <div className="flex flex-col items-start justify-center flex-1 text-center md:text-left md:ml-20">
+            {[
+              "PREPARE WITH PURPOSE",
+              "PERFORM WITH PRIDE",
+              "SERVE WITH COURAGE",
+            ].map((line, idx) => (
+              <h1
+                key={idx}
+                className="text-2xl sm:text-4xl md:text-5xl lg:text-7xl font-bold drop-shadow-lg"
+                style={{
+                  color: "#FF5D00",
+                  WebkitTextStroke: "0px white",
+                  fontFamily: "Montserrat, sans-serif",
+                }}
+              >
+                {line}
+              </h1>
+            ))}
             <h1
-              className="text-3xl md:text-5xl font-bold drop-shadow-lg text-left"
+              className="text-2xl sm:text-4xl md:text-5xl lg:text-7xl font-bold drop-shadow-lg"
               style={{
                 color: "#FF5D00",
-                WebkitTextStroke: "1px white",
-                fontSize: 75,
-                fontFamily: "Montserrat, sans-serif",
-              }}
-            >
-              PREPARE WITH PURPOSE
-            </h1>
-            <h1
-              className="text-3xl md:text-5xl font-bold drop-shadow-lg text-left"
-              style={{
-                color: "#FF5D00",
-                WebkitTextStroke: "1px white",
-                fontSize: 75,
-                fontFamily: "Montserrat, sans-serif",
-              }}
-            >
-              PERFORM WITH PRIDE
-            </h1>
-            <h1
-              className="text-3xl md:text-5xl font-bold drop-shadow-lg text-left"
-              style={{
-                color: "#FF5D00",
-                WebkitTextStroke: "1px white",
-                fontSize: 75,
-                fontFamily: "Montserrat, sans-serif",
-              }}
-            >
-              SERVE WITH COURAGE
-            </h1>
-            <h1
-              className="text-3xl md:text-5xl font-bold drop-shadow-lg text-left"
-              style={{
-                color: "#FF5D00",
-                WebkitTextStroke: "1px white",
-                fontSize: 75,
+                WebkitTextStroke: "0px white",
                 fontFamily: "Montserrat, sans-serif",
               }}
             >
@@ -74,59 +57,23 @@ function Home() {
               />
             </h1>
           </div>
-
-          {/* User Count */}
-          {/* <div
-            className="flex items-center justify-center ml-10"
-            style={{
-              height: "55px",
-              width: "150px",
-              marginRight: "150px",
-              backgroundColor: "white",
-            }}
-          >
-            <h3>{userCount} Users</h3>
-          </div> */}
         </div>
       </div>
 
-      <div
-        style={{
-          height: "500px",
-          backgroundColor: "#D7F1FF",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          paddingLeft: "88px",
-          paddingRight: "88px",
-        }}
-      >
-        <div>
-          <h1
-            style={{
-              fontSize: "60px",
-              fontFamily: "Montserrat, sans-serif",
-              fontWeight: "bolder",
-              background:
-                "linear-gradient(to right, #CCCCCC 0%, #8C8C8C 13%, #666666 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              display: "inline-block",
-              marginBottom: "30px",
-            }}
-          >
-            Why Prasikshan ?
-          </h1>
-        </div>
-
-        <div
+      <div className="bg-[#D7F1FF] flex flex-col items-center justify-center px-4 md:px-10 py-12">
+        <h1
+          className="text-3xl md:text-4xl lg:text-5xl font-bold mb-8"
           style={{
-            display: "flex",
-            gap: "60px",
-            marginBottom: "30px",
+            fontFamily: "Montserrat, sans-serif",
+            background:
+              "linear-gradient(to right, #CCCCCC 0%, #8C8C8C 13%, #666666 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
           }}
         >
+          Why Prasikshan ?
+        </h1>
+        <div className="flex flex-col md:flex-row gap-8 items-center">
           <SmallCardHome
             name={"Ananya Sharma"}
             title={"NDA Aspirant"}
@@ -152,105 +99,29 @@ function Home() {
         </div>
       </div>
 
-      <div
-        style={{
-          height: "280px",
-          backgroundColor: "#EDF9FF",
-          display: "flex",
-          alignContent: "center",
-          justifyContent: "space-around",
-        }}
-      >
-        <div>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              // backgroundColor: "red",
-              // paddingLeft: "100px",
-              paddingTop: "60px",
-              paddingBottom: "100px",
-              gap: "10px",
-            }}
+      <div className="bg-[#EDF9FF] flex flex-col lg:flex-row items-center justify-between px-4 md:px-10 py-10 gap-8">
+        <div className="flex flex-col gap-2 text-center lg:text-left">
+          <h1
+            className="text-3xl md:text-4xl font-bold"
+            style={{ fontFamily: "Montserrat, sans-serif" }}
           >
-            <h1
-              style={{
-                Color: "#716262",
-                fontSize: "50px",
-                fontWeight: "bolder",
-                fontFamily: "Montserrat, sans-serif",
-              }}
-            >
-              Quick-Quiz
-            </h1>
-            <div>
-              <h3
-                style={{
-                  fontWeight: 700,
-                  fontSize: "25px",
-                }}
-              >
-                Show Us You're SSB-Ready.
-              </h3>
-              <h6
-                style={{
-                  fontWeight: 500,
-                  fontSize: "20px",
-                }}
-              >
-                Every question brings you one step closer to the uniform.
-              </h6>
-            </div>
-          </div>
+            Quick-Quiz
+          </h1>
+          <h3 className="font-semibold text-xl">Show Us You're SSB-Ready.</h3>
+          <h6 className="font-medium text-lg">
+            Every question brings you one step closer to the uniform.
+          </h6>
         </div>
-        <div
-          style={{
-            display: "flex",
-            // backgroundColor: "red",
-            gap: "20px",
-            alignItems: "center",
-          }}
-        >
+
+        <div className="flex gap-4">
           <button
-            style={{
-              backgroundColor: "#241F1F",
-              color: "white",
-              paddingLeft: "28px",
-              paddingRight: "28px",
-              paddingTop: "18px",
-              paddingBottom: "18px",
-              borderRadius: "10px",
-              fontWeight: 700,
-              fontFamily: "Poppins",
-              transition: "transform 0.2s ease-in-out", // smooth transition
-              cursor: "pointer",
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.transform = "scale(1.05)")
-            }
-            onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+            className="bg-black text-white py-3 px-6 rounded-lg font-bold transition-transform duration-200 hover:scale-105"
             onClick={() => navigate("/fivequestion")}
           >
             5 Question
           </button>
           <button
-            style={{
-              backgroundColor: "white",
-              color: "black",
-              paddingLeft: "25px",
-              paddingRight: "25px",
-              paddingTop: "15px",
-              paddingBottom: "15px",
-              borderRadius: "10px",
-              fontWeight: 700,
-              border: "3px solid black",
-              transition: "transform 0.2s ease-in-out", // smooth hover transition
-              cursor: "pointer",
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.transform = "scale(1.05)")
-            }
-            onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+            className="bg-white text-black py-3 px-6 border-2 border-black rounded-lg font-bold transition-transform duration-200 hover:scale-105"
             onClick={() => navigate("/tenquestion")}
           >
             10 Question
@@ -258,7 +129,7 @@ function Home() {
         </div>
       </div>
 
-      <Footer></Footer>
+      <Footer />
     </>
   );
 }

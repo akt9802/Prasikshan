@@ -22,6 +22,7 @@ import DisplayWatQuestion from "./components/WAT/DisplayWatQuestion.jsx";
 import DisplaySrtQuestion from "./components/SRT/DisplaySrtQuestion.jsx";
 import DisplayLecturetteQuestion from "./components/LECTURETTE/DisplayLecturetteQuestion.jsx";
 import DisplayPiQuestion from "./components/PersonalInterview/DisplayPiQuestion.jsx";
+import DisplayTatQuestion from "./components/TAT/DisplayTatQuestion.jsx";
 
 function App() {
   return (
@@ -73,6 +74,10 @@ function App() {
         <Route
           path="/alltest/pi/displaypiquestions"
           element={<DisplayPiQuestion />}
+        />
+        <Route
+          path="/alltest/tat/displaytatquestions"
+          element={<DisplayTatQuestion />}
         />
       </Route>
     </Routes>
