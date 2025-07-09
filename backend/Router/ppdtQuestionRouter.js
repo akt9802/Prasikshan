@@ -6,15 +6,6 @@ const PPDTQuestion = require("../Model/PPDTQuestion.js");
 let currentId = 1; // Start from _id = 1
 const MAX_ID = 15; // Total PPDT questions
 
-// ✅ Helper to convert Google Drive link to direct image URL
-const convertDriveLink = (url) => {
-  const match = url.match(/\/d\/([^/]+)\//);
-  if (match && match[1]) {
-    return `https://drive.google.com/uc?export=view&id=${match[1]}`;
-  }
-  return url; // fallback if not Google Drive link
-};
-
 ppdtQuestionRouter.get("/ppdt/displayppdtquestions", async (req, res) => {
   try {
     // 🔥 Find question by currentId
@@ -27,10 +18,10 @@ ppdtQuestionRouter.get("/ppdt/displayppdtquestions", async (req, res) => {
       });
     }
 
-    // ✅ Fix image link before sending to frontend
+    // ✅ No need to fix the image link if using GitHub raw or GitHub Pages
     const fixedQuestion = {
       ...question._doc, // Spread document fields
-      image: convertDriveLink(question.image),
+      image: question.image, // Keep as-is (GitHub link)
     };
 
     // Prepare for next call

@@ -35,6 +35,8 @@ const lecturetteRouter = require("./Router/lecturetteRouter.js");
 app.use("/alltest", lecturetteRouter);
 const piRouter = require("./Router/piRouter.js");
 app.use("/alltest", piRouter);
+const tatRouter = require("./Router/tatRouter.js");
+app.use("/alltest", tatRouter);
 
 // Serve React build in production
 if (process.env.NODE_ENV === "production") {
