@@ -1,6 +1,6 @@
 const express = require("express");
 const lecturetteQuestionRouter = express.Router();
-const LecturetteQuestion = require("../Model/LecturetteQuestion.js");
+const LecturetteQuestion = require("../Model/LECTURETTEQuestion.js");
 
 let currentTopicId = 1;
 
