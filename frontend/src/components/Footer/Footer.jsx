@@ -1,7 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 function Footer() {
-  const [userCount, setuserCount] = useState(0);
+  const [userCount, setUserCount] = useState(0);
+
+  useEffect(() => {
+    const fetchUserCount = async () => {
+      try {
+        const response = await fetch("/support/count");
+        const data = await response.json();
+        if (response.ok) {
+          setUserCount(data.count); // set user count
+        } else {
+          console.error("Failed to fetch count:", data.message);
+        }
+      } catch (err) {
+        console.error("Error fetching user count:", err);
+      }
+    };
+
+    fetchUserCount();
+  }, []);
 
   return (
     <div
@@ -42,7 +60,7 @@ function Footer() {
             margin: 0,
           }}
         >
-          © 2025 Prasikshan. All Rights Reserved.
+          © 2025 Prashikshan. All Rights Reserved.
         </h2>
       </div>
 

@@ -99,7 +99,7 @@ function Home() {
         </div>
       </div>
 
-      <div className="bg-[#EDF9FF] flex flex-col lg:flex-row items-center justify-between px-4 md:px-10 py-10 gap-8">
+      <div className="bg-[#EDF9FF] flex flex-col lg:flex-row items-center justify-between px-4 md:px-21 py-10 gap-8">
         <div className="flex flex-col gap-2 text-center lg:text-left">
           <h1
             className="text-3xl md:text-4xl font-bold"

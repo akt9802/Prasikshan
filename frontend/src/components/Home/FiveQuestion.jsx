@@ -5,7 +5,7 @@ function FiveQuestion() {
     const navigate = useNavigate();
   return (
     <>
-      <div className="flex justify-center items-center min-h-[calc(100vh-180px)] bg-gradient-to-b from-blue-100 to-blue-300">
+      <div className="flex justify-center items-center min-h-[calc(100vh-160px)] bg-gradient-to-b from-blue-100 to-blue-300">
         <div className="bg-blue-100 border border-gray-300 p-6 rounded-md w-full max-w-3xl">
           <h1 className="text-2xl font-bold text-center mb-4">Instructions</h1>
           <div

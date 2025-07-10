@@ -4,7 +4,7 @@ import Layout from "./components/Layout/Layout.jsx";
 import Home from "./components/Home/Home.jsx";
 import AboutSSB from "./components/About/AboutSSB.jsx";
 import Alltest from "./components/Alltest/Alltest.jsx";
-import ContactUs from "./components/Contactus/ContactUs.jsx";
+import ContactUs from "./components/Contactus/SupportUs.jsx";
 import FiveQuestion from "./components/Home/FiveQuestion.jsx";
 import DisplayFiveQuestion from "./components/Home/DisplayFiveQuestion.jsx";
 import TenQuestion from "./components/Home/TenQuestion.jsx";

@@ -39,7 +39,7 @@ function Header() {
       >
         <Link to="/">Home</Link>
         <Link to="/aboutssb">About SSB</Link>
-        <Link to="/contactus">Contact Us</Link>
+        <Link to="/contactus">Support Us</Link>
         <div style={{ alignItems: "center" }}>
           <button
             style={{
