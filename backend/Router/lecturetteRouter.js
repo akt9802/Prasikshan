@@ -6,7 +6,7 @@ const LecturetteQuestion = require("../Model/LECTURETTEQuestion.js");
 let currentTopicId = 1;
 
 lecturetteQuestionRouter.get(
-  "/lecturette/displaylecturettequestion",
+  "/displaylecturettequestion",
   async (req, res) => {
     try {
       const topic = await LecturetteQuestion.findOne({

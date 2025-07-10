@@ -3,7 +3,7 @@ const srtQuestionRouter = express.Router();
 const SRTQuestion = require("../Model/SRTQuestion.js");
 
 // GET random 60 SRT situations
-srtQuestionRouter.get("/srt/displaysrtquestions", async (req, res) => {
+srtQuestionRouter.get("/displaysrtquestions", async (req, res) => {
   try {
     const questions = await SRTQuestion.aggregate([{ $sample: { size: 60 } }]);
     res.json(questions);

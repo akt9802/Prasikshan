@@ -3,7 +3,7 @@ const piQuestionRouter = express.Router();
 const PIQuestion = require("../Model/PIQuestion.js");
 
 // GET all 30 PI questions
-piQuestionRouter.get("/pi/displaypiquestions", async (req, res) => {
+piQuestionRouter.get("/displaypiquestions", async (req, res) => {
   try {
     const questions = await PIQuestion.find({}).sort({ question_id: 1 }); 
     if (!questions || questions.length === 0) {

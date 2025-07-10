@@ -3,7 +3,7 @@ const tatQuestionRouter = express.Router();
 
 const TATQuestion = require("../Model/TATQuestion.js");
 
-tatQuestionRouter.get("/tat/displaytatquestions", async (req, res) => {
+tatQuestionRouter.get("/displaytatquestions", async (req, res) => {
   try {
     const randomQuestions = await TATQuestion.aggregate([
       { $sample: { size: 12 } },

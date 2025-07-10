@@ -4,7 +4,7 @@ const oirQuestionRouter = express.Router();
 const OirQuestion = require("../Model/OirQuestion.js");
 
 
-oirQuestionRouter.get("/oir/displayoirquestions", async (req, res) => {
+oirQuestionRouter.get("/displayoirquestions", async (req, res) => {
   try {
     const questions = await OirQuestion.aggregate([{ $sample: { size: 40 } }]);
     res.json(questions);

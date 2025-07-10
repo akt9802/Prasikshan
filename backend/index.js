@@ -23,20 +23,28 @@ if (process.env.NODE_ENV === "development") {
 // Router import
 const questionRouter = require("./Router/questionRouter.js");
 app.use("/question", questionRouter);
+
 const oirQuestionRouter = require("./Router/oirQuestionRouter.js");
-app.use("/alltest", oirQuestionRouter);
+app.use("/alltest/oir", oirQuestionRouter);
+
 const ppdtQuestionRouter = require("./Router/ppdtQuestionRouter.js");
-app.use("/alltest", ppdtQuestionRouter);
+app.use("/alltest/ppdt", ppdtQuestionRouter);
+
 const watQuestionRouter = require("./Router/watQuestionRouter.js");
-app.use("/alltest", watQuestionRouter);
+app.use("/alltest/wat", watQuestionRouter);
+
 const srtQuestionRouter = require("./Router/srtQuestionRouter.js");
-app.use("/alltest", srtQuestionRouter);
+app.use("/alltest/srt", srtQuestionRouter);
+
 const lecturetteRouter = require("./Router/lecturetteRouter.js");
-app.use("/alltest", lecturetteRouter);
+app.use("/alltest/lecturette", lecturetteRouter);
+
 const piRouter = require("./Router/piRouter.js");
-app.use("/alltest", piRouter);
+app.use("/alltest/pi", piRouter);
+
 const tatRouter = require("./Router/tatRouter.js");
-app.use("/alltest", tatRouter);
+app.use("/alltest/tat", tatRouter);
+
 const supportRouter = require("./Router/supporterRouter.js");
 app.use("/support", supportRouter);
 
@@ -47,6 +55,7 @@ if (process.env.NODE_ENV === "production") {
   app.get("/*", (req, res) => {
     res.sendFile(path.join(__dirname, "client/build", "index.html"));
   });
+  
   
 } else {
   app.get("/", (req, res) => {
