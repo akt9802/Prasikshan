@@ -2,6 +2,7 @@ const express = require("express");
 const lecturetteQuestionRouter = express.Router();
 const LecturetteQuestion = require("../Model/LECTURETTEQuestion.js");
 
+
 let currentTopicId = 1;
 
 lecturetteQuestionRouter.get(
@@ -27,4 +28,3 @@ lecturetteQuestionRouter.get(
 );
 
 module.exports = lecturetteQuestionRouter;
-
