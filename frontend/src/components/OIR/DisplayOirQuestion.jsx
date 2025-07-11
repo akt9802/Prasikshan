@@ -21,7 +21,7 @@ function DisplayOirQuestion() {
         setQuestions(data);
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching questions:", error);
+        console.error("Error in fetching questions:", error);
         setLoading(false);
       }
     };
