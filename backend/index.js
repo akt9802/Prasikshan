@@ -11,14 +11,14 @@ const app = express();
 app.use(express.json());
 
 // Allow CORS only in development
-if (process.env.NODE_ENV === "development") {
+// if (process.env.NODE_ENV === "development") {
   app.use(
     cors({
       origin: "http://localhost:5173",
       credentials: true,
     })
   );
-}
+// }
 
 // Router import
 const questionRouter = require("./Router/questionRouter.js");
