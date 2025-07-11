@@ -14,7 +14,7 @@ app.use(express.json());
 if (process.env.NODE_ENV === "development") {
   app.use(
     cors({
-      origin: "http://localhost:5173", 
+      origin: "http://localhost:5173",
       credentials: true,
     })
   );
@@ -48,20 +48,20 @@ app.use("/alltest/tat", tatRouter);
 const supportRouter = require("./Router/supporterRouter.js");
 app.use("/support", supportRouter);
 
-// Serve React build in production
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "client/build")));
+// // Serve React build in production
+// if (process.env.NODE_ENV === "production") {
+//   app.use(express.static(path.join(__dirname, "client/build")));
 
-  app.get("/*", (req, res) => {
-    res.sendFile(path.join(__dirname, "client/build", "index.html"));
-  });
-  
-  
-} else {
-  app.get("/", (req, res) => {
-    res.json({ message: "App is running fine (DEV)" });
-  });
-}
+//   app.get("/*", (req, res) => {
+//     res.sendFile(path.join(__dirname, "client/build", "index.html"));
+//   });
+
+
+// } else {
+app.get("/", (req, res) => {
+  res.json({ message: "App is running fine (DEV)" });
+});
+// }
 
 async function main() {
   try {
