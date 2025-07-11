@@ -6,7 +6,7 @@ function Footer() {
   useEffect(() => {
     const fetchUserCount = async () => {
       try {
-        const response = await fetch("/support/count");
+        const response = await fetch("https://prasikshan-79z7.onrender.com/support/count");
         const data = await response.json();
         if (response.ok) {
           setUserCount(data.count); // set user count

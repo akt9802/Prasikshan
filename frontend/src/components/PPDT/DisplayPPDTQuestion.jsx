@@ -10,7 +10,7 @@ function DisplayPPDTQuestion() {
   useEffect(() => {
     const fetchQuestion = async () => {
       try {
-        const response = await fetch("/alltest/ppdt/displayppdtquestions"); // using proxy
+        const response = await fetch("https://prasikshan-79z7.onrender.com/alltest/ppdt/displayppdtquestions"); // using proxy
         if (!response.ok) {
           throw new Error("Failed to fetch PPDT question");
         }

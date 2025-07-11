@@ -11,7 +11,7 @@ function DisplaySrtQuestion() {
   useEffect(() => {
     const fetchSRTQuestions = async () => {
       try {
-        const response = await fetch("/alltest/srt/displaysrtquestions");
+        const response = await fetch("https://prasikshan-79z7.onrender.com/alltest/srt/displaysrtquestions");
         if (!response.ok) {
           throw new Error("Failed to fetch SRT questions");
         }
