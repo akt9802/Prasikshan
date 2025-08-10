@@ -14,7 +14,7 @@ function SupportUs() {
     }
 
     try {
-      const response = await fetch("/support/register", {
+      const response = await fetch("https://prasikshan-79z7.onrender.com/support/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),

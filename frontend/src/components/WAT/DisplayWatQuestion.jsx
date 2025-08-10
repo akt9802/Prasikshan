@@ -12,7 +12,7 @@ function DisplayWatQuestion() {
   useEffect(() => {
     const fetchWATQuestions = async () => {
       try {
-        const response = await fetch("/alltest/wat/displaywatquestions");
+        const response = await fetch("https://prasikshan-79z7.onrender.com/alltest/wat/displaywatquestions");
         if (!response.ok) {
           throw new Error("Failed to fetch WAT questions");
         }

@@ -11,7 +11,7 @@ function DisplayLecturetteQuestion() {
   useEffect(() => {
     const fetchLecturette = async () => {
       try {
-        const response = await fetch("/alltest/lecturette/DisplayLecturetteQuestion");
+        const response = await fetch("https://prasikshan-79z7.onrender.com/alltest/lecturette/DisplayLecturetteQuestion");
         if (!response.ok) {
           throw new Error("Failed to fetch lecturette topic");
         }

@@ -15,7 +15,7 @@ function DisplayTenQuestion() {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await fetch("/question/tenquestions");
+        const response = await fetch("https://prasikshan-79z7.onrender.com/question/tenquestions");
         const data = await response.json();
         setQuestions(data);
         setLoading(false);

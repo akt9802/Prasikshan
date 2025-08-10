@@ -11,7 +11,7 @@ function DisplayTatQuestion() {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await fetch("/alltest/tat/displaytatquestions");
+        const response = await fetch("https://prasikshan-79z7.onrender.com/alltest/tat/displaytatquestions");
         if (!response.ok) throw new Error("Failed to fetch TAT questions");
         const data = await response.json();
         setQuestions(data);
