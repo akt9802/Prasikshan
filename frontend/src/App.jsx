@@ -23,6 +23,8 @@ import DisplaySrtQuestion from "./components/SRT/DisplaySrtQuestion.jsx";
 import DisplayLecturetteQuestion from "./components/LECTURETTE/DisplayLecturetteQuestion.jsx";
 import DisplayPiQuestion from "./components/PersonalInterview/DisplayPiQuestion.jsx";
 import DisplayTatQuestion from "./components/TAT/DisplayTatQuestion.jsx";
+import LoginPage from "./components/LoginPage/LoginPage.jsx";
+import SignupPage from "./components/LoginPage/SignupPage.jsx";
 
 function App() {
   return (
@@ -79,6 +81,9 @@ function App() {
           path="/alltest/tat/displaytatquestions"
           element={<DisplayTatQuestion />}
         />
+
+        <Route path="/login" element={<LoginPage />}/>
+        <Route path="/signup" element={<SignupPage />} />
       </Route>
     </Routes>
   );

@@ -46,6 +46,17 @@ function Header() {
           <Link to="/">Home</Link>
           <Link to="/aboutssb">About SSB</Link>
           <Link to="/contactus">Support Us</Link>
+          <Link
+            style={{
+              backgroundColor: "#00FF11",
+              borderRadius: "5px",
+              color: "black",
+            }}
+            className="px-10 py-2 font-bold"
+            to="/Login"
+          >
+            LOGIN
+          </Link>
           <button
             onClick={() => navigate("/alltest")}
             style={{
@@ -59,7 +70,7 @@ function Header() {
           </button>
         </nav>
 
-        {/* Mobile Hamburger */}
+        {/* Mobile layout */}
         <div className="md:hidden">
           <button
             onClick={toggleMenu}
