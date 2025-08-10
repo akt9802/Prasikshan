@@ -4,7 +4,6 @@ import Layout from "./components/Layout/Layout.jsx";
 import Home from "./components/Home/Home.jsx";
 import AboutSSB from "./components/About/AboutSSB.jsx";
 import Alltest from "./components/Alltest/Alltest.jsx";
-import ContactUs from "./components/Contactus/SupportUs.jsx";
 import FiveQuestion from "./components/Home/FiveQuestion.jsx";
 import DisplayFiveQuestion from "./components/Home/DisplayFiveQuestion.jsx";
 import TenQuestion from "./components/Home/TenQuestion.jsx";
@@ -25,6 +24,7 @@ import DisplayPiQuestion from "./components/PersonalInterview/DisplayPiQuestion.
 import DisplayTatQuestion from "./components/TAT/DisplayTatQuestion.jsx";
 import LoginPage from "./components/LoginPage/LoginPage.jsx";
 import SignupPage from "./components/LoginPage/SignupPage.jsx";
+import UserDetails from "./components/UserDetails/userDetails.jsx";
 
 function App() {
   return (
@@ -33,7 +33,6 @@ function App() {
         <Route index element={<Home />} />
         <Route path="/aboutssb" element={<AboutSSB />} />
         <Route path="/alltest" element={<Alltest />} />
-        <Route path="/contactus" element={<ContactUs />} />
         <Route path="/fivequestion" element={<FiveQuestion />} />
         <Route
           path="/fivequestion/displayfivequestion"
@@ -84,6 +83,7 @@ function App() {
 
         <Route path="/login" element={<LoginPage />}/>
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/userdetails" element={<UserDetails />} />
       </Route>
     </Routes>
   );

@@ -1,14 +1,19 @@
 import React, { useState } from "react";
 import "../../App.css";
 import { Link, useNavigate } from "react-router-dom";
-import { FiMenu, FiX } from "react-icons/fi"; // For hamburger icons
+import { FiMenu, FiX, FiUser } from "react-icons/fi"; // For hamburger and user icons
 
-function Header() {
+function LoginHeader() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false); // For dropdown
+//   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false); // For user menu dropdown
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
+  };
+
+  const handleUserIconClick = () => {
+    navigate("/userdetails"); // Navigate to the user detail page
   };
 
   return (
@@ -45,18 +50,26 @@ function Header() {
         >
           <Link to="/">Home</Link>
           <Link to="/aboutssb">About SSB</Link>
-          <Link to="/contactus">Support Us</Link>
-          <Link
+          <button
+            onClick={() => navigate("/alltest")}
             style={{
               backgroundColor: "#00FF11",
               borderRadius: "5px",
               color: "black",
             }}
-            className="px-10 py-2 font-bold"
-            to="/Login"
+            className="px-5 py-1.5 font-semibold"
           >
-            LOGIN
-          </Link>
+            Start Test
+          </button>
+          <div
+            style={{
+              position: "relative",
+              cursor: "pointer",
+            }}
+            onClick={handleUserIconClick} // Navigate to user detail page
+          >
+            <FiUser size={24} />
+          </div>
         </nav>
 
         {/* Mobile layout */}
@@ -107,10 +120,26 @@ function Header() {
           >
             Support Us
           </Link> */}
+          <button
+            onClick={() => {
+              navigate("/starttest");
+              setIsOpen(false);
+            }}
+            style={{
+              marginTop: "10px",
+              backgroundColor: "#00FF11",
+              borderRadius: "5px",
+              color: "black",
+              padding: "8px 15px",
+              fontWeight: "600",
+            }}
+          >
+            Start Test
+          </button>
         </div>
       )}
     </header>
   );
 }
 
-export default Header;
+export default LoginHeader;
