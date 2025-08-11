@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "../../App.css";
 import { Link, useNavigate } from "react-router-dom";
-import { FiMenu, FiX } from "react-icons/fi"; // For hamburger icons
+import { FiMenu, FiX } from "react-icons/fi"; // hamburger icons
 
 function Header() {
   const navigate = useNavigate();
@@ -45,7 +45,6 @@ function Header() {
         >
           <Link to="/">Home</Link>
           <Link to="/aboutssb">About SSB</Link>
-          <Link to="/contactus">Support Us</Link>
           <Link
             style={{
               backgroundColor: "#00FF11",
@@ -53,9 +52,9 @@ function Header() {
               color: "black",
             }}
             className="px-10 py-2 font-bold"
-            to="/Login"
+            to="/signin"
           >
-            LOGIN
+            SignIn
           </Link>
         </nav>
 
@@ -99,6 +98,13 @@ function Header() {
             style={{ padding: "10px 0", borderBottom: "1px solid #1E5CA8" }}
           >
             About SSB
+          </Link>
+          <Link
+            to="/signin"
+            onClick={() => setIsOpen(false)}
+            style={{ padding: "10px 0", borderBottom: "1px solid #1E5CA8" }}
+          >
+            SignIn
           </Link>
           {/* <Link
             to="/contactus"

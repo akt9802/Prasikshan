@@ -24,8 +24,11 @@ app.use(express.json());
 const questionRouter = require("./Router/questionRouter.js");
 app.use("/question", questionRouter);
 
+
 const oirQuestionRouter = require("./Router/oirQuestionRouter.js");
 app.use("/alltest/oir", oirQuestionRouter);
+app.use("/alltest", oirQuestionRouter);
+
 
 const ppdtQuestionRouter = require("./Router/ppdtQuestionRouter.js");
 app.use("/alltest/ppdt", ppdtQuestionRouter);
@@ -51,7 +54,11 @@ app.use("/alltest/tat", tatRouter);
 const userSignupRouter = require('./Router/userSignupRouter.js');
 app.use('/v1',userSignupRouter);
 
+const userSigninRouter = require('./Router/userSigninRouter.js');
+app.use('/v1',userSigninRouter)
 
+const userDetailsRouter = require('./Router/userDetails.js');
+app.use("/v1", userDetailsRouter);
 
 
 // // Serve React build in production

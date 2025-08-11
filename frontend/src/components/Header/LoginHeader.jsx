@@ -122,7 +122,7 @@ function LoginHeader() {
           </Link> */}
           <button
             onClick={() => {
-              navigate("/starttest");
+              navigate("/alltest");
               setIsOpen(false);
             }}
             style={{

@@ -22,7 +22,7 @@ import DisplaySrtQuestion from "./components/SRT/DisplaySrtQuestion.jsx";
 import DisplayLecturetteQuestion from "./components/LECTURETTE/DisplayLecturetteQuestion.jsx";
 import DisplayPiQuestion from "./components/PersonalInterview/DisplayPiQuestion.jsx";
 import DisplayTatQuestion from "./components/TAT/DisplayTatQuestion.jsx";
-import LoginPage from "./components/LoginPage/LoginPage.jsx";
+import SigninPage from "./components/LoginPage/SigninPage.jsx";
 import SignupPage from "./components/LoginPage/SignupPage.jsx";
 import UserDetails from "./components/UserDetails/userDetails.jsx";
 
@@ -81,7 +81,7 @@ function App() {
           element={<DisplayTatQuestion />}
         />
 
-        <Route path="/login" element={<LoginPage />}/>
+        <Route path="/signin" element={<SigninPage />}/>
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/userdetails" element={<UserDetails />} />
       </Route>

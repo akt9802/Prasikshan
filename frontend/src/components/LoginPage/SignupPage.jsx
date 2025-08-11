@@ -8,23 +8,39 @@ function SignupPage() {
     password: "",
     confirmPassword: "",
   });
-  const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // State for confirm password visibility
+  const [showPassword, setShowPassword] = useState(false); 
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false); 
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords do not match!");
       return;
     }
+    try {
+      await fetch("http://localhost:3000/v1/signup" ,{
+        method: "POST",
+        headers: {
+          "Content-Type" : "application/json",
+        },
+        body : JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password : formData.password,
+        }),
+      });
 
-    alert("Form submitted successfully!");
+      // const data = await response.json();
+
+    } catch (error) {
+      console.error("Error during signup : ",error);
+    }
   };
 
   return (
@@ -122,7 +138,7 @@ function SignupPage() {
                       type="button"
                       onClick={() =>
                         setShowConfirmPassword(!showConfirmPassword)
-                      } // Toggle visibility
+                      }
                       className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500"
                     >
                       {showConfirmPassword ? "Hide" : "Show"}
@@ -138,10 +154,10 @@ function SignupPage() {
                 <p className="text-sm font-light text-gray-500 dark:text-gray-400 text-center">
                   Already have an account?{" "}
                   <Link
-                    to="/login"
+                    to="/signin"
                     className="font-medium text-primary-600 hover:underline dark:text-primary-500"
                   >
-                    Login here
+                    Signin here
                   </Link>
                 </p>
               </form>
