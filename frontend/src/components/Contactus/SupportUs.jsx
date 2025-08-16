@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import supportImage from "../../assets/contact-us/contactimage.jpg";
 import Footer from "../Footer/Footer.jsx";
+const LOCAL = import.meta.env.VITE_BACKEND_URL;
+const PRODUCTION_URL = import.meta.env.VITE_PRODUCTION_URL;
+const apiURL = LOCAL || PRODUCTION_URL;
 
 function SupportUs() {
   const [email, setEmail] = useState("");
@@ -14,7 +17,7 @@ function SupportUs() {
     }
 
     try {
-      const response = await fetch("https://prasikshan-79z7.onrender.com/support/register", {
+      const response = await fetch(`${apiURL}/support/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import Footer from "../Footer/Footer.jsx";
 import { useNavigate } from "react-router-dom";
-
+const LOCAL = import.meta.env.VITE_BACKEND_URL;
+const PRODUCTION_URL = import.meta.env.VITE_PRODUCTION_URL;
+const apiURL = LOCAL || PRODUCTION_URL;
 function DisplaySrtQuestion() {
   const [timeLeft, setTimeLeft] = useState(1800); // 30 minutes = 1800 sec
   const [stage, setStage] = useState("loading"); // loading, showSituations, showReactions
@@ -11,7 +13,7 @@ function DisplaySrtQuestion() {
   useEffect(() => {
     const fetchSRTQuestions = async () => {
       try {
-        const response = await fetch("https://prasikshan-79z7.onrender.com/alltest/srt/displaysrtquestions");
+        const response = await fetch(`${apiURL}/alltest/srt/displaysrtquestions`);
         if (!response.ok) {
           throw new Error("Failed to fetch SRT questions");
         }

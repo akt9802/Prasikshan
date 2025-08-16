@@ -1,6 +1,9 @@
 import Footer from "../Footer/Footer.jsx";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+const LOCAL = import.meta.env.VITE_BACKEND_URL;
+const PRODUCTION_URL = import.meta.env.VITE_PRODUCTION_URL;
+const apiURL = LOCAL || PRODUCTION_URL;
 
 function DisplayWatQuestion() {
   const [stage, setStage] = useState("loading"); // loading, displayWord, showAll
@@ -12,7 +15,7 @@ function DisplayWatQuestion() {
   useEffect(() => {
     const fetchWATQuestions = async () => {
       try {
-        const response = await fetch("https://prasikshan-79z7.onrender.com/alltest/wat/displaywatquestions");
+        const response = await fetch(`${apiURL}/alltest/wat/displaywatquestions`);
         if (!response.ok) {
           throw new Error("Failed to fetch WAT questions");
         }

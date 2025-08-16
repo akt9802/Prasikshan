@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
-
+const LOCAL = import.meta.env.VITE_BACKEND_URL;
+const PRODUCTION_URL = import.meta.env.VITE_PRODUCTION_URL;
+const apiURL = LOCAL || PRODUCTION_URL;
 function Footer() {
   const [userCount, setUserCount] = useState(0);
 
   useEffect(() => {
     const fetchUserCount = async () => {
       try {
-        const response = await fetch("https://prasikshan-79z7.onrender.com/support/count");
+        const response = await fetch(`${apiURL}/support/count`);
         const data = await response.json();
         if (response.ok) {
           setUserCount(data.count); // set user count

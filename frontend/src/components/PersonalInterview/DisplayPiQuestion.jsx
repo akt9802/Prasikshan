@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Footer from "../Footer/Footer.jsx";
+const LOCAL = import.meta.env.VITE_BACKEND_URL;
+const PRODUCTION_URL = import.meta.env.VITE_PRODUCTION_URL;
+const apiURL = LOCAL || PRODUCTION_URL;
 
 function DisplayPiQuestion() {
   const [questions, setQuestions] = useState([]);
@@ -11,7 +14,7 @@ function DisplayPiQuestion() {
   useEffect(() => {
     const fetchPiQuestions = async () => {
       try {
-        const response = await fetch("https://prasikshan-79z7.onrender.com/alltest/pi/displaypiquestions");
+        const response = await fetch(`${apiURL}/alltest/pi/displaypiquestions`);
         if (!response.ok) {
           throw new Error("Failed to fetch PI questions");
         }

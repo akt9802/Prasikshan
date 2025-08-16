@@ -26,7 +26,8 @@ const questionRouter = require("./Router/questionRouter.js");
 app.use("/question", questionRouter);
 const oirQuestionRouter = require("./Router/oirQuestionRouter.js");
 app.use("/alltest/oir", oirQuestionRouter);
-app.use("/alltest", oirQuestionRouter);
+
+// app.use("/alltest", oirQuestionRouter);
 const oirTestResultRouter = require("./Router/testResultRouter/oirTestResultRouter.js");
 app.use("/v1", oirTestResultRouter);
 
@@ -49,11 +50,14 @@ app.use("/alltest/lecturette", lecturetteRouter);
 const piRouter = require("./Router/piRouter.js");
 app.use("/alltest/pi", piRouter);
 
+// TAT ROUTER
 const tatRouter = require("./Router/tatRouter.js");
 app.use("/alltest/tat", tatRouter);
+const tatTestResultRouter = require("./Router/testResultRouter/tatTestResultRouter.js");
+app.use("/v1", tatTestResultRouter);
 
-// const supportRouter = require("./Router/supporterRouter.js");
-// app.use("/support", supportRouter);
+const supportRouter = require("./Router/supporterRouter.js");
+app.use("/support", supportRouter);
 
 const userSignupRouter = require('./Router/userSignupRouter.js');
 app.use('/v1',userSignupRouter);

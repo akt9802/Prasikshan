@@ -18,7 +18,7 @@ function DisplayOirQuestion() {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await fetch("https://prasikshan-79z7.onrender.com/alltest/oir/displayoirquestions");
+        const response = await fetch(`${apiURL}/alltest/oir/displayoirquestions`);
         const data = await response.json();
         setQuestions(data);
         setLoading(false);

@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MCQquestion from "../Question-Format/MCQquestion.jsx";
 import Footer from "../Footer/Footer.jsx";
+const LOCAL = import.meta.env.VITE_BACKEND_URL;
+const PRODUCTION_URL = import.meta.env.VITE_PRODUCTION_URL;
+const apiURL = LOCAL || PRODUCTION_URL;
 
 function DisplayFiveQuestion() {
   const [questions, setQuestions] = useState([]);
@@ -15,7 +18,7 @@ function DisplayFiveQuestion() {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await fetch("https://prasikshan-79z7.onrender.com/question/fivequestions");
+        const response = await fetch(`${apiURL}/question/fivequestions`);
         const data = await response.json();
         setQuestions(data);
         setLoading(false);

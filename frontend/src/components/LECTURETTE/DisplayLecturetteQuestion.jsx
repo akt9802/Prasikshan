@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Footer from "../Footer/Footer.jsx";
+const LOCAL = import.meta.env.VITE_BACKEND_URL;
+const PRODUCTION_URL = import.meta.env.VITE_PRODUCTION_URL;
+const apiURL = LOCAL || PRODUCTION_URL;
 
 function DisplayLecturetteQuestion() {
   const [stage, setStage] = useState("loading"); // loading, showTopic, showSpeech
@@ -11,7 +14,7 @@ function DisplayLecturetteQuestion() {
   useEffect(() => {
     const fetchLecturette = async () => {
       try {
-        const response = await fetch("https://prasikshan-79z7.onrender.com/alltest/lecturette/DisplayLecturetteQuestion");
+        const response = await fetch(`${apiURL}/alltest/lecturette/DisplayLecturetteQuestion`);
         if (!response.ok) {
           throw new Error("Failed to fetch lecturette topic");
         }

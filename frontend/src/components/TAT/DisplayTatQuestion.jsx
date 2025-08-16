@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import Footer from "../Footer/Footer.jsx";
+const LOCAL = import.meta.env.VITE_BACKEND_URL;
+const PRODUCTION_URL = import.meta.env.VITE_PRODUCTION_URL;
+const apiURL = LOCAL || PRODUCTION_URL;
 
 function DisplayTatQuestion() {
   const [questions, setQuestions] = useState([]);
@@ -11,7 +14,9 @@ function DisplayTatQuestion() {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await fetch("https://prasikshan-79z7.onrender.com/alltest/tat/displaytatquestions");
+        const response = await fetch(
+          `${apiURL}/alltest/tat/displaytatquestions`
+        );
         if (!response.ok) throw new Error("Failed to fetch TAT questions");
         const data = await response.json();
         setQuestions(data);
@@ -40,6 +45,32 @@ function DisplayTatQuestion() {
     return () => clearTimeout(timer);
   }, [timeLeft, stage, imageLoaded]);
 
+  // Submit TAT test result to backend
+  const submitTatTestResult = async () => {
+    const testResult = {
+      testName: "TAT Test",
+      score: questions.length, // or your scoring logic
+      timeTaken: questions.length * (30 + 240), // total seconds, adjust as needed
+      dateTaken: new Date().toISOString(),
+    };
+
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      await fetch(`${apiURL}/v1/addTatTestResult`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(testResult),
+      });
+    } catch (err) {
+      console.error("Failed to save TAT test result", err);
+    }
+  };
+
   const goToNext = () => {
     if (currentIndex + 1 < questions.length) {
       setCurrentIndex(currentIndex + 1);
@@ -48,6 +79,7 @@ function DisplayTatQuestion() {
       setImageLoaded(false);
     } else {
       setStage("review");
+      submitTatTestResult();
     }
   };
 
@@ -59,6 +91,7 @@ function DisplayTatQuestion() {
 
   const stopTest = () => {
     setStage("review");
+    submitTatTestResult();
   };
 
   if (stage === "loading" || questions.length === 0) {
