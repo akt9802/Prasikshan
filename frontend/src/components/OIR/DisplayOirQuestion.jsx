@@ -2,7 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MCQquestion from "../Question-Format/MCQquestion.jsx";
 import Footer from "../Footer/Footer.jsx";
-
+const LOCAL = import.meta.env.VITE_BACKEND_URL;
+const PRODUCTION_URL = import.meta.env.VITE_PRODUCTION_URL;
+const apiURL = LOCAL || PRODUCTION_URL;
 function DisplayOirQuestion() {
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
@@ -63,44 +65,49 @@ function DisplayOirQuestion() {
   };
 
   const handleSubmit = async () => {
-    let correctCount = 0;
+    console.log(LOCAL);
+    console.log(PRODUCTION_URL);
+    
+    
+  let correctCount = 0;
 
-    questions.forEach((q) => {
-      const userAnswer = (answers[q._id] || "").trim().toLowerCase();
-      const correctAnswer = (q.answer || "").trim().toLowerCase();
-      if (userAnswer === correctAnswer) {
-        correctCount += 1;
-      }
-    });
-
-    setScore(correctCount);
-    setSubmitted(true);
-
-    // Prepare test result data
-    const testResult = {
-      testName: "OIR Test",
-      score: correctCount,
-      timeTaken: 20 * 60 - timeLeft, // seconds taken
-      dateTaken: new Date().toISOString(),
-    };
-
-    // Get JWT token from localStorage
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    try {
-      await fetch("https://prasikshan-79z7.onrender.com/v1/addOirTestResult", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(testResult),
-      });
-    } catch (err) {
-      console.error("Failed to save OIR test result", err);
+  questions.forEach((q) => {
+    const userAnswer = (answers[q._id] || "").trim().toLowerCase();
+    const correctAnswer = (q.answer || "").trim().toLowerCase();
+    if (userAnswer === correctAnswer) {
+      correctCount += 1;
     }
+  });
+
+  setScore(correctCount);
+  setSubmitted(true);
+
+  // Prepare test result data
+  const testResult = {
+    testName: "OIR Test",
+    score: correctCount,
+    timeTaken: 20 * 60 - timeLeft, // seconds taken
+    dateTaken: new Date().toISOString(),
   };
+
+  // Get JWT token from localStorage
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  try {
+    await fetch(`${apiURL}/v1/addOirTestResult`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(testResult),
+    });
+  } catch (err) {
+    // Optionally handle error
+    console.error("Failed to save OIR test result", err);
+  }
+};
 
   const handleGoAllTest = () => {
     navigate("/alltest");
