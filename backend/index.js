@@ -37,9 +37,11 @@ app.use("/alltest/ppdt", ppdtQuestionRouter);
 const ppdtTestResultRouter = require("./Router/testResultRouter/ppdtTestResultRouter.js");
 app.use("/v1", ppdtTestResultRouter);
 
-
+// WAT ROUTER
 const watQuestionRouter = require("./Router/watQuestionRouter.js");
 app.use("/alltest/wat", watQuestionRouter);
+const watTestResultRouter = require("./Router/testResultRouter/watTestResultRouter.js");
+app.use("/v1", watTestResultRouter);
 
 const srtQuestionRouter = require("./Router/srtQuestionRouter.js");
 app.use("/alltest/srt", srtQuestionRouter);

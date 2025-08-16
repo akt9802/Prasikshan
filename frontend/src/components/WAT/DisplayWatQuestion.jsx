@@ -15,7 +15,9 @@ function DisplayWatQuestion() {
   useEffect(() => {
     const fetchWATQuestions = async () => {
       try {
-        const response = await fetch(`${apiURL}/alltest/wat/displaywatquestions`);
+        const response = await fetch(
+          `${apiURL}/alltest/wat/displaywatquestions`
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch WAT questions");
         }
@@ -42,12 +44,40 @@ function DisplayWatQuestion() {
       }
     } else if (stage === "displayWord" && currentIndex >= watWords.length) {
       setStage("showAll");
+      submitWatTestResult();
     }
     return () => clearTimeout(timer);
   }, [timeLeft, currentIndex, stage, watWords]);
 
+  // Submit WAT test result to backend
+  const submitWatTestResult = async () => {
+    const testResult = {
+      testName: "WAT Test",
+      score: watWords.length, // or your scoring logic
+      timeTaken: watWords.length * 15, // total seconds, adjust as needed
+      dateTaken: new Date().toISOString(),
+    };
+
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      await fetch(`${apiURL}/v1/addWatTestResult`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(testResult),
+      });
+    } catch (err) {
+      console.error("Failed to save WAT test result", err);
+    }
+  };
+
   const stopTimer = () => {
     setStage("showAll");
+    submitWatTestResult();
   };
 
   const goToAllTests = () => {
