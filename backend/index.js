@@ -49,8 +49,13 @@ app.use("/alltest/srt", srtQuestionRouter);
 const srtTestResultRouter = require("./Router/testResultRouter/srtTestResultRouter.js");
 app.use("/v1", srtTestResultRouter);
 
+
+
+// LECTURETTER ROUTER
 const lecturetteRouter = require("./Router/lecturetteRouter.js");
 app.use("/alltest/lecturette", lecturetteRouter);
+const lecturetteTestResultRouter = require("./Router/testResultRouter/lecturetteTestResultRouter.js");
+app.use("/v1", lecturetteTestResultRouter);
 
 const piRouter = require("./Router/piRouter.js");
 app.use("/alltest/pi", piRouter);

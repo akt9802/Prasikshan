@@ -10,11 +10,38 @@ function DisplayLecturetteQuestion() {
   const [lecturette, setLecturette] = useState(null);
   const [timeLeft, setTimeLeft] = useState(180); // 3 minutes = 180 sec
   const navigate = useNavigate();
+  // Submit Lecturette test result to backend
+  const submitLecturetteTestResult = async () => {
+    const testResult = {
+      testName: "Lecturette Test",
+      score: 1, // or your scoring logic
+      timeTaken: 180 - timeLeft, // seconds taken
+      dateTaken: new Date().toISOString(),
+    };
+
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      await fetch(`${apiURL}/v1/addLecturetteTestResult`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(testResult),
+      });
+    } catch (err) {
+      console.error("Failed to save Lecturette test result", err);
+    }
+  };
 
   useEffect(() => {
     const fetchLecturette = async () => {
       try {
-        const response = await fetch(`${apiURL}/alltest/lecturette/DisplayLecturetteQuestion`);
+        const response = await fetch(
+          `${apiURL}/alltest/lecturette/DisplayLecturetteQuestion`
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch lecturette topic");
         }
@@ -35,12 +62,14 @@ function DisplayLecturetteQuestion() {
       timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
     } else if (stage === "showTopic" && timeLeft === 0) {
       setStage("showSpeech");
+      submitLecturetteTestResult();
     }
     return () => clearTimeout(timer);
   }, [timeLeft, stage]);
 
   const stopHandler = () => {
     setStage("showSpeech");
+    submitLecturetteTestResult();
   };
 
   const goToAllTest = () => {
