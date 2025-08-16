@@ -29,6 +29,8 @@ const oirQuestionRouter = require("./Router/oirQuestionRouter.js");
 app.use("/alltest/oir", oirQuestionRouter);
 app.use("/alltest", oirQuestionRouter);
 
+const oirTestResultRouter = require("./Router/testResultRouter/oirTestResultRouter.js");
+app.use("/v1", oirTestResultRouter);
 
 const ppdtQuestionRouter = require("./Router/ppdtQuestionRouter.js");
 app.use("/alltest/ppdt", ppdtQuestionRouter);
@@ -59,6 +61,8 @@ app.use('/v1',userSigninRouter)
 
 const userDetailsRouter = require('./Router/userDetails.js');
 app.use("/v1", userDetailsRouter);
+
+
 
 
 // // Serve React build in production

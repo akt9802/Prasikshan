@@ -62,13 +62,12 @@ function DisplayOirQuestion() {
     }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     let correctCount = 0;
 
     questions.forEach((q) => {
       const userAnswer = (answers[q._id] || "").trim().toLowerCase();
       const correctAnswer = (q.answer || "").trim().toLowerCase();
-
       if (userAnswer === correctAnswer) {
         correctCount += 1;
       }
@@ -76,6 +75,31 @@ function DisplayOirQuestion() {
 
     setScore(correctCount);
     setSubmitted(true);
+
+    // Prepare test result data
+    const testResult = {
+      testName: "OIR Test",
+      score: correctCount,
+      timeTaken: 20 * 60 - timeLeft, // seconds taken
+      dateTaken: new Date().toISOString(),
+    };
+
+    // Get JWT token from localStorage
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      await fetch("https://prasikshan-79z7.onrender.com/v1/addOirTestResult", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(testResult),
+      });
+    } catch (err) {
+      console.error("Failed to save OIR test result", err);
+    }
   };
 
   const handleGoAllTest = () => {
