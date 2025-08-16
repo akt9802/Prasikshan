@@ -21,19 +21,21 @@ app.use(express.json());
 // }
 
 // Router import
+// OIR ROUTER
 const questionRouter = require("./Router/questionRouter.js");
 app.use("/question", questionRouter);
-
-
 const oirQuestionRouter = require("./Router/oirQuestionRouter.js");
 app.use("/alltest/oir", oirQuestionRouter);
 app.use("/alltest", oirQuestionRouter);
-
 const oirTestResultRouter = require("./Router/testResultRouter/oirTestResultRouter.js");
 app.use("/v1", oirTestResultRouter);
 
+// PPDT ROUTER
 const ppdtQuestionRouter = require("./Router/ppdtQuestionRouter.js");
 app.use("/alltest/ppdt", ppdtQuestionRouter);
+const ppdtTestResultRouter = require("./Router/testResultRouter/ppdtTestResultRouter.js");
+app.use("/v1", ppdtTestResultRouter);
+
 
 const watQuestionRouter = require("./Router/watQuestionRouter.js");
 app.use("/alltest/wat", watQuestionRouter);

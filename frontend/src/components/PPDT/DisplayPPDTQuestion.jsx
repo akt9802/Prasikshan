@@ -1,21 +1,27 @@
 import Footer from "../Footer/Footer.jsx";
 import React, { useState, useEffect } from "react";
+const LOCAL = import.meta.env.VITE_BACKEND_URL;
+const PRODUCTION_URL = import.meta.env.VITE_PRODUCTION_URL;
+const apiURL = LOCAL || PRODUCTION_URL;
 
 function DisplayPPDTQuestion() {
   const [stage, setStage] = useState("loading"); // loading, viewImage, waitStory, showStories
   const [timeLeft, setTimeLeft] = useState(30); // 30 sec for image
   const [question, setQuestion] = useState(null); // Holds fetched data
   const [imageLoaded, setImageLoaded] = useState(false); // Track image loading
+  const [submitted, setSubmitted] = useState(false);
+  const [score, setScore] = useState(0);
 
   useEffect(() => {
     const fetchQuestion = async () => {
       try {
-        const response = await fetch("https://prasikshan-79z7.onrender.com/alltest/ppdt/displayppdtquestions"); // using proxy
+        const response = await fetch(
+          `${apiURL}/alltest/ppdt/displayppdtquestions`
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch PPDT question");
         }
         const data = await response.json();
-        console.log("Fetched Question:", data); // Debug fetched data
         setQuestion(data);
         // We wait for image to load before starting timer
       } catch (err) {
@@ -41,9 +47,41 @@ function DisplayPPDTQuestion() {
     return () => clearTimeout(timer);
   }, [timeLeft, stage, imageLoaded]);
 
+  // Submit PPDT test result to backend
+  const handleSubmitPPDT = async () => {
+    // Example: you can calculate score based on some logic, here we just set 1 for demo
+    let calculatedScore = 1; // Replace with your actual scoring logic if needed
+    setScore(calculatedScore);
+    setSubmitted(true);
+
+    const testResult = {
+      testName: "PPDT Test",
+      score: calculatedScore,
+      timeTaken: 270, // 30 sec image + 4 min story, or calculate as needed
+      dateTaken: new Date().toISOString(),
+    };
+
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      await fetch(`${apiURL}/v1/addPpdtTestResult`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(testResult),
+      });
+    } catch (err) {
+      console.error("Failed to save PPDT test result", err);
+    }
+  };
+
   const stopTimer = () => {
     if (stage === "waitStory") {
       setStage("showStories");
+      handleSubmitPPDT();
     }
   };
 
@@ -113,7 +151,7 @@ function DisplayPPDTQuestion() {
                 onClick={stopTimer}
                 className="mt-4 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md shadow"
               >
-                Stop
+                Stop & Submit
               </button>
             </div>
           )}
