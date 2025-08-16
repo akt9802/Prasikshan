@@ -5,15 +5,17 @@ const LOCAL = import.meta.env.VITE_BACKEND_URL;
 const PRODUCTION_URL = import.meta.env.VITE_PRODUCTION_URL;
 const apiURL = LOCAL || PRODUCTION_URL;
 function DisplaySrtQuestion() {
-  const [timeLeft, setTimeLeft] = useState(1800); // 30 minutes = 1800 sec
-  const [stage, setStage] = useState("loading"); // loading, showSituations, showReactions
+  const [timeLeft, setTimeLeft] = useState(1800);
+  const [stage, setStage] = useState("loading");
   const [srtData, setSrtData] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchSRTQuestions = async () => {
       try {
-        const response = await fetch(`${apiURL}/alltest/srt/displaysrtquestions`);
+        const response = await fetch(
+          `${apiURL}/alltest/srt/displaysrtquestions`
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch SRT questions");
         }
@@ -35,12 +37,40 @@ function DisplaySrtQuestion() {
       timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
     } else if (stage === "showSituations" && timeLeft === 0) {
       setStage("showReactions");
+      submitSrtTestResult();
     }
     return () => clearTimeout(timer);
   }, [timeLeft, stage]);
 
+  // Submit SRT test result to backend
+  const submitSrtTestResult = async () => {
+    const testResult = {
+      testName: "SRT Test",
+      score: srtData.length, // or your scoring logic
+      timeTaken: 1800 - timeLeft, // seconds taken
+      dateTaken: new Date().toISOString(),
+    };
+
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      await fetch(`${apiURL}/v1/addSrtTestResult`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(testResult),
+      });
+    } catch (err) {
+      console.error("Failed to save SRT test result", err);
+    }
+  };
+
   const stopHandler = () => {
     setStage("showReactions");
+    submitSrtTestResult();
   };
 
   const goToAllTest = () => {

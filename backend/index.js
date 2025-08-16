@@ -43,8 +43,11 @@ app.use("/alltest/wat", watQuestionRouter);
 const watTestResultRouter = require("./Router/testResultRouter/watTestResultRouter.js");
 app.use("/v1", watTestResultRouter);
 
+// SRT ROUTER 
 const srtQuestionRouter = require("./Router/srtQuestionRouter.js");
 app.use("/alltest/srt", srtQuestionRouter);
+const srtTestResultRouter = require("./Router/testResultRouter/srtTestResultRouter.js");
+app.use("/v1", srtTestResultRouter);
 
 const lecturetteRouter = require("./Router/lecturetteRouter.js");
 app.use("/alltest/lecturette", lecturetteRouter);
