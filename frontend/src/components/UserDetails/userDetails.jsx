@@ -50,6 +50,12 @@ function UserDetails() {
           <p>
             <strong>Tests Taken:</strong> {userDetails.testsTaken}
           </p>
+          <p>
+            and also all the best
+          </p>
+          <p>
+            another testing 
+          </p>
 
         </div>
       ) : (
