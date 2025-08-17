@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
-
+const LOCAL = import.meta.env.VITE_BACKEND_URL;
+const PRODUCTION_URL = import.meta.env.VITE_PRODUCTION_URL;
+const apiURL = LOCAL || PRODUCTION_URL;
 function UserDetails() {
   const [userDetails, setUserDetails] = useState(null);
 
@@ -13,7 +15,7 @@ function UserDetails() {
           return;
         }
 
-        const response = await fetch("http://localhost:3000/v1/userdetails", {
+        const response = await fetch(`${apiURL}/v1/userdetails`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`, 
@@ -37,7 +39,6 @@ function UserDetails() {
 
   return (
     <div>
-      <h1>User Details</h1>
       {userDetails ? (
         <div>
           <p>
@@ -49,9 +50,7 @@ function UserDetails() {
           <p>
             <strong>Tests Taken:</strong> {userDetails.testsTaken}
           </p>
-          <p>
-            <strong>Improvements:</strong> {userDetails.improvements}
-          </p>
+
         </div>
       ) : (
         <p>Loading user details...</p>
