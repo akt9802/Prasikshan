@@ -8,7 +8,7 @@ function WATinstruction() {
   return (
     <>
       <div className="flex justify-center items-center min-h-[calc(100vh-160px)] bg-gradient-to-b from-blue-100 to-blue-300 px-4">
-        <div className="bg-blue-100 border border-gray-300 p-6 md:p-8 rounded-md w-full max-w-5xl">
+        <div className="bg-blue-100 border border-gray-300 p-6 md:p-8 rounded-md  max-w-1xl">
           <h1 className="text-3xl md:text-4xl font-bold text-center mb-6 text-blue-800">
             Instructions [WAT]
           </h1>

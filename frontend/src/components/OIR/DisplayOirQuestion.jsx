@@ -18,7 +18,9 @@ function DisplayOirQuestion() {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await fetch(`${apiURL}/alltest/oir/displayoirquestions`);
+        const response = await fetch(
+          `${apiURL}/alltest/oir/displayoirquestions`
+        );
         const data = await response.json();
         setQuestions(data);
         setLoading(false);
@@ -67,47 +69,46 @@ function DisplayOirQuestion() {
   const handleSubmit = async () => {
     console.log(LOCAL);
     console.log(PRODUCTION_URL);
-    
-    
-  let correctCount = 0;
 
-  questions.forEach((q) => {
-    const userAnswer = (answers[q._id] || "").trim().toLowerCase();
-    const correctAnswer = (q.answer || "").trim().toLowerCase();
-    if (userAnswer === correctAnswer) {
-      correctCount += 1;
-    }
-  });
+    let correctCount = 0;
 
-  setScore(correctCount);
-  setSubmitted(true);
-
-  // Prepare test result data
-  const testResult = {
-    testName: "OIR Test",
-    score: correctCount,
-    timeTaken: 20 * 60 - timeLeft, // seconds taken
-    dateTaken: new Date().toISOString(),
-  };
-
-  // Get JWT token from localStorage
-  const token = localStorage.getItem("token");
-  if (!token) return;
-
-  try {
-    await fetch(`${apiURL}/v1/addOirTestResult`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(testResult),
+    questions.forEach((q) => {
+      const userAnswer = (answers[q._id] || "").trim().toLowerCase();
+      const correctAnswer = (q.answer || "").trim().toLowerCase();
+      if (userAnswer === correctAnswer) {
+        correctCount += 1;
+      }
     });
-  } catch (err) {
-    // Optionally handle error
-    console.error("Failed to save OIR test result", err);
-  }
-};
+
+    setScore(correctCount);
+    setSubmitted(true);
+
+    // Prepare test result data
+    const testResult = {
+      testName: "OIR Test",
+      score: correctCount,
+      timeTaken: 20 * 60 - timeLeft, // seconds taken
+      dateTaken: new Date().toISOString(),
+    };
+
+    // Get JWT token from localStorage
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      await fetch(`${apiURL}/v1/addOirTestResult`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(testResult),
+      });
+    } catch (err) {
+      // Optionally handle error
+      console.error("Failed to save OIR test result", err);
+    }
+  };
 
   const handleGoAllTest = () => {
     navigate("/alltest");
@@ -123,13 +124,39 @@ function DisplayOirQuestion() {
 
   return (
     <div className="relative flex flex-col min-h-screen">
-      {/* Floating Timer (LEFT side now) */}
-      <div className="fixed top-20 left-5 bg-white border border-gray-300 shadow-xl rounded-full px-6 py-3 flex items-center space-x-2 z-50">
-        <span className="text-lg font-semibold text-gray-700">⏳</span>
-        <span className="text-xl font-bold text-red-600">
-          {formatTime(timeLeft)}
-        </span>
-      </div>
+      <header className="w-full py-4 bg-white shadow-md flex flex-col items-center z-40 sticky top-15 left-0 right-0">
+        {/* <h1 className="text-2xl font-bold text-blue-700">OIR Test</h1> */}
+        <div className="flex flex-col md:flex-row items-center gap-4 mt-2">
+          {!submitted && (
+            <div className="flex items-center space-x-2">
+              <span className="text-lg font-semibold text-gray-700">⏳</span>
+              <span className="text-2xl font-bold text-red-600">
+                {formatTime(timeLeft)}
+              </span>
+              <button
+                onClick={handleSubmit}
+                className="ml-4 bg-red-500 text-white px-6 py-2 rounded-full hover:bg-red-600 transform hover:scale-105 transition duration-300 text-base"
+              >
+                Stop & Submit
+              </button>
+            </div>
+          )}
+          {/* Score and Go Back button after submission */}
+          {submitted && (
+            <div className="flex flex-col md:flex-row items-center gap-4">
+              <span className="text-xl font-semibold text-green-700">
+                🎉 You scored {score} out of {questions.length}
+              </span>
+              <button
+                onClick={handleGoAllTest}
+                className="ml-4 bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 transition duration-300"
+              >
+                Go back to All Test
+              </button>
+            </div>
+          )}
+        </div>
+      </header>
 
       {/* Main Content */}
       <main className="flex-grow py-10 px-4 bg-gradient-to-b from-blue-100 to-blue-300">
@@ -150,22 +177,21 @@ function DisplayOirQuestion() {
             </div>
           ))}
 
+          {/* Submit button at the bottom (only if not submitted) */}
           {!submitted && (
             <div className="flex justify-center mt-8">
               <button
                 onClick={handleSubmit}
-                className="bg-green-500 text-white px-8 py-3 rounded-full hover:bg-green-600 transform hover:scale-105 transition duration-300"
+                className="bg-green-500 text-white px-10 py-3 rounded-full hover:bg-green-600 transform hover:scale-105 transition duration-300 text-lg"
               >
                 Submit Answers
               </button>
             </div>
           )}
 
+          {/* After submission, show Go Back button */}
           {submitted && (
             <div className="flex flex-col items-center mt-8 space-y-4">
-              <p className="text-xl font-semibold text-green-700">
-                🎉 You scored {score} out of {questions.length}
-              </p>
               <button
                 onClick={handleGoAllTest}
                 className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 transition duration-300"

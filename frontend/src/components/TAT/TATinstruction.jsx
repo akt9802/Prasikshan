@@ -7,14 +7,14 @@ function TATinstruction() {
 
   return (
     <>
-      <div className="flex justify-center items-center min-h-[calc(100vh-160px)] bg-gradient-to-b from-blue-100 to-blue-300 px-4">
-        <div className="bg-blue-100 border border-gray-300 p-6 md:p-8 rounded-md w-full max-w-5xl">
-          <h1 className="text-3xl md:text-4xl font-bold text-center mb-6 text-blue-800">
+      <div className="flex justify-center items-center min-h-[calc(100vh-160px)] bg-gradient-to-b from-blue-100 to-blue-300 px-2 sm:px-4">
+        <div className="bg-blue-100 border border-gray-300 p-4 sm:p-6 md:p-8 rounded-md max-w-1xl shadow-lg">
+          <h1 className="text-xl xs:text-3xl md:text-4xl font-bold text-center mb-4 sm:mb-6 text-blue-800">
             Instructions [TAT]
           </h1>
 
-          <div className="bg-white border border-gray-300 rounded-md p-4 md:p-6">
-            <ol className="list-decimal list-inside space-y-3 text-gray-700 text-base md:text-lg font-poppins">
+          <div className="bg-white border border-gray-300 rounded-md p-3 sm:p-4 md:p-6">
+            <ol className="list-decimal list-inside space-y-2 sm:space-y-3 text-gray-700 text-xs sm:text-sm md:text-base font-poppins">
               <li>
                 This test is designed to assess your{" "}
                 <b>
@@ -57,9 +57,9 @@ function TATinstruction() {
           </div>
 
           {/* Start Button */}
-          <div className="flex justify-center mt-6">
+          <div className="flex flex-col sm:flex-row justify-center items-center mt-5 sm:mt-6 gap-3">
             <button
-              className="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-8 rounded-md shadow-md transition duration-300 ease-in-out"
+              className="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 sm:px-8 rounded-md shadow-md transition duration-300 ease-in-out text-base sm:text-lg"
               onClick={() => navigate("/alltest/tat/displaytatquestions")}
             >
               Start Quiz

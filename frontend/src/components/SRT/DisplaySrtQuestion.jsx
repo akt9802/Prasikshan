@@ -93,19 +93,40 @@ function DisplaySrtQuestion() {
 
   return (
     <div className="relative flex flex-col min-h-screen">
-      {/* Floating Timer on Left */}
-      <div className="fixed top-20 left-5 bg-white border border-gray-300 shadow-xl rounded-full px-6 py-3 flex items-center space-x-2 z-50">
-        <span className="text-lg font-semibold text-gray-700">⏳</span>
-        <span className="text-xl font-bold text-blue-600">
-          {formatTime(timeLeft)}
-        </span>
-      </div>
+      <header className="w-full py-4 bg-white shadow-md flex flex-col items-center z-40 sticky top-15 left-0 right-0">
+        <div className="flex flex-col md:flex-row items-center gap-4 mt-2">
+          {stage === "showSituations" && (
+            <div className="flex items-center space-x-2">
+              <span className="text-lg font-semibold text-gray-700">⏳</span>
+              <span className="text-2xl font-bold text-red-600">
+                {formatTime(timeLeft)}
+              </span>
+              <button
+                onClick={stopHandler}
+                className="ml-4 bg-red-500 text-white px-6 py-2 rounded-full hover:bg-red-600 transform hover:scale-105 transition duration-300 text-base"
+              >
+                Stop & Submit
+              </button>
+            </div>
+          )}
+          {stage === "showReactions" && (
+            <div className="flex flex-col md:flex-row items-center gap-4">
+              <span className="text-xl font-semibold text-green-700">
+                🎉 You completed the SRT Test ({srtData.length} situations)
+              </span>
+              <button
+                onClick={goToAllTest}
+                className="ml-4 bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 transition duration-300"
+              >
+                Go back to All Test
+              </button>
+            </div>
+          )}
+        </div>
+      </header>
 
       {/* Main Content */}
-      <main
-        className="flex-grow py-10 px-4 bg-gradient-to-b from-blue-100 to-blue-300"
-        style={{ paddingTop: "60px", paddingBottom: "60px" }}
-      >
+      <main className="flex-grow py-10 px-4 bg-gradient-to-b from-blue-100 to-blue-300">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Show Situations */}
           {stage === "showSituations" && srtData.length > 0 && (
@@ -166,7 +187,6 @@ function DisplaySrtQuestion() {
           )}
         </div>
       </main>
-
       <Footer />
     </div>
   );
