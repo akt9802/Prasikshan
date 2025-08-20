@@ -12,11 +12,11 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
-      "/alltest": {
-        target: "http://localhost:3000",
-        changeOrigin: true,
-        secure: false,
-      },
+      // "/alltest": {
+      //   target: "http://localhost:3000",
+      //   changeOrigin: true,
+      //   secure: false,
+      // },
       "/support": {
         target: "http://localhost:3000",
         changeOrigin: true,
