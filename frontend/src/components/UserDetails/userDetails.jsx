@@ -82,11 +82,11 @@ function UserDetails() {
           <div
             style={{
               textAlign: "center",
-              marginBottom: 20,
+              marginBottom: 5,
               padding: "20px 0",
               backgroundColor: "#fff",
               borderRadius: 12,
-              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.5)",
             }}
           >
             <h1
@@ -123,7 +123,7 @@ function UserDetails() {
               <TotalTest userDetails={userDetails} />
             </div>
             <div style={{ width: "100%", maxWidth: 800 }}>
-              <MonthlyTest />
+              <MonthlyTest userDetails={userDetails} />
             </div>
           </div>
 

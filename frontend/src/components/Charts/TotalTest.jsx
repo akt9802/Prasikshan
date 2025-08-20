@@ -142,7 +142,7 @@ function TotalTest({ userDetails }) {
       {/* Chart or message */}
       {hasTests && Array.isArray(chartData) ? (
         <>
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={350}>
             <PieChart>
               <Pie
                 data={chartData}
