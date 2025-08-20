@@ -12,12 +12,12 @@ app.use(express.json());
 
 // Allow CORS only in development
 // if (process.env.NODE_ENV === "development") {
-  app.use(
-    cors({
-      origin: ["https://prasikshan.vercel.app","http://localhost:5173"],
-      credentials: true,
-    })
-  );
+app.use(
+  cors({
+    origin: ["https://prasikshan.vercel.app", "http://localhost:5173"],
+    credentials: true,
+  })
+);
 // }
 
 // Router import
@@ -43,13 +43,11 @@ app.use("/alltest/wat", watQuestionRouter);
 const watTestResultRouter = require("./Router/testResultRouter/watTestResultRouter.js");
 app.use("/v1", watTestResultRouter);
 
-// SRT ROUTER 
+// SRT ROUTER
 const srtQuestionRouter = require("./Router/srtQuestionRouter.js");
 app.use("/alltest/srt", srtQuestionRouter);
 const srtTestResultRouter = require("./Router/testResultRouter/srtTestResultRouter.js");
 app.use("/v1", srtTestResultRouter);
-
-
 
 // LECTURETTER ROUTER
 const lecturetteRouter = require("./Router/lecturetteRouter.js");
@@ -69,17 +67,14 @@ app.use("/v1", tatTestResultRouter);
 const supportRouter = require("./Router/supporterRouter.js");
 app.use("/support", supportRouter);
 
-const userSignupRouter = require('./Router/userSignupRouter.js');
-app.use('/v1',userSignupRouter);
+const userSignupRouter = require("./Router/userSignupRouter.js");
+app.use("/v1", userSignupRouter);
 
-const userSigninRouter = require('./Router/userSigninRouter.js');
-app.use('/v1',userSigninRouter)
+const userSigninRouter = require("./Router/userSigninRouter.js");
+app.use("/v1", userSigninRouter);
 
-const userDetailsRouter = require('./Router/userDetails.js');
+const userDetailsRouter = require("./Router/userDetails.js");
 app.use("/v1", userDetailsRouter);
-
-
-
 
 // // Serve React build in production
 // if (process.env.NODE_ENV === "production") {
@@ -88,7 +83,6 @@ app.use("/v1", userDetailsRouter);
 //   app.get("/*", (req, res) => {
 //     res.sendFile(path.join(__dirname, "client/build", "index.html"));
 //   });
-
 
 // } else {
 app.get("/", (req, res) => {
