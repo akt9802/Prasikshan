@@ -29,6 +29,8 @@ function UserDetails() {
         });
 
         const data = await response.json();
+        // console.log(data);
+        
         if (response.ok) {
           setUserDetails(data);
         } else {
@@ -47,7 +49,7 @@ function UserDetails() {
   const renderSelectedChart = () => {
     switch (selectedTest) {
       case "OIR":
-        return <OirScore />;
+        return <OirScore  />;
       case "PPDT":
         return <PPDTScore />;
       case "TAT":
@@ -80,11 +82,11 @@ function UserDetails() {
           <div
             style={{
               textAlign: "center",
-              marginBottom: 20,
+              marginBottom: 5,
               padding: "20px 0",
               backgroundColor: "#fff",
               borderRadius: 12,
-              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.5)",
             }}
           >
             <h1
@@ -118,10 +120,10 @@ function UserDetails() {
             }}
           >
             <div style={{ width: "100%", maxWidth: 600 }}>
-              <TotalTest />
+              <TotalTest userDetails={userDetails} />
             </div>
             <div style={{ width: "100%", maxWidth: 800 }}>
-              <MonthlyTest />
+              <MonthlyTest userDetails={userDetails} />
             </div>
           </div>
 

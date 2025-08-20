@@ -24,7 +24,7 @@ userDetailsRouter.get("/userdetails", async (req, res) => {
     res.status(200).json({
       name: user.name,
       email: user.email,
-      testsTaken: user.testsTaken.length, 
+      testsTaken: user.testsTaken, 
       improvements: user.improvements || 0, 
     });
   } catch (error) {
