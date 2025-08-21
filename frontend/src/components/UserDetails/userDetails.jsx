@@ -3,6 +3,11 @@ import MonthlyTest from "../../components/Charts/MonthlyTest.jsx";
 import PPDTScore from "../../components/Charts/PPDTScore.jsx";
 import TotalTest from "../../components/Charts/TotalTest.jsx";
 import React, { useEffect, useState } from "react";
+import TatScore from "../../components/Charts/TatScore.jsx";
+import WatScore from "../../components/Charts/WatScore.jsx";
+import SrtScore from "../../components/Charts/SrtScore.jsx";
+import Lecturette from "../../components/Charts/LecturetteScore.jsx";
+
 const LOCAL = import.meta.env.VITE_BACKEND_URL;
 const PRODUCTION_URL = import.meta.env.VITE_PRODUCTION_URL;
 const apiURL = LOCAL || PRODUCTION_URL;
@@ -30,7 +35,7 @@ function UserDetails() {
 
         const data = await response.json();
         // console.log(data);
-        
+
         if (response.ok) {
           setUserDetails(data);
         } else {
@@ -45,21 +50,49 @@ function UserDetails() {
     fetchUserDetails();
   }, []);
 
+  // Logout function
+  const handleLogout = () => {
+    // Remove token from localStorage
+    localStorage.removeItem("token");
+
+    // Optionally show a confirmation message
+    alert("You have been logged out successfully!");
+
+    // Redirect to login page or refresh the page
+    window.location.href = "/"; // or use React Router's navigate
+  };
+
   // Function to render the selected chart component
   const renderSelectedChart = () => {
     switch (selectedTest) {
       case "OIR":
-        return <OirScore  />;
+        return <OirScore userDetails={userDetails} />;
       case "PPDT":
-        return <PPDTScore />;
+        return <PPDTScore userDetails={userDetails} />;
       case "TAT":
-        return <div>TAT Score Chart (Coming Soon)</div>;
+        return (
+          <div>
+            <TatScore userDetails={userDetails} />
+          </div>
+        );
       case "WAT":
-        return <div>WAT Score Chart (Coming Soon)</div>;
+        return (
+          <div>
+            <WatScore userDetails={userDetails} />
+          </div>
+        );
       case "SRT":
-        return <div>SRT Score Chart (Coming Soon)</div>;
+        return (
+          <div>
+            <SrtScore userDetails={userDetails} />
+          </div>
+        );
       case "LECTURETTE":
-        return <div>Lecturette Score Chart (Coming Soon)</div>;
+        return (
+          <div>
+            <Lecturette userDetails={userDetails} />
+          </div>
+        );
       default:
         return <OirScore />;
     }
@@ -78,7 +111,6 @@ function UserDetails() {
     >
       {userDetails ? (
         <div>
-          {/* User Name Header */}
           <div
             style={{
               textAlign: "center",
@@ -87,8 +119,41 @@ function UserDetails() {
               backgroundColor: "#fff",
               borderRadius: 12,
               boxShadow: "0 2px 8px rgba(0,0,0,0.5)",
+              position: "relative", // Added for button positioning
             }}
           >
+            {/* Logout Button */}
+            <button
+              onClick={handleLogout}
+              style={{
+                position: "absolute",
+                top: "20px",
+                right: "20px",
+                padding: "10px 20px",
+                backgroundColor: "#dc3545",
+                color: "white",
+                border: "none",
+                borderRadius: 8,
+                fontSize: "0.9rem",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+              }}
+              onMouseOver={(e) => {
+                e.target.style.backgroundColor = "#c82333";
+                e.target.style.transform = "translateY(-2px)";
+                e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";
+              }}
+              onMouseOut={(e) => {
+                e.target.style.backgroundColor = "#dc3545";
+                e.target.style.transform = "translateY(0)";
+                e.target.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
+              }}
+            >
+              Logout
+            </button>
+
             <h1
               style={{
                 fontWeight: "bold",

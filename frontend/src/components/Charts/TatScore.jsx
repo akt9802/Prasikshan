@@ -10,10 +10,10 @@ import {
   Legend,
 } from "recharts";
 
-function PPDTScore({ userDetails }) {
-  // console.log("PPDT userDetails:", userDetails); // Debug log
+function TatScore({ userDetails }) {
+//   console.log("TAT userDetails:", userDetails); // Debug log
 
-  const processPPDTData = () => {
+  const processTATData = () => {
     try {
       if (
         !userDetails ||
@@ -25,37 +25,35 @@ function PPDTScore({ userDetails }) {
       }
 
       const testArray = userDetails.testsTaken;
-      // console.log("All tests:", testArray); // Debug log
+    //   console.log("All tests:", testArray); // Debug log
 
-      const ppdtTests = testArray
+      const tatTests = testArray
         .filter(
           (test) =>
-            test &&
-            test.testName &&
-            test.testName.toLowerCase().includes("ppdt")
+            test && test.testName && test.testName.toLowerCase().includes("tat") // Changed from "ppdt" to "tat"
         )
         .sort((a, b) => new Date(a.dateTaken) - new Date(b.dateTaken))
-        .slice(-50); // Get only the last 50 PPDT tests
+        .slice(-50); // Get only the last 50 TAT tests
 
-      // console.log("Filtered PPDT tests (last 50):", ppdtTests); // Debug log
+    //   console.log("Filtered TAT tests (last 50):", tatTests); // Debug log
 
-      const ppdtData = ppdtTests.map((test, index) => ({
+      const tatData = tatTests.map((test, index) => ({
         attempt: `Test ${index + 1}`,
-        score: 0, // Set score to 0 as requested (not attempt number)
+        score: 0, // Set actual score to 0 as requested
         date: test.dateTaken
           ? new Date(test.dateTaken).toISOString().split("T")[0]
           : "",
       }));
 
-      // console.log("Processed PPDT data (last 50):", ppdtData); // Debug log
-      return ppdtData;
+    //   console.log("Processed TAT data (last 50):", tatData); // Debug log
+      return tatData;
     } catch (error) {
-      console.error("Error processing PPDT data:", error);
+      console.error("Error processing TAT data:", error);
       return [];
     }
   };
 
-  const ppdtData = processPPDTData();
+  const tatData = processTATData();
 
   const defaultData = [
     {
@@ -65,7 +63,7 @@ function PPDTScore({ userDetails }) {
     },
   ];
 
-  const dataToUse = ppdtData.length > 0 ? ppdtData : defaultData;
+  const dataToUse = tatData.length > 0 ? tatData : defaultData;
 
   return (
     <div
@@ -86,7 +84,7 @@ function PPDTScore({ userDetails }) {
           color: "#124D96",
         }}
       >
-        PPDT Test Progress {ppdtData.length > 0 && `(${ppdtData.length} Tests)`}
+        TAT Test Progress {tatData.length > 0 && `(${tatData.length} Tests)`}
       </h2>
 
       {/* Score Summary */}
@@ -104,9 +102,7 @@ function PPDTScore({ userDetails }) {
           <div
             style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#124D96" }}
           >
-            {ppdtData.length > 0
-              ? ppdtData[ppdtData.length - 1]?.score || 0
-              : 0}
+            {tatData.length > 0 ? tatData[tatData.length - 1]?.score || 0 : 0}
           </div>
           <div style={{ fontSize: "0.9rem", color: "#666" }}>Latest Score</div>
         </div>
@@ -114,9 +110,7 @@ function PPDTScore({ userDetails }) {
           <div
             style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#28a745" }}
           >
-            {ppdtData.length > 0
-              ? Math.max(...ppdtData.map((d) => d.score))
-              : 0}
+            {tatData.length > 0 ? Math.max(...tatData.map((d) => d.score)) : 0}
           </div>
           <div style={{ fontSize: "0.9rem", color: "#666" }}>Best Score</div>
         </div>
@@ -124,7 +118,7 @@ function PPDTScore({ userDetails }) {
           <div
             style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#17a2b8" }}
           >
-            {ppdtData.length}
+            {tatData.length}
           </div>
           <div style={{ fontSize: "0.9rem", color: "#666" }}>
             Total Attempts
@@ -189,7 +183,7 @@ function PPDTScore({ userDetails }) {
           <Area
             type="monotone"
             dataKey="score"
-            name="PPDT Score"
+            name="TAT Score"
             stroke="#124D96"
             fill="#124D96"
             fillOpacity={0.3}
@@ -207,13 +201,13 @@ function PPDTScore({ userDetails }) {
             fontWeight: "500",
           }}
         >
-          {ppdtData.length === 0
-            ? "🎯 Take your first PPDT test to see progress!"
-            : `📊 ${ppdtData.length} PPDT tests completed! Scoring system coming soon.`}
+          {tatData.length === 0
+            ? "🎯 Take your first TAT test to see progress!"
+            : `📊 ${tatData.length} TAT tests completed! Scoring system coming soon.`}
         </span>
       </div>
     </div>
   );
 }
 
-export default PPDTScore;
+export default TatScore;

@@ -93,9 +93,9 @@ function TotalTest({ userDetails }) {
       chartData[0].testName !== "Error" &&
       chartData[0].testName !== "No valid tests";
 
-    console.log("Chart Data:", chartData);
-    console.log("Total Tests:", totalTests);
-    console.log("Has Tests:", hasTests);
+    // console.log("Chart Data:", chartData);
+    // console.log("Total Tests:", totalTests);
+    // console.log("Has Tests:", hasTests);
   } catch (error) {
     console.error("Error in TotalTest component:", error);
     return (

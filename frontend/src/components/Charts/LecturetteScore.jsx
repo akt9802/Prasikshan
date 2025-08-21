@@ -10,10 +10,10 @@ import {
   Legend,
 } from "recharts";
 
-function PPDTScore({ userDetails }) {
-  // console.log("PPDT userDetails:", userDetails); // Debug log
+function LecturetteScore({ userDetails }) {
+  // console.log("Lecturette userDetails:", userDetails); // Debug log
 
-  const processPPDTData = () => {
+  const processLecturetteData = () => {
     try {
       if (
         !userDetails ||
@@ -25,37 +25,37 @@ function PPDTScore({ userDetails }) {
       }
 
       const testArray = userDetails.testsTaken;
-      // console.log("All tests:", testArray); // Debug log
+      console.log("All tests:", testArray); // Debug log
 
-      const ppdtTests = testArray
+      const lecturetteTests = testArray
         .filter(
           (test) =>
             test &&
             test.testName &&
-            test.testName.toLowerCase().includes("ppdt")
+            test.testName.toLowerCase().includes("lecturette")
         )
         .sort((a, b) => new Date(a.dateTaken) - new Date(b.dateTaken))
-        .slice(-50); // Get only the last 50 PPDT tests
+        .slice(-50); // Get only the last 50 Lecturette tests
 
-      // console.log("Filtered PPDT tests (last 50):", ppdtTests); // Debug log
+      console.log("Filtered Lecturette tests (last 50):", lecturetteTests); // Debug log
 
-      const ppdtData = ppdtTests.map((test, index) => ({
+      const lecturetteData = lecturetteTests.map((test, index) => ({
         attempt: `Test ${index + 1}`,
-        score: 0, // Set score to 0 as requested (not attempt number)
+        score: 0, // Set score to 0 as requested (will be updated later)
         date: test.dateTaken
           ? new Date(test.dateTaken).toISOString().split("T")[0]
           : "",
       }));
 
-      // console.log("Processed PPDT data (last 50):", ppdtData); // Debug log
-      return ppdtData;
+      console.log("Processed Lecturette data (last 50):", lecturetteData); // Debug log
+      return lecturetteData;
     } catch (error) {
-      console.error("Error processing PPDT data:", error);
+      console.error("Error processing Lecturette data:", error);
       return [];
     }
   };
 
-  const ppdtData = processPPDTData();
+  const lecturetteData = processLecturetteData();
 
   const defaultData = [
     {
@@ -65,7 +65,7 @@ function PPDTScore({ userDetails }) {
     },
   ];
 
-  const dataToUse = ppdtData.length > 0 ? ppdtData : defaultData;
+  const dataToUse = lecturetteData.length > 0 ? lecturetteData : defaultData;
 
   return (
     <div
@@ -86,7 +86,8 @@ function PPDTScore({ userDetails }) {
           color: "#124D96",
         }}
       >
-        PPDT Test Progress {ppdtData.length > 0 && `(${ppdtData.length} Tests)`}
+        Lecturette Test Progress{" "}
+        {lecturetteData.length > 0 && `(${lecturetteData.length} Tests)`}
       </h2>
 
       {/* Score Summary */}
@@ -104,8 +105,8 @@ function PPDTScore({ userDetails }) {
           <div
             style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#124D96" }}
           >
-            {ppdtData.length > 0
-              ? ppdtData[ppdtData.length - 1]?.score || 0
+            {lecturetteData.length > 0
+              ? lecturetteData[lecturetteData.length - 1]?.score || 0
               : 0}
           </div>
           <div style={{ fontSize: "0.9rem", color: "#666" }}>Latest Score</div>
@@ -114,8 +115,8 @@ function PPDTScore({ userDetails }) {
           <div
             style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#28a745" }}
           >
-            {ppdtData.length > 0
-              ? Math.max(...ppdtData.map((d) => d.score))
+            {lecturetteData.length > 0
+              ? Math.max(...lecturetteData.map((d) => d.score))
               : 0}
           </div>
           <div style={{ fontSize: "0.9rem", color: "#666" }}>Best Score</div>
@@ -124,7 +125,7 @@ function PPDTScore({ userDetails }) {
           <div
             style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#17a2b8" }}
           >
-            {ppdtData.length}
+            {lecturetteData.length}
           </div>
           <div style={{ fontSize: "0.9rem", color: "#666" }}>
             Total Attempts
@@ -189,7 +190,7 @@ function PPDTScore({ userDetails }) {
           <Area
             type="monotone"
             dataKey="score"
-            name="PPDT Score"
+            name="Lecturette Score"
             stroke="#124D96"
             fill="#124D96"
             fillOpacity={0.3}
@@ -207,13 +208,13 @@ function PPDTScore({ userDetails }) {
             fontWeight: "500",
           }}
         >
-          {ppdtData.length === 0
-            ? "🎯 Take your first PPDT test to see progress!"
-            : `📊 ${ppdtData.length} PPDT tests completed! Scoring system coming soon.`}
+          {lecturetteData.length === 0
+            ? "🎯 Take your first Lecturette test to see progress!"
+            : ``}
         </span>
       </div>
     </div>
   );
 }
 
-export default PPDTScore;
+export default LecturetteScore;
