@@ -25,7 +25,7 @@ function LecturetteScore({ userDetails }) {
       }
 
       const testArray = userDetails.testsTaken;
-      console.log("All tests:", testArray); // Debug log
+      // console.log("All tests:", testArray); // Debug log
 
       const lecturetteTests = testArray
         .filter(
@@ -37,7 +37,7 @@ function LecturetteScore({ userDetails }) {
         .sort((a, b) => new Date(a.dateTaken) - new Date(b.dateTaken))
         .slice(-50); // Get only the last 50 Lecturette tests
 
-      console.log("Filtered Lecturette tests (last 50):", lecturetteTests); // Debug log
+      // console.log("Filtered Lecturette tests (last 50):", lecturetteTests); // Debug log
 
       const lecturetteData = lecturetteTests.map((test, index) => ({
         attempt: `Test ${index + 1}`,
@@ -47,7 +47,7 @@ function LecturetteScore({ userDetails }) {
           : "",
       }));
 
-      console.log("Processed Lecturette data (last 50):", lecturetteData); // Debug log
+      // console.log("Processed Lecturette data (last 50):", lecturetteData); // Debug log
       return lecturetteData;
     } catch (error) {
       console.error("Error processing Lecturette data:", error);
