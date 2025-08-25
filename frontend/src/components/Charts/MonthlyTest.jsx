@@ -33,8 +33,8 @@ function MonthlyTest({ userDetails }) {
       const thirtyDaysAgo = new Date(today);
       thirtyDaysAgo.setDate(today.getDate() - 30);
 
-      console.log("Today:", today.toISOString().split("T")[0]);
-      console.log("30 days ago:", thirtyDaysAgo.toISOString().split("T")[0]);
+      // console.log("Today:", today.toISOString().split("T")[0]);
+      // console.log("30 days ago:", thirtyDaysAgo.toISOString().split("T")[0]);
 
       // Group tests by date (only for past 30 days)
       const dailyCounts = {};
@@ -59,7 +59,7 @@ function MonthlyTest({ userDetails }) {
         }))
         .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-      console.log("Processed monthly data (last 30 days):", monthlyData);
+      // console.log("Processed monthly data (last 30 days):", monthlyData);
       return monthlyData;
     } catch (error) {
       console.error("Error processing monthly data:", error);

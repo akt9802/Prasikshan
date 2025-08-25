@@ -10,10 +10,10 @@ import {
   Legend,
 } from "recharts";
 
-function PPDTScore({ userDetails }) {
-  // console.log("PPDT userDetails:", userDetails); // Debug log
+function WatScore({ userDetails }) {
+//   console.log("WAT userDetails:", userDetails); // Debug log
 
-  const processPPDTData = () => {
+  const processWATData = () => {
     try {
       if (
         !userDetails ||
@@ -25,47 +25,70 @@ function PPDTScore({ userDetails }) {
       }
 
       const testArray = userDetails.testsTaken;
-      // console.log("All tests:", testArray); // Debug log
 
-      const ppdtTests = testArray
+      // Calculate date 30 days ago
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const watTests = testArray
         .filter(
           (test) =>
             test &&
             test.testName &&
-            test.testName.toLowerCase().includes("ppdt")
+            test.testName.toLowerCase().includes("wat") &&
+            test.dateTaken &&
+            new Date(test.dateTaken) >= thirtyDaysAgo // Only last 30 days
         )
-        .sort((a, b) => new Date(a.dateTaken) - new Date(b.dateTaken))
-        .slice(-50); // Get only the last 50 PPDT tests
+        .sort((a, b) => new Date(a.dateTaken) - new Date(b.dateTaken));
 
-      // console.log("Filtered PPDT tests (last 50):", ppdtTests); // Debug log
+    //   console.log("Filtered WAT tests (last 30 days):", watTests); // Debug log
 
-      const ppdtData = ppdtTests.map((test, index) => ({
-        attempt: `Test ${index + 1}`,
-        score: 0, // Set score to 0 as requested (not attempt number)
-        date: test.dateTaken
-          ? new Date(test.dateTaken).toISOString().split("T")[0]
-          : "",
-      }));
+      // Group tests by date and count how many tests per date
+      const dailyCounts = {};
 
-      // console.log("Processed PPDT data (last 50):", ppdtData); // Debug log
-      return ppdtData;
+      watTests.forEach((test) => {
+        if (test && test.dateTaken) {
+          const testDate = new Date(test.dateTaken);
+          const dateString = testDate.toISOString().split("T")[0]; // Get YYYY-MM-DD
+
+          // Count tests for this date
+          dailyCounts[dateString] = (dailyCounts[dateString] || 0) + 1;
+        }
+      });
+
+      // Convert to array format for chart and sort by date
+      const watData = Object.entries(dailyCounts)
+        .map(([date, count]) => ({
+          date,
+          testsCount: Number(count),
+          formattedDate: new Date(date).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "2-digit",
+          }),
+        }))
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    //   console.log("Processed WAT data (last 30 days):", watData); // Debug log
+      return watData;
     } catch (error) {
-      console.error("Error processing PPDT data:", error);
+      console.error("Error processing WAT data:", error);
       return [];
     }
   };
 
-  const ppdtData = processPPDTData();
+  const watData = processWATData();
+  const totalTests = watData.reduce((sum, day) => sum + day.testsCount, 0);
+  const activeDays = watData.length;
 
   const defaultData = [
     {
-      attempt: "No attempts yet",
-      score: 0,
-      date: "",
+      date: "No attempts yet",
+      testsCount: 0,
+      formattedDate: "No data",
     },
   ];
 
-  const dataToUse = ppdtData.length > 0 ? ppdtData : defaultData;
+  const dataToUse = watData.length > 0 ? watData : defaultData;
 
   return (
     <div
@@ -86,10 +109,11 @@ function PPDTScore({ userDetails }) {
           color: "#124D96",
         }}
       >
-        PPDT Test Progress {ppdtData.length > 0 && `(${ppdtData.length} Tests)`}
+        WAT Test Activity - Last 30 Days{" "}
+        {watData.length > 0 && `(${activeDays} Active Days)`}
       </h2>
 
-      {/* Score Summary */}
+      {/* Summary Stats */}
       <div
         style={{
           display: "flex",
@@ -104,31 +128,37 @@ function PPDTScore({ userDetails }) {
           <div
             style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#124D96" }}
           >
-            {ppdtData.length > 0
-              ? ppdtData[ppdtData.length - 1]?.score || 0
-              : 0}
+            {totalTests}
           </div>
-          <div style={{ fontSize: "0.9rem", color: "#666" }}>Latest Score</div>
+          <div style={{ fontSize: "0.9rem", color: "#666" }}>Total Tests</div>
         </div>
         <div style={{ textAlign: "center" }}>
           <div
             style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#28a745" }}
           >
-            {ppdtData.length > 0
-              ? Math.max(...ppdtData.map((d) => d.score))
+            {watData.length > 0
+              ? Math.max(...watData.map((d) => d.testsCount))
               : 0}
           </div>
-          <div style={{ fontSize: "0.9rem", color: "#666" }}>Best Score</div>
+          <div style={{ fontSize: "0.9rem", color: "#666" }}>Max Per Day</div>
         </div>
         <div style={{ textAlign: "center" }}>
           <div
             style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#17a2b8" }}
           >
-            {ppdtData.length}
+            {activeDays}
           </div>
-          <div style={{ fontSize: "0.9rem", color: "#666" }}>
-            Total Attempts
+          <div style={{ fontSize: "0.9rem", color: "#666" }}>Active Days</div>
+        </div>
+        <div style={{ textAlign: "center" }}>
+          <div
+            style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#FF8042" }}
+          >
+            {activeDays > 0
+              ? Math.round((totalTests / activeDays) * 10) / 10
+              : 0}
           </div>
+          <div style={{ fontSize: "0.9rem", color: "#666" }}>Avg Per Day</div>
         </div>
       </div>
 
@@ -136,7 +166,7 @@ function PPDTScore({ userDetails }) {
         <AreaChart data={dataToUse}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
-            dataKey="attempt"
+            dataKey="formattedDate"
             fontSize={12}
             angle={-45}
             textAnchor="end"
@@ -144,10 +174,10 @@ function PPDTScore({ userDetails }) {
           />
           <YAxis
             allowDecimals={false}
-            domain={[0, 10]} // Fixed domain for score range
+            domain={[0, "dataMax + 1"]} // Dynamic domain based on max tests per day
             fontSize={12}
             label={{
-              value: "Score",
+              value: "Tests Count",
               angle: -90,
               position: "insideLeft",
               style: { textAnchor: "middle" },
@@ -166,18 +196,11 @@ function PPDTScore({ userDetails }) {
                       padding: 10,
                     }}
                   >
-                    <p style={{ margin: 0, fontWeight: "bold" }}>{label}</p>
-                    <p style={{ margin: "5px 0", color: "#124D96" }}>
-                      Score: {data.score} (Coming Soon)
-                    </p>
-                    <p
-                      style={{
-                        margin: "5px 0",
-                        color: "#666",
-                        fontSize: "0.9rem",
-                      }}
-                    >
+                    <p style={{ margin: 0, fontWeight: "bold" }}>
                       Date: {new Date(data.date).toLocaleDateString()}
+                    </p>
+                    <p style={{ margin: "5px 0", color: "#124D96" }}>
+                      WAT Tests: {data.testsCount}
                     </p>
                   </div>
                 );
@@ -188,8 +211,8 @@ function PPDTScore({ userDetails }) {
           <Legend />
           <Area
             type="monotone"
-            dataKey="score"
-            name="PPDT Score"
+            dataKey="testsCount"
+            name="WAT Tests Per Day"
             stroke="#124D96"
             fill="#124D96"
             fillOpacity={0.3}
@@ -207,13 +230,17 @@ function PPDTScore({ userDetails }) {
             fontWeight: "500",
           }}
         >
-          {ppdtData.length === 0
-            ? "🎯 Take your first PPDT test to see progress!"
-            : `📊 ${ppdtData.length} PPDT tests completed! Scoring system coming soon.`}
+          {watData.length === 0
+            ? "🎯 Take your first WAT test in the last 30 days to see activity!"
+            : totalTests >= 10
+            ? "🎉 Great WAT activity in the last 30 days!"
+            : totalTests >= 5
+            ? ""
+            : ""}
         </span>
       </div>
     </div>
   );
 }
 
-export default PPDTScore;
+export default WatScore;
