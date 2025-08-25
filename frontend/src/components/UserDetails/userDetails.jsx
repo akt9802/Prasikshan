@@ -3,13 +3,10 @@ import MonthlyTest from "../../components/Charts/MonthlyTest.jsx";
 import PPDTScore from "../../components/Charts/PPDTScore.jsx";
 import TotalTest from "../../components/Charts/TotalTest.jsx";
 import React, { useEffect, useState } from "react";
-
 import TatScore from "../../components/Charts/TatScore.jsx";
 import WatScore from "../../components/Charts/WatScore.jsx";
 import SrtScore from "../../components/Charts/SrtScore.jsx";
-import Lecturette from "../../components/Charts/LecturetteScore.jsx";
-
-
+import LecturetteScore from "../../components/Charts/LecturetteScore.jsx"; // Fixed import path
 import Footer from "../../components/Footer/Footer.jsx";
 
 const LOCAL = import.meta.env.VITE_BACKEND_URL;
@@ -18,7 +15,7 @@ const apiURL = LOCAL || PRODUCTION_URL;
 
 function UserDetails() {
   const [userDetails, setUserDetails] = useState(null);
-  const [selectedTest, setSelectedTest] = useState("OIR"); // Add state for selected test
+  const [selectedTest, setSelectedTest] = useState("OIR");
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -38,7 +35,6 @@ function UserDetails() {
         });
 
         const data = await response.json();
-        // console.log(data);
 
         if (response.ok) {
           setUserDetails(data);
@@ -56,14 +52,9 @@ function UserDetails() {
 
   // Logout function
   const handleLogout = () => {
-    // Remove token from localStorage
     localStorage.removeItem("token");
-
-    // Optionally show a confirmation message
     alert("You have been logged out successfully!");
-
-    // Redirect to login page or refresh the page
-    window.location.href = "/"; // or use React Router's navigate
+    window.location.href = "/";
   };
 
   // Function to render the selected chart component
@@ -71,7 +62,6 @@ function UserDetails() {
     switch (selectedTest) {
       case "OIR":
         return <OirScore userDetails={userDetails} />;
-
       case "PPDT":
         return <PPDTScore userDetails={userDetails} />;
       case "TAT":
@@ -95,91 +85,72 @@ function UserDetails() {
       case "LECTURETTE":
         return (
           <div>
-            <Lecturette userDetails={userDetails} />
+            <LecturetteScore userDetails={userDetails} />
           </div>
         );
       default:
-        return <OirScore />;
+        return <OirScore userDetails={userDetails} />;
     }
   };
 
   return (
-
-    <div
-      style={{
-        width: "100%",
-        maxWidth: 1400,
-        margin: "0 auto",
-        padding: "20px",
-        minHeight: "100vh",
-        backgroundColor: "#f8f9fa",
-      }}
-    >
-      {userDetails ? (
-        <div>
-          <div
-            style={{
-              textAlign: "center",
-              marginBottom: 5,
-              padding: "20px 0",
-              backgroundColor: "#fff",
-              borderRadius: 12,
-              boxShadow: "0 2px 8px rgba(0,0,0,0.5)",
-              position: "relative", // Added for button positioning
-            }}
-          >
-            {/* Logout Button */}
-            <button
-              onClick={handleLogout}
-              style={{
-                position: "absolute",
-                top: "20px",
-                right: "20px",
-                padding: "10px 20px",
-                backgroundColor: "#dc3545",
-                color: "white",
-                border: "none",
-                borderRadius: 8,
-                fontSize: "0.9rem",
-                fontWeight: "600",
-                cursor: "pointer",
-                transition: "all 0.3s ease",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-              }}
-              onMouseOver={(e) => {
-                e.target.style.backgroundColor = "#c82333";
-                e.target.style.transform = "translateY(-2px)";
-                e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";
-              }}
-              onMouseOut={(e) => {
-                e.target.style.backgroundColor = "#dc3545";
-                e.target.style.transform = "translateY(0)";
-                e.target.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
-              }}
-            >
-              Logout
-            </button>
-
-            <h1
-              style={{
-                fontWeight: "bold",
-                fontSize: "2.5rem",
-                margin: 0,
-                color: "#124D96",
-              }}
-            >
-              Welcome, {userDetails.name}!
-            </h1>
-            <p
+    <div>
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 1400,
+          margin: "0 auto",
+          padding: "20px",
+          minHeight: "100vh",
+          backgroundColor: "#f8f9fa",
+        }}
+      >
+        {userDetails ? (
+          <div>
+            {/* Welcome Section */}
+            <div
               style={{
                 textAlign: "center",
-                marginBottom: 5,
+                marginBottom: 30,
                 padding: "20px 0",
                 backgroundColor: "#fff",
                 borderRadius: 12,
                 boxShadow: "0 2px 8px rgba(0,0,0,0.5)",
+                position: "relative",
               }}
             >
+              {/* Logout Button */}
+              <button
+                onClick={handleLogout}
+                style={{
+                  position: "absolute",
+                  top: "20px",
+                  right: "20px",
+                  padding: "10px 20px",
+                  backgroundColor: "#dc3545",
+                  color: "white",
+                  border: "none",
+                  borderRadius: 8,
+                  fontSize: "0.9rem",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.backgroundColor = "#c82333";
+                  e.target.style.transform = "translateY(-2px)";
+                  e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.backgroundColor = "#dc3545";
+                  e.target.style.transform = "translateY(0)";
+                  e.target.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
+                }}
+              >
+                Logout
+              </button>
+
               <h1
                 style={{
                   fontWeight: "bold",
@@ -201,6 +172,7 @@ function UserDetails() {
                 Track your test performance and progress
               </p>
             </div>
+
             {/* Charts Container */}
             <div
               style={{
@@ -208,6 +180,7 @@ function UserDetails() {
                 gridTemplateColumns: "repeat(auto-fit, minmax(500px, 1fr))",
                 gap: 30,
                 justifyItems: "center",
+                marginBottom: 30,
               }}
             >
               <div style={{ width: "100%", maxWidth: 600 }}>
