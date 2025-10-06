@@ -14,7 +14,7 @@ app.use(express.json());
 // if (process.env.NODE_ENV === "development") {
 app.use(
   cors({
-    origin: ["https://prasikshan.vercel.app", "http://localhost:5173"],
+    origin: ["https://prasikshan.vercel.app", "http://localhost:5173","http://localhost:5174"],
     credentials: true,
   })
 );
