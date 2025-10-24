@@ -25,6 +25,8 @@ import DisplayTatQuestion from "./components/TAT/DisplayTatQuestion.jsx";
 import SigninPage from "./components/LoginPage/SigninPage.jsx";
 import SignupPage from "./components/LoginPage/SignupPage.jsx";
 import UserDetails from "./components/UserDetails/userDetails.jsx";
+import Ranking from "./components/Ranking/Ranking.jsx";
+import RankingUser from "./components/Ranking/RankingUser.jsx";
 
 function App() {
   return (
@@ -84,6 +86,8 @@ function App() {
         <Route path="/signin" element={<SigninPage />}/>
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/userdetails" element={<UserDetails />} />
+        <Route path="/ranking" element={<Ranking />} />
+  <Route path="/ranking/:username" element={<RankingUser />} />
       </Route>
     </Routes>
   );

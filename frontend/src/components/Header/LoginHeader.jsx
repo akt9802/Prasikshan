@@ -50,6 +50,7 @@ function LoginHeader() {
         >
           <Link to="/">Home</Link>
           <Link to="/aboutssb">About SSB</Link>
+          <Link to="/ranking">Ranking</Link>
           <button
             onClick={() => navigate("/alltest")}
             style={{
