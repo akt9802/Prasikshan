@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import OirScore from "../Charts/OirScore.jsx";
+import MonthlyTest from "../Charts/MonthlyTest.jsx";
+import PPDTScore from "../Charts/PPDTScore.jsx";
+import TotalTest from "../Charts/TotalTest.jsx";
+import TatScore from "../Charts/TatScore.jsx";
+import WatScore from "../Charts/WatScore.jsx";
+import SrtScore from "../Charts/SrtScore.jsx";
+import LecturetteScore from "../Charts/LecturetteScore.jsx";
+import Footer from "../Footer/Footer.jsx";
 
 function RankingUser() {
   const { username } = useParams();
@@ -7,6 +16,7 @@ function RankingUser() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedTest, setSelectedTest] = useState('OIR');
 
   useEffect(() => {
     let cancelled = false;
@@ -66,21 +76,45 @@ function RankingUser() {
             </div>
           </div>
 
-          <section style={{ marginTop: 24 }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#0f172a' }}>Recent tests</h3>
-            <div style={{ marginTop: 12 }}>
-              {(user && Array.isArray(user.testsTaken) && user.testsTaken.length > 0) ? (
-                user.testsTaken.slice(0,10).map((t, idx) => (
-                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#f8fafc', borderRadius: 8, marginBottom: 8 }}>
-                    <div style={{ color: '#0f172a' }}>{t.testName}</div>
-                    <div style={{ color: '#374151', fontWeight: 600 }}>{t.score} pts</div>
-                  </div>
-                ))
-              ) : (
-                <div style={{ color: '#6b7280' }}>No tests recorded yet for this user.</div>
-              )}
+          {/* Charts Container (like UserDetails) */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: 24, justifyItems: 'center', marginTop: 24 }}>
+            <div style={{ width: '100%', maxWidth: 700 }}>
+              <TotalTest userDetails={user} />
             </div>
-          </section>
+            <div style={{ width: '100%', maxWidth: 700 }}>
+              <MonthlyTest userDetails={user} />
+            </div>
+          </div>
+
+          {/* Test Score Selection Section (reuse patterns from UserDetails) */}
+          <div style={{ margin: '40px 0', padding: 30, backgroundColor: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', maxWidth: 1200 }}>
+            <h2 style={{ textAlign: 'center', fontSize: '1.5rem', fontWeight: '700', color: '#124D96', marginBottom: 20 }}>Check Test Scores</h2>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: 24, alignItems: 'start' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12 }}>
+                <button onClick={() => setSelectedTest('OIR')} style={{ padding: '12px 16px', backgroundColor: selectedTest === 'OIR' ? '#0f3d6b' : '#1E5799', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 700 }}>OIR</button>
+                <button onClick={() => setSelectedTest('PPDT')} style={{ padding: '12px 16px', backgroundColor: selectedTest === 'PPDT' ? '#009688' : '#00C49F', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 700 }}>PPDT</button>
+                <button onClick={() => setSelectedTest('TAT')} style={{ padding: '12px 16px', backgroundColor: selectedTest === 'TAT' ? '#e6940a' : '#FFA500', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 700 }}>TAT</button>
+                <button onClick={() => setSelectedTest('WAT')} style={{ padding: '12px 16px', backgroundColor: selectedTest === 'WAT' ? '#e6692e' : '#FF8042', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 700 }}>WAT</button>
+                <button onClick={() => setSelectedTest('SRT')} style={{ padding: '12px 16px', backgroundColor: selectedTest === 'SRT' ? '#6c63d2' : '#8884d8', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 700 }}>SRT</button>
+                <button onClick={() => setSelectedTest('LECTURETTE')} style={{ padding: '12px 16px', backgroundColor: selectedTest === 'LECTURETTE' ? '#6bb36b' : '#82ca9d', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 700 }}>LECTURETTE</button>
+              </div>
+
+              <div style={{ borderRadius: 8, minHeight: 240 }}>
+                {(() => {
+                  switch (selectedTest) {
+                    case 'OIR': return <OirScore userDetails={user} />;
+                    case 'PPDT': return <PPDTScore userDetails={user} />;
+                    case 'TAT': return <TatScore userDetails={user} />;
+                    case 'WAT': return <WatScore userDetails={user} />;
+                    case 'SRT': return <SrtScore userDetails={user} />;
+                    case 'LECTURETTE': return <LecturetteScore userDetails={user} />;
+                    default: return <OirScore userDetails={user} />;
+                  }
+                })()}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

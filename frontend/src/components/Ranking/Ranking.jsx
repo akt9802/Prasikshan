@@ -122,16 +122,14 @@ function Ranking() {
                 return (
                 <div
                   key={u.name}
-                  className={`flex items-center justify-between gap-4 p-4 rounded-md transition transform duration-200 hover:shadow-2xl hover:-translate-y-1 border-2 ${isCurrent ? 'bg-indigo-50 border-indigo-300' : 'bg-white border-gray-300'}`}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => navigate(`/ranking/${encodeURIComponent(u.name)}`)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/ranking/${encodeURIComponent(u.name)}`); }}
+                  className={`flex items-center justify-between gap-4 p-4 rounded-md transition transform duration-200 hover:shadow-2xl hover:-translate-y-1 border-2 cursor-pointer ${isCurrent ? 'bg-indigo-50 border-indigo-300' : 'bg-white border-gray-300'}`}
                 >
                   <div className="flex items-center gap-4">
-                    <div
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => navigate(`/ranking/${encodeURIComponent(u.name)}`)}
-                      onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/ranking/${encodeURIComponent(u.name)}`); }}
-                      className="flex items-center gap-3 cursor-pointer"
-                    >
+                    <div className="flex items-center gap-3">
                       <div style={{ background: pickColor(u.name) }} className="w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium text-slate-900 shadow-sm">
                         {initials}
                       </div>
