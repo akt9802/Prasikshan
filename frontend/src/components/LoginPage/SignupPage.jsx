@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function SignupPage() {
   const [formData, setFormData] = useState({
@@ -24,7 +24,7 @@ function SignupPage() {
       return;
     }
     try {
-      await fetch("http://localhost:3000/v1/signup" ,{
+      const response = await fetch("http://localhost:3000/v1/signup" ,{
         method: "POST",
         headers: {
           "Content-Type" : "application/json",
@@ -36,10 +36,23 @@ function SignupPage() {
         }),
       });
 
-      // const data = await response.json();
+      if (response.ok) {
+        // Redirect user to /alltest after successful signup
+        navigate('/alltest');
+        return;
+      } else {
+        // try to show backend message if provided
+        let msg = 'Signup failed';
+        try {
+          const err = await response.json();
+          if (err && err.message) msg = err.message;
+        } catch {}
+        alert(msg);
+      }
 
     } catch (error) {
       console.error("Error during signup : ",error);
+      alert('Signup error. Check console for details.');
     }
   };
 

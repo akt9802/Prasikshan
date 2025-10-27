@@ -79,6 +79,10 @@ app.use("/v1", userDetailsRouter);
 const rankingRouter = require("./Router/rankingRouter.js");
 app.use("/v1/ranking", rankingRouter);
 
+// Gemini proxy router (AI suggestions + assessment)
+const geminiRouter = require("./Router/geminiRouter.js");
+app.use('/v1/gemini', geminiRouter);
+
 // // Serve React build in production
 // if (process.env.NODE_ENV === "production") {
 //   app.use(express.static(path.join(__dirname, "client/build")));
