@@ -14,7 +14,7 @@ app.use(express.json());
 // if (process.env.NODE_ENV === "development") {
 app.use(
   cors({
-    origin: ["https://prasikshan.vercel.app", "http://localhost:5173"],
+    origin: ["https://prasikshan.vercel.app", "http://localhost:5173","http://localhost:5174"],
     credentials: true,
   })
 );
@@ -75,6 +75,13 @@ app.use("/v1", userSigninRouter);
 
 const userDetailsRouter = require("./Router/userDetails.js");
 app.use("/v1", userDetailsRouter);
+
+const rankingRouter = require("./Router/rankingRouter.js");
+app.use("/v1/ranking", rankingRouter);
+
+// Gemini proxy router (AI suggestions + assessment)
+const geminiRouter = require("./Router/geminiRouter.js");
+app.use('/v1/gemini', geminiRouter);
 
 // // Serve React build in production
 // if (process.env.NODE_ENV === "production") {

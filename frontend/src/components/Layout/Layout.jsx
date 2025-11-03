@@ -7,10 +7,19 @@ function Layout() {
   const [isSignedIn, setIsSignedIn] = useState(false);
 
   useEffect(() => {
-    // if token exist in local storage then this 
+    // set initial signed-in state on mount
     const token = localStorage.getItem("token");
-    setIsSignedIn(!!token); 
-  }, [isSignedIn]);
+    setIsSignedIn(!!token);
+
+    // listen for auth changes (signin/signout) and update header reactively
+    const onAuthChange = () => {
+      const t = localStorage.getItem("token");
+      setIsSignedIn(!!t);
+    };
+
+    window.addEventListener("auth-change", onAuthChange);
+    return () => window.removeEventListener("auth-change", onAuthChange);
+  }, []);
 
   return (
     <>

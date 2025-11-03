@@ -8,15 +8,32 @@ function Footer() {
   useEffect(() => {
     const fetchUserCount = async () => {
       try {
-        const response = await fetch(`${apiURL}/support/count`);
-        const data = await response.json();
-        if (response.ok) {
-          setUserCount(data.count); // set user count
+        // Use existing ranking endpoint which returns all users in `data`.
+        // Count total users by length of the returned array so we don't need
+        // a separate backend endpoint for user count.
+        const resp = await fetch(`${apiURL || ''}/v1/ranking`);
+        const result = await resp.json();
+        if (resp.ok && result && result.success && Array.isArray(result.data)) {
+          setUserCount(result.data.length);
+        } else if (resp.ok && Array.isArray(result)) {
+          // In case the endpoint returns a raw array (fallback), use its length
+          setUserCount(result.length);
         } else {
-          console.error("Failed to fetch count:", data.message);
+          // fallback to previous supporter count endpoint if available
+          try {
+            const response2 = await fetch(`${apiURL || ''}/support/count`);
+            const data2 = await response2.json();
+            if (response2.ok && data2 && typeof data2.count === 'number') {
+              setUserCount(data2.count);
+            } else {
+              console.error('Failed to fetch user count from both endpoints');
+            }
+          } catch (err2) {
+            console.error('Error fetching user count fallback:', err2);
+          }
         }
       } catch (err) {
-        console.error("Error fetching user count:", err);
+        console.error('Error fetching user count:', err);
       }
     };
 
