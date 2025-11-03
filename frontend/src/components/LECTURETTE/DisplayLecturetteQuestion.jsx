@@ -266,20 +266,24 @@ function DisplayLecturetteQuestion() {
     setSuggestionText('');
     try {
       // Try backend Gemini route if available
-      const res = await fetch('/v1/gemini/generate', {
+      const endpoint = `${apiURL.replace(/\/$/, '')}/v1/gemini/generate`;
+      console.debug('Calling suggestion endpoint:', endpoint);
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ speechText: text, topic: lecturette?.topic || '' }),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        const txt = data?.text || data?.result || '';
-        if (txt) setSuggestionText(String(txt));
-        else setSuggestionText(localGenerateSuggestion(text));
-      } else {
-        setSuggestionText(localGenerateSuggestion(text));
-      }
+        if (res.ok) {
+          const data = await res.json();
+          console.debug('Suggestion response:', data);
+          const txt = data?.text || data?.result || '';
+          if (txt) setSuggestionText(String(txt));
+          else setSuggestionText(localGenerateSuggestion(text));
+        } else {
+          console.warn('Suggestion endpoint returned non-ok status', res.status);
+          setSuggestionText(localGenerateSuggestion(text));
+        }
     } catch (e) {
       // fallback to local generation
       console.warn('Suggestion generation failed', e);
@@ -309,7 +313,15 @@ function DisplayLecturetteQuestion() {
     reasons.push(`Avg word length: ${avgWordLen.toFixed(1)}`);
     if (fillerMatches > 0) reasons.push(`Filler words detected: ${fillerMatches}`);
     if (wordCount < 30) reasons.push('Try to expand your answer with 2–3 supporting points.');
-    return { score: Math.round(s), reasons };
+
+    // If answer is extremely short (likely only restating the topic), give a low score
+    if (wordCount <= 5) {
+      return { score: 1, reasons: ['Answer is too short — expand with supporting points'] };
+    }
+
+    // Map 0-100 -> 0-10 but ensure at least 1
+    const mapped = Math.max(1, Math.round(s / 10));
+    return { score: mapped, reasons };
   };
 
   const handleCheckScore = async () => {
@@ -323,7 +335,9 @@ function DisplayLecturetteQuestion() {
 
       // Try backend model-based assessment first
       try {
-        const res = await fetch('/v1/gemini/assess', {
+        const assessEndpoint = `${apiURL.replace(/\/$/, '')}/v1/gemini/assess`;
+        console.debug('Calling assess endpoint:', assessEndpoint);
+        const res = await fetch(assessEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ speechText: text }),
@@ -331,12 +345,15 @@ function DisplayLecturetteQuestion() {
 
         if (res.ok) {
           const data = await res.json();
+          console.debug('Assess response:', data);
           // Expecting { score: number (0-10), reasons: [string], raw }
           if (typeof data.score === 'number') {
             const reasons = Array.isArray(data.reasons) && data.reasons.length ? data.reasons : (data.raw ? [data.raw] : []);
             setScore({ score: data.score, reasons });
             return;
           }
+        } else {
+          console.warn('Assess endpoint returned non-ok status', res.status);
         }
       } catch (e) {
         console.warn('Backend assess call failed, falling back to local heuristic', e);
