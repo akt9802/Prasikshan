@@ -24,7 +24,7 @@ function SignupPage() {
       return;
     }
     try {
-      const response = await fetch("https://prasikshan.onrender.com/v1/signup" ,{
+      const response = await fetch("https://Prasikshan.onrender.com/v1/signup" ,{
         method: "POST",
         headers: {
           "Content-Type" : "application/json",

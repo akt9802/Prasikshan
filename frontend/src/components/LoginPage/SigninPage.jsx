@@ -20,7 +20,7 @@ function SigninPage() {
    e.preventDefault();
 
    try {
-     const response = await fetch("https://prasikshan.onrender.com/v1/signin", {
+     const response = await fetch("https://Prasikshan.onrender.com/v1/signin", {
        method: "POST",
        headers: {
          "Content-Type": "application/json",

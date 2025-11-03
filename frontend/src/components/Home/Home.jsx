@@ -71,7 +71,7 @@ function Home() {
             WebkitTextFillColor: "transparent",
           }}
         >
-          Why Prasikshan ?
+          Why Prashikshan ?
         </h1>
         <div className="flex flex-col md:flex-row gap-8 items-center">
           <SmallCardHome

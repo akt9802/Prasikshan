@@ -40,7 +40,7 @@ function LoginHeader() {
       >
         {/* Logo */}
         <div style={{ cursor: "pointer" }} onClick={() => navigate("/")}>
-          <h1 className="font-bold">Prasikshan</h1>
+          <h1 className="font-bold">Prashikshan</h1>
         </div>
 
         {/* Desktop Nav */}
