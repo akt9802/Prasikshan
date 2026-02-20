@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { Typewriter } from 'react-simple-typewriter';
 import SmallCardHome from './SmallCardHome';
-import Footer from './Footer';
+import Footer from '../footer/Footer';
 
 export default function Home() {
   const router = useRouter();
@@ -29,7 +29,7 @@ export default function Home() {
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'linear-gradient(135deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.15) 100%)',
+            background: 'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)',
             pointerEvents: 'none',
           }}
         ></div>
@@ -45,10 +45,10 @@ export default function Home() {
                 key={idx}
                 className="text-2xl sm:text-4xl md:text-5xl lg:text-7xl font-bold drop-shadow-lg"
                 style={{
-                  color: '#FF5D00',
+                  color: '#FFFFFF',
                   fontFamily: 'Montserrat, sans-serif',
                   marginBottom: '10px',
-                  textShadow: '3px 3px 6px rgba(0,0,0,0.7)',
+                  textShadow: '4px 4px 8px rgba(0,0,0,0.8)',
                 }}
               >
                 {line}
@@ -57,9 +57,9 @@ export default function Home() {
             <h1
               className="text-2xl sm:text-4xl md:text-5xl lg:text-7xl font-bold drop-shadow-lg"
               style={{
-                color: '#FF5D00',
+                color: '#FFFFFF',
                 fontFamily: 'Montserrat, sans-serif',
-                textShadow: '3px 3px 6px rgba(0,0,0,0.7)',
+                textShadow: '4px 4px 8px rgba(0,0,0,0.8)',
                 minHeight: '90px',
               }}
             >
@@ -114,7 +114,7 @@ export default function Home() {
         className="bg-[#EDF9FF] flex flex-col lg:flex-row items-center justify-between px-4 md:px-21 py-10 gap-8"
         style={{ padding: '40px 5vw' }}
       >
-        <div className="flex flex-col gap-2 text-center lg:text-left">
+        <div className="flex flex-col gap-2 text-center lg:text-left text-gray-700">
           <h1
             className="text-3xl md:text-4xl font-bold"
             style={{ fontFamily: 'Montserrat, sans-serif' }}

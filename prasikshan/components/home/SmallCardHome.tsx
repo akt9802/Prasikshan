@@ -17,6 +17,15 @@ export default function SmallCardHome({ name, title, text }: SmallCardHomeProps)
         borderRadius: '15px',
         transition: 'transform 0.3s ease, box-shadow 0.3s ease',
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+        backgroundImage: `
+          radial-gradient(circle at 100% 100%, #f0f8ff 0, #f0f8ff 12.5%, transparent 12.5%),
+          radial-gradient(circle at 0 100%, #f0f8ff 0, #f0f8ff 12.5%, transparent 12.5%),
+          radial-gradient(circle at 100% 0, #f0f8ff 0, #f0f8ff 12.5%, transparent 12.5%),
+          radial-gradient(circle at 0 0, #f0f8ff 0, #f0f8ff 12.5%, transparent 12.5%)
+        `,
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: '20px 20px',
+        backgroundPosition: '100% 100%, 0 100%, 100% 0, 0 0',
       }}
     >
       <div
@@ -43,7 +52,7 @@ export default function SmallCardHome({ name, title, text }: SmallCardHomeProps)
           👤
         </div>
         <div>
-          <h3 style={{ fontWeight: 'bolder', margin: '0' }}>{name}</h3>
+          <h3 style={{ fontWeight: 'bolder', margin: '0' }} className="text-black">{name}</h3>
           <h6 style={{ margin: '0', fontSize: '14px', color: '#666' }}>{title}</h6>
         </div>
       </div>
