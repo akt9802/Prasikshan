@@ -1,0 +1,291 @@
+/* === IMAGE CAROUSEL === */
+.image-carousel {
+  height: 300px;
+  overflow: hidden;
+  position: relative;
+  background-color: #D7F1FF;
+  display: flex;
+  align-items: center;
+}
+
+.slider-track {
+  display: flex;
+  width: max-content;
+  animation: scroll 45s linear infinite;
+}
+
+.slide {
+  min-width: 400px;
+  height: 220px;
+  margin: 0 10px;
+  transition: transform 0.3s ease-in-out;
+}
+
+.slide:hover {
+  transform: scale(1.05);
+}
+
+.slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* === SSB TIMELINE === */
+.ssb-container {
+  padding: 50px 20px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.ssb-heading {
+  text-align: center;
+  font-size: 40px;
+  font-weight: 800;
+  margin-bottom: 40px;
+  background: linear-gradient(to right, #000000, #666666);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: #000;
+}
+
+.ssb-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.ssb-row {
+  display: grid;
+  grid-template-columns: 1fr 20px 1fr;
+  align-items: center;
+  position: relative;
+}
+
+.ssb-line {
+  width: 5px;
+  height: 100%;
+  background-color: black;
+  justify-self: center;
+}
+
+.ssb-card-left,
+.ssb-card-right {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: 500;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+  position: relative;
+  min-width: 180px;
+  width: fit-content;
+}
+
+.ssb-card-left {
+  justify-self: end;
+}
+
+.ssb-card-right {
+  justify-self: start;
+}
+
+.ssb-card-left h3,
+.ssb-card-right h3 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  color: #000;
+  font-weight: 600;
+}
+
+.ssb-card-left p,
+.ssb-card-right p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+  font-weight: 500;
+}
+
+.ssb-hover-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.ssb-detail {
+  position: absolute;
+  top: 50%;
+  width: 260px;
+  background-color: white;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%) scale(0.95);
+  transition: all 0.3s ease;
+  z-index: 10;
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #000;
+}
+
+.ssb-detail p {
+  color: #000;
+  margin: 0;
+  font-size: 12px;
+}
+
+.ssb-detail strong {
+  color: #000;
+  font-weight: 600;
+}
+
+.ssb-hover-wrapper:hover .ssb-detail {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(-50%) scale(1);
+}
+
+.ssb-detail.left {
+  right: 50%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+}
+
+.ssb-detail.right {
+  left: 50%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+}
+
+/* === SSB GRID === */
+.ssb-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 40px;
+  padding: 30px 10px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.ssb-card {
+  width: 250px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: white;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ssb-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.ssb-img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+
+.ssb-title {
+  margin: 0;
+  padding: 10px;
+  font-size: 16px;
+  text-align: center;
+  font-weight: 600;
+  color: #333;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 992px) {
+  .slide {
+    min-width: 300px;
+    height: 180px;
+  }
+
+  .ssb-grid {
+    gap: 30px;
+  }
+
+  .ssb-card {
+    width: 200px;
+  }
+
+  .ssb-heading {
+    font-size: 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  .ssb-row {
+    grid-template-columns: 1fr;
+  }
+
+  .ssb-line {
+    display: none;
+  }
+
+  .ssb-card-left,
+  .ssb-card-right {
+    justify-self: center;
+  }
+
+  .ssb-hover-wrapper {
+    display: block;
+    width: 100%;
+  }
+
+  .ssb-detail {
+    position: static;
+    opacity: 1;
+    transform: none;
+    width: 100%;
+    margin-top: 10px;
+    pointer-events: auto;
+    box-shadow: none;
+  }
+
+  .ssb-hover-wrapper:hover .ssb-detail {
+    transform: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .slide {
+    min-width: 250px;
+    height: 150px;
+  }
+
+  .ssb-card {
+    width: 100%;
+    max-width: 90%;
+  }
+
+  .ssb-img {
+    height: 140px;
+  }
+
+  .ssb-title {
+    font-size: 14px;
+  }
+
+  .ssb-heading {
+    font-size: 24px;
+  }
+}
+  
