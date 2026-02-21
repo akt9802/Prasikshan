@@ -1,11 +1,21 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
+export interface ITestResult {
+  testName: string;
+  score: number;
+  timeTaken: number;
+  dateTaken: string;
+  responses?: Array<{ word?: string; response?: string; text?: string }>;
+  createdAt?: Date;
+}
+
 export interface IUser extends Document {
   username: string;
   email: string;
   password: string;
   fullName?: string;
   profileImage?: string;
+  testsTaken?: ITestResult[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -41,6 +51,28 @@ const UserSchema = new Schema<IUser>(
     profileImage: {
       type: String,
       default: null,
+    },
+    testsTaken: {
+      type: [
+        {
+          testName: String,
+          score: Number,
+          timeTaken: Number,
+          dateTaken: String,
+          responses: [
+            {
+              word: String,
+              response: String,
+              text: String,
+            },
+          ],
+          createdAt: {
+            type: Date,
+            default: Date.now,
+          },
+        },
+      ],
+      default: [],
     },
   },
   {
