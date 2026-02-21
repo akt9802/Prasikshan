@@ -24,7 +24,7 @@ export default function Alltest() {
       description:
         "Assess your logical and analytical abilities with verbal and non-verbal reasoning questions designed to evaluate your problem-solving skills.",
       route: "/alltest/oir",
-      duration: "50 min",
+      duration: "40 min",
       questions: 40,
       icon: "🧠",
     },

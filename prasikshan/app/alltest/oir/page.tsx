@@ -50,7 +50,7 @@ export default function OirInstruction() {
                     </span>
                     <div>
                       <p className="text-gray-700 text-base md:text-lg">
-                        You will have a total of <span className="font-semibold">50 minutes</span> to complete all questions. Use your time wisely and manage it effectively.
+                        You will have a total of <span className="font-semibold">40 minutes</span> to complete all questions. Use your time wisely and manage it effectively.
                       </p>
                     </div>
                   </li>
