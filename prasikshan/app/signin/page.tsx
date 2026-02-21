@@ -13,12 +13,14 @@ export default function SigninPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
     setError("");
+    setSuccess("");
   };
 
   const toggleShowPassword = () => setShowPassword((s) => !s);
@@ -29,7 +31,7 @@ export default function SigninPage() {
     setLoading(true);
 
     try {
-      const response = await fetch("https://Prasikshan.onrender.com/v1/signin", {
+      const response = await fetch("/api/auth/signin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -42,9 +44,12 @@ export default function SigninPage() {
 
       const data = await response.json();
 
-      if (response.ok) {
+      if (data.success) {
         // Store the token in local storage
         localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+
+        setSuccess(data.message || "Sign-in successful!");
 
         // Dispatch events to notify about auth change
         window.dispatchEvent(new Event("auth-change"));
@@ -57,7 +62,7 @@ export default function SigninPage() {
         // Small delay to ensure state updates
         setTimeout(() => {
           router.push("/alltest");
-        }, 100);
+        }, 500);
       } else {
         setError(data.message || "Sign-in failed!");
       }
@@ -82,6 +87,12 @@ export default function SigninPage() {
               {error && (
                 <div className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">
                   {error}
+                </div>
+              )}
+
+              {success && (
+                <div className="p-4 mb-4 text-sm text-green-700 bg-green-100 rounded-lg">
+                  {success}
                 </div>
               )}
 

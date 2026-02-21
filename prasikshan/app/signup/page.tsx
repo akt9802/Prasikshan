@@ -7,7 +7,8 @@ import Footer from "@/components/footer/Footer";
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
-    name: "",
+    username: "",
+    fullName: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -16,12 +17,14 @@ export default function SignupPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
     setError("");
+    setSuccess("");
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -36,13 +39,14 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      const response = await fetch("https://Prasikshan.onrender.com/v1/signup", {
+      const response = await fetch("/api/auth/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name: formData.name,
+          username: formData.username,
+          fullName: formData.fullName,
           email: formData.email,
           password: formData.password,
         }),
@@ -50,24 +54,21 @@ export default function SignupPage() {
 
       const data = await response.json();
 
-      if (response.ok) {
-        // Store the token in local storage if provided
-        if (data.token) {
-          localStorage.setItem("token", data.token);
-
-          // Dispatch events to notify about auth change
-          window.dispatchEvent(new Event("auth-change"));
-          window.dispatchEvent(new StorageEvent("storage", {
-            key: "token",
-            newValue: data.token,
-            storageArea: localStorage,
-          }));
+      if (data.success) {
+        // Store user in local storage
+        if (data.user) {
+          localStorage.setItem("user", JSON.stringify(data.user));
         }
 
-        // Small delay to ensure state updates
+        setSuccess(data.message || "Account created successfully! Redirecting to signin...");
+
+        // Dispatch events to notify about auth change
+        window.dispatchEvent(new Event("auth-change"));
+
+        // Redirect to signin page for login
         setTimeout(() => {
-          router.push("/alltest");
-        }, 100);
+          router.push("/signin");
+        }, 1500);
       } else {
         setError(data.message || "Signup failed!");
       }
@@ -95,23 +96,47 @@ export default function SignupPage() {
                 </div>
               )}
 
+              {success && (
+                <div className="p-4 mb-4 text-sm text-green-700 bg-green-100 rounded-lg">
+                  {success}
+                </div>
+              )}
+
               <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
                 <div>
                   <label
-                    htmlFor="name"
+                    htmlFor="username"
                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                   >
-                    Your Name
+                    Username
                   </label>
                   <input
                     type="text"
-                    name="name"
-                    id="name"
-                    value={formData.name}
+                    name="username"
+                    id="username"
+                    value={formData.username}
                     onChange={handleChange}
                     className="bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    placeholder="Enter your name here..."
+                    placeholder="Enter your username here..."
                     required
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="fullName"
+                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    Full Name (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    name="fullName"
+                    id="fullName"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    className="bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    placeholder="Enter your full name..."
                   />
                 </div>
 
