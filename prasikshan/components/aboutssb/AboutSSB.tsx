@@ -20,13 +20,15 @@ function AboutSSB() {
   ];
 
   const ssbCenters = [
-    // Approximate positions tuned visually for the SVG map
-    { name: "SSB Kapurthala", top: "24%", left: "31%" },
-    { name: "SSB Allahabad", top: "44%", left: "54%" },
-    { name: "SSB Varanasi", top: "47%", left: "60%" },
-    { name: "SSB Bhopal", top: "56%", left: "50%" },
-    { name: "SSB Bangalore", top: "70%", left: "48%" },
-    { name: "SSB Coimbatore", top: "80%", left: "50%" },
+    // Approximate positions for the SVG India map (percentages)
+    { name: "SSB Kolkata", top: "51%", left: "65%" },
+    { name: "SSB Bhopal", top: "50%", left: "35%" },
+    { name: "SSB Kapurthala", top: "27%", left: "30%" },
+    { name: "SSB Guwahati", top: "40%", left: "76%" },
+    { name: "SSB Dehradun", top: "29%", left: "38%" },
+    { name: "SSB Visakhapatnam", top: "68%", left: "47%" },
+    { name: "SSB Allahabad", top: "42%", left: "48%" },
+    { name: "SSB Mysore", top: "80%", left: "32%" },
   ];
 
   return (
@@ -218,23 +220,32 @@ function AboutSSB() {
               priority
             />
 
-            {ssbCenters.map((center) => (
-              <button
-                key={center.name}
-                type="button"
-                className="group absolute flex flex-col items-center"
-                style={{
-                  top: center.top,
-                  left: center.left,
-                  transform: "translate(-50%, -100%)",
-                }}
-              >
-                <span className="w-3 h-3 md:w-3.5 md:h-3.5 rounded-full bg-red-500 border-2 border-white shadow-lg group-hover:scale-110 transition-transform duration-150" />
-                <span className="mt-1 px-2 py-1 rounded-full bg-white/90 text-[10px] sm:text-xs md:text-sm font-medium text-gray-800 shadow-md whitespace-nowrap">
-                  {center.name}
-                </span>
-              </button>
-            ))}
+            {ssbCenters.map((center) => {
+              const isMysore = center.name === "SSB Mysore";
+              const labelMarginClass = isMysore ? "order-first mb-1" : "mt-1";
+
+              return (
+                <button
+                  key={center.name}
+                  type="button"
+                  className="group absolute flex flex-col items-center"
+                  style={{
+                    top: center.top,
+                    left: center.left,
+                    transform: "translate(-50%, -100%)",
+                  }}
+                >
+                  <span
+                    className={
+                      `${labelMarginClass} px-1.5 py-[2px] rounded-full bg-white/90 text-[8px] sm:text-[10px] md:text-xs font-medium text-gray-800 shadow-md whitespace-nowrap`
+                    }
+                  >
+                    {center.name}
+                  </span>
+                  <span className="w-3 h-3 md:w-3.5 md:h-3.5 rounded-full bg-red-500 border-2 border-white shadow-lg group-hover:scale-110 transition-transform duration-150" />
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

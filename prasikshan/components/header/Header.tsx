@@ -39,7 +39,7 @@ export default function Header() {
           style={{ cursor: 'pointer', fontWeight: 'bold', fontSize: '24px' }}
           onClick={() => router.push('/')}
         >
-          Prashikshan
+          Prasikshan
         </div>
 
         {/* Desktop Nav */}
