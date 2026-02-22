@@ -50,7 +50,7 @@ export default function LecturetteInstruction() {
                     </span>
                     <div>
                       <p className="text-gray-700 text-base md:text-lg">
-                        You will be given a <span className="font-semibold">card with four topics</span>. You must choose one topic to speak on.
+                        You will be given <span className="font-semibold">a random topic</span>. You must prepare and then speak on it.
                       </p>
                     </div>
                   </li>
@@ -72,7 +72,7 @@ export default function LecturetteInstruction() {
                     </span>
                     <div>
                       <p className="text-gray-700 text-base md:text-lg">
-                        After preparation, you will speak on the selected topic for <span className="font-semibold">3 minutes</span>.
+                        During preparation, your <span className="font-semibold">speech is continuously recorded</span> for analysis.
                       </p>
                     </div>
                   </li>
@@ -83,7 +83,7 @@ export default function LecturetteInstruction() {
                     </span>
                     <div>
                       <p className="text-gray-700 text-base md:text-lg">
-                        Your talk should be <span className="font-semibold">structured, logical, and to the point</span>, covering key facts and your views.
+                        Your speech should be <span className="font-semibold">structured, logical, and clear</span>.
                       </p>
                     </div>
                   </li>
@@ -94,7 +94,7 @@ export default function LecturetteInstruction() {
                     </span>
                     <div>
                       <p className="text-gray-700 text-base md:text-lg">
-                        Speak clearly and confidently. <span className="font-semibold">Avoid unnecessary pauses or repetition</span>.
+                        Speak <span className="font-semibold">clearly and confidently</span>. Avoid filler words and unnecessary pauses.
                       </p>
                     </div>
                   </li>
@@ -105,7 +105,18 @@ export default function LecturetteInstruction() {
                     </span>
                     <div>
                       <p className="text-gray-700 text-base md:text-lg">
-                        Maintain <span className="font-semibold">good posture, eye contact, and a calm tone</span> throughout the talk.
+                        Maintain <span className="font-semibold">good posture and eye contact</span> with the camera throughout.
+                      </p>
+                    </div>
+                  </li>
+
+                  <li className="flex gap-4">
+                    <span className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white font-bold rounded-full flex-shrink-0">
+                      8
+                    </span>
+                    <div>
+                      <p className="text-gray-700 text-base md:text-lg">
+                        After completion, you'll receive <span className="font-semibold">an automated score and improvement suggestions</span>.
                       </p>
                     </div>
                   </li>
@@ -115,11 +126,11 @@ export default function LecturetteInstruction() {
                 <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <h3 className="font-bold text-blue-900 mb-3">💡 Key Tips for Success:</h3>
                   <ul className="space-y-2 text-gray-700 text-sm md:text-base">
-                    <li>✓ Choose a topic you have knowledge about</li>
-                    <li>✓ Prepare a structured outline during prep time</li>
-                    <li>✓ Speak with confidence and clarity</li>
-                    <li>✓ Make relevant points - don't ramble</li>
-                    <li>✓ Manage time - cover all essential points in 3 minutes</li>
+                    <li>✓ Prepare a structured outline: Intro → 2-3 main points → Conclusion</li>
+                    <li>✓ Speak with conviction and clarity</li>
+                    <li>✓ Support your points with relevant examples</li>
+                    <li>✓ Manage time well to cover all essential points</li>
+                    <li>✓ Avoid rambling, filler words, or losing track</li>
                   </ul>
                 </div>
               </div>

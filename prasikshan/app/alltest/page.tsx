@@ -68,7 +68,7 @@ export default function Alltest() {
       description:
         "Make quick decisions on real-life scenarios to assess your presence of mind and practical decision-making abilities.",
       route: "/alltest/srt",
-      duration: "20 min",
+      duration: "30 min",
       questions: 60,
       icon: "⚡",
     },
@@ -79,7 +79,7 @@ export default function Alltest() {
       description:
         "Choose a topic, prepare your thoughts, and deliver a structured speech demonstrating clarity and confidence.",
       route: "/alltest/lecturette",
-      duration: "6 min",
+      duration: "3 min",
       questions: 1,
       icon: "🎤",
     },
