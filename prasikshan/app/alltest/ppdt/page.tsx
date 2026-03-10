@@ -98,6 +98,17 @@ export default function PpdtInstruction() {
                       </p>
                     </div>
                   </li>
+
+                  <li className="flex gap-4">
+                    <span className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white font-bold rounded-full flex-shrink-0">
+                      7
+                    </span>
+                    <div>
+                      <p className="text-gray-700 text-base md:text-lg">
+                        Do not refresh or close the browser during the test, as it may lead to loss of progress.
+                      </p>
+                    </div>
+                  </li>
                 </ol>
 
                 {/* Key Tips Section */}
@@ -109,7 +120,23 @@ export default function PpdtInstruction() {
                     <li>✓ Include past, present, and future in your narrative</li>
                     <li>✓ Show Officer-Like Qualities in your story</li>
                     <li>✓ Use clear and concise language</li>
+                    <li>✓ Stay calm and focused during the test</li>
                   </ul>
+                </div>
+
+                {/* Test Format Info */}
+                <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <h3 className="font-bold text-yellow-900 mb-3">⚡ Test Format:</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-white rounded-lg p-3">
+                      <p className="text-sm text-gray-600">Image Viewing</p>
+                      <p className="font-bold text-yellow-700">30 seconds</p>
+                    </div>
+                    <div className="bg-white rounded-lg p-3">
+                      <p className="text-sm text-gray-600">Story Writing</p>
+                      <p className="font-bold text-yellow-700">4 minutes</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

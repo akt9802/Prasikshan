@@ -5,8 +5,9 @@ export interface ITestResult {
   score: number;
   timeTaken: number;
   dateTaken: string;
-  responses?: Array<{ word?: string; response?: string; text?: string }>;
+  responses?: any[];
   createdAt?: Date;
+  [key: string]: any;
 }
 
 export interface IUser extends Document {
@@ -59,13 +60,7 @@ const UserSchema = new Schema<IUser>(
           score: Number,
           timeTaken: Number,
           dateTaken: String,
-          responses: [
-            {
-              word: String,
-              response: String,
-              text: String,
-            },
-          ],
+          responses: Schema.Types.Mixed,
           createdAt: {
             type: Date,
             default: Date.now,

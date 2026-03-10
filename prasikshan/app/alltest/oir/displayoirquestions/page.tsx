@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Footer from "@/components/footer/Footer";
+import { useRouter } from "next/navigation";
 
 interface Question {
   _id: string;
@@ -11,6 +12,7 @@ interface Question {
 }
 
 export default function DisplayOirQuestion() {
+  const router = useRouter();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<(string | null)[]>([]);
@@ -19,6 +21,8 @@ export default function DisplayOirQuestion() {
   const [showResults, setShowResults] = useState(false);
   const [timeLeft, setTimeLeft] = useState(40 * 60); // 40 minutes in seconds
   const [markedForReview, setMarkedForReview] = useState<Set<number>>(new Set());
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -92,6 +96,86 @@ export default function DisplayOirQuestion() {
     });
     return correct;
   };
+
+  const submitTest = async () => {
+    console.log("Submit Test button clicked");
+    if (!submitted) {
+      setShowResults(true);
+    }
+  };
+
+  // Auto-submit when timer expires
+  useEffect(() => {
+    if (showResults && !submitted && questions.length > 0) {
+      console.log("Timer expired or submit clicked, auto-submitting...");
+      
+      const performSubmit = async () => {
+        try {
+          setSubmitting(true);
+          console.log("=== Auto Submit Called ===");
+
+          // Get token from localStorage
+          const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+          console.log("Token from localStorage:", token ? "Found" : "Not found");
+
+          if (token) {
+            // Calculate score
+            const score = calculateScore();
+            const timeTaken = 40 * 60 - timeLeft;
+
+            // Create responses array
+            const responses = questions.map((q, idx) => ({
+              _id: q._id,
+              question: q.question,
+              selectedAnswer: answers[idx] || null,
+              correctAnswer: q.answer,
+              isCorrect: answers[idx] === q.answer,
+            }));
+
+            // Submit results to backend
+            const testData = {
+              testName: "OIR",
+              score: score,
+              timeTaken: timeTaken,
+              dateTaken: new Date().toISOString(),
+              responses: responses,
+            };
+
+            console.log("Test data:", { testName: testData.testName, score: testData.score, timeTaken: testData.timeTaken });
+            console.log("Sending request to /api/oirquestions/result");
+
+            const response = await fetch("/api/oirquestions/result", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify(testData),
+            });
+
+            console.log("Response status:", response.status);
+            const responseData = await response.json();
+            console.log("Response data:", responseData);
+
+            if (!response.ok) {
+              console.error("Failed to submit test result:", responseData);
+            } else {
+              console.log("Test result saved successfully");
+            }
+          }
+
+          setSubmitted(true);
+        } catch (err) {
+          console.error("Error in auto-submit:", err);
+          setSubmitted(true);
+        } finally {
+          setSubmitting(false);
+        }
+      };
+
+      performSubmit();
+    }
+  }, [showResults, submitted]);
 
   if (loading) {
     return (
@@ -343,10 +427,11 @@ export default function DisplayOirQuestion() {
 
           {/* Submit Button */}
           <button
-            onClick={() => setShowResults(true)}
-            className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition"
+            onClick={submitTest}
+            disabled={submitting}
+            className="w-full mt-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-500 text-white font-bold py-3 px-4 rounded-lg transition"
           >
-            Submit Test
+            {submitting ? "⏳ Submitting..." : "Submit Test"}
           </button>
         </div>
       </div>
