@@ -381,7 +381,7 @@ export default function Alltest() {
             borderBottom: `3px solid rgba(255,255,255,0.06)`,
           }}
         >
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w-7xl mx-auto">
             <div className="flex items-center gap-2 mb-4">
               <span
                 className="text-xs font-black tracking-widest uppercase px-3 py-1 rounded-full"
@@ -426,8 +426,8 @@ export default function Alltest() {
         </div>
 
         {/* ── Cards grid ── */}
-        <div className="max-w-5xl mx-auto px-4 md:px-8 py-12">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="max-w-7xl mx-auto px-3 md:px-6 py-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {TESTS.map((test, index) => (
               <TestCard key={test.id} test={test} index={index} />
             ))}
