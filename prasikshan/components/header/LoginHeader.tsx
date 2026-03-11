@@ -69,6 +69,12 @@ export default function LoginHeader() {
           >
             Ranking
           </a>
+          <a
+            onClick={() => router.push('/admin')}
+            style={{ cursor: 'pointer', color: 'white', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}
+          >
+            Admin
+          </a>
           <button
             onClick={() => router.push('/alltest')}
             style={{
@@ -165,6 +171,22 @@ export default function LoginHeader() {
             }}
           >
             Ranking
+          </a>
+          <a
+            onClick={() => {
+              router.push('/admin');
+              setIsOpen(false);
+            }}
+            style={{
+              padding: '10px 0',
+              borderBottom: '1px solid #1E5CA8',
+              cursor: 'pointer',
+              color: 'white',
+              textDecoration: 'none',
+              fontWeight: 600,
+            }}
+          >
+            Admin
           </a>
           <button
             onClick={() => {
