@@ -1,468 +1,374 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Footer from "@/components/footer/Footer";
 import {
-  PieChart,
-  Pie,
-  Cell,
-  LineChart,
-  Line,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  Legend,
-  ResponsiveContainer,
+  PieChart, Pie, Cell, LineChart, Line, AreaChart, Area,
+  XAxis, YAxis, Tooltip, CartesianGrid, Legend, ResponsiveContainer,
 } from "recharts";
 
-const TYPE_COLORS = ["#124D96", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d"];
+// ── Brand palette ──────────────────────────────────────────────────────────────
+const B = {
+  navy: '#124D96',
+  navyDark: '#0D3A72',
+  navyDeep: '#0A2A55',
+  blue: '#1E5799',
+  blueMid: '#2563EB',
+  blueLight: '#60A5FA',
+  iceBlue: '#EDF9FF',
+  iceMid: '#D7F1FF',
+  iceDeep: '#BEE3F8',
+  textDark: '#0F172A',
+  textMid: '#334155',
+  textMuted: '#475569',
+  textLight: '#94A3B8',
+  white: '#FFFFFF',
+};
+
+// Distinct per-test color — used in pie chart, selector, stat tiles
+const TEST_COLORS: Record<string, string> = {
+  OIR: '#124D96', // brand navy   — Intelligence
+  PPDT: '#0891B2', // cyan          — Visual Perception
+  TAT: '#7C3AED', // violet        — Psychology / Stories
+  WAT: '#059669', // emerald       — Words / Language
+  SRT: '#DC2626', // red           — Urgency / Reaction
+  LECTURETTE: '#D97706', // amber         — Speaking / Delivery
+};
+const PIE_COLORS = Object.values(TEST_COLORS);
 
 interface UserDetails {
   name: string;
   email: string;
-  testsTaken?: any[];
+  testsTaken?: { testName: string; score: number; timeTaken: number; dateTaken: string }[];
 }
 
-// Mock data with multiple test attempts
 const mockUserDetails: UserDetails = {
   name: "Aman Kumar",
   email: "aman@example.com",
   testsTaken: [
-    { testName: "OIR", score: 28, timeTaken: 2400, dateTaken: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString() },
-    { testName: "OIR", score: 32, timeTaken: 2200, dateTaken: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString() },
-    { testName: "OIR", score: 35, timeTaken: 2100, dateTaken: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString() },
-    { testName: "OIR", score: 38, timeTaken: 2050, dateTaken: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString() },
-    { testName: "OIR", score: 35, timeTaken: 2150, dateTaken: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() },
-    { testName: "PPDT", score: 30, timeTaken: 1800, dateTaken: new Date(Date.now() - 23 * 24 * 60 * 60 * 1000).toISOString() },
-    { testName: "PPDT", score: 32, timeTaken: 1750, dateTaken: new Date(Date.now() - 18 * 24 * 60 * 60 * 1000).toISOString() },
-    { testName: "PPDT", score: 35, timeTaken: 1700, dateTaken: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString() },
-    { testName: "TAT", score: 25, timeTaken: 2200, dateTaken: new Date(Date.now() - 22 * 24 * 60 * 60 * 1000).toISOString() },
-    { testName: "TAT", score: 28, timeTaken: 2100, dateTaken: new Date(Date.now() - 17 * 24 * 60 * 60 * 1000).toISOString() },
-    { testName: "WAT", score: 26, timeTaken: 1500, dateTaken: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString() },
-    { testName: "WAT", score: 28, timeTaken: 1450, dateTaken: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString() },
-    { testName: "SRT", score: 22, timeTaken: 1800, dateTaken: new Date(Date.now() - 19 * 24 * 60 * 60 * 1000).toISOString() },
-    { testName: "SRT", score: 25, timeTaken: 1750, dateTaken: new Date(Date.now() - 13 * 24 * 60 * 60 * 1000).toISOString() },
-    { testName: "LECTURETTE", score: 24, timeTaken: 1900, dateTaken: new Date(Date.now() - 16 * 24 * 60 * 60 * 1000).toISOString() },
+    { testName: "OIR", score: 28, timeTaken: 2400, dateTaken: new Date(Date.now() - 25 * 86400000).toISOString() },
+    { testName: "OIR", score: 32, timeTaken: 2200, dateTaken: new Date(Date.now() - 20 * 86400000).toISOString() },
+    { testName: "OIR", score: 35, timeTaken: 2100, dateTaken: new Date(Date.now() - 15 * 86400000).toISOString() },
+    { testName: "OIR", score: 38, timeTaken: 2050, dateTaken: new Date(Date.now() - 10 * 86400000).toISOString() },
+    { testName: "OIR", score: 35, timeTaken: 2150, dateTaken: new Date(Date.now() - 5 * 86400000).toISOString() },
+    { testName: "PPDT", score: 30, timeTaken: 1800, dateTaken: new Date(Date.now() - 23 * 86400000).toISOString() },
+    { testName: "PPDT", score: 32, timeTaken: 1750, dateTaken: new Date(Date.now() - 18 * 86400000).toISOString() },
+    { testName: "PPDT", score: 35, timeTaken: 1700, dateTaken: new Date(Date.now() - 12 * 86400000).toISOString() },
+    { testName: "TAT", score: 25, timeTaken: 2200, dateTaken: new Date(Date.now() - 22 * 86400000).toISOString() },
+    { testName: "TAT", score: 28, timeTaken: 2100, dateTaken: new Date(Date.now() - 17 * 86400000).toISOString() },
+    { testName: "WAT", score: 26, timeTaken: 1500, dateTaken: new Date(Date.now() - 21 * 86400000).toISOString() },
+    { testName: "WAT", score: 28, timeTaken: 1450, dateTaken: new Date(Date.now() - 14 * 86400000).toISOString() },
+    { testName: "SRT", score: 22, timeTaken: 1800, dateTaken: new Date(Date.now() - 19 * 86400000).toISOString() },
+    { testName: "SRT", score: 25, timeTaken: 1750, dateTaken: new Date(Date.now() - 13 * 86400000).toISOString() },
+    { testName: "LECTURETTE", score: 24, timeTaken: 1900, dateTaken: new Date(Date.now() - 16 * 86400000).toISOString() },
   ],
 };
 
-// Total Tests Chart Component
-const TotalTestChart = ({ userDetails }: { userDetails: UserDetails }) => {
-  const processTestData = () => {
-    if (!userDetails?.testsTaken) {
-      return [{ testName: "No tests taken yet", count: 0 }];
-    }
+// ── Helpers ────────────────────────────────────────────────────────────────────
+const fmtTime = (s: number) => `${Math.floor(s / 60)}m ${s % 60}s`;
 
-    const testCounts: Record<string, number> = {};
-    userDetails.testsTaken.forEach((test) => {
-      const name = test.testName.toUpperCase();
-      testCounts[name] = (testCounts[name] || 0) + 1;
-    });
+function StatTile({ value, label, accent = B.navy }: { value: string | number; label: string; accent?: string }) {
+  return (
+    <div className="rounded-2xl p-5 flex flex-col"
+      style={{ background: 'rgba(255,255,255,0.72)', border: '1.5px solid rgba(18,77,150,0.13)', backdropFilter: 'blur(8px)', boxShadow: '0 2px 12px rgba(18,77,150,0.07)' }}>
+      <span className="text-3xl font-black mb-1" style={{ color: accent }}>{value}</span>
+      <span className="text-xs font-semibold" style={{ color: B.textLight }}>{label}</span>
+    </div>
+  );
+}
 
-    return Object.entries(testCounts).map(([name, count]) => ({
-      testName: name,
-      count,
-    }));
-  };
+function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl p-6" style={{ background: 'rgba(255,255,255,0.72)', border: '1.5px solid rgba(18,77,150,0.13)', backdropFilter: 'blur(10px)', boxShadow: '0 2px 12px rgba(18,77,150,0.07)' }}>
+      <h3 className="text-base font-extrabold mb-5 pb-4" style={{ color: B.textDark, borderBottom: '1px solid rgba(18,77,150,0.08)' }}>{title}</h3>
+      {children}
+    </div>
+  );
+}
 
-  const data = processTestData();
-  const hasData = data.length > 0 && data[0].testName !== "No tests taken yet";
+// ── Distribution Pie ───────────────────────────────────────────────────────────
+function TotalTestChart({ userDetails }: { userDetails: UserDetails }) {
+  const data = (() => {
+    const counts: Record<string, number> = {};
+    userDetails.testsTaken?.forEach(t => { const n = t.testName.toUpperCase(); counts[n] = (counts[n] || 0) + 1; });
+    return Object.entries(counts).map(([testName, count]) => ({ testName, count }));
+  })();
 
   return (
-    <div style={{ width: "100%", background: "#fff", borderRadius: 16, boxShadow: "0 8px 24px rgba(18, 77, 150, 0.12)", padding: 30, transition: "all 0.3s ease" }}>
-      <h2 style={{ textAlign: "center", fontWeight: "700", fontSize: "1.5rem", marginBottom: 25, color: "#124D96", letterSpacing: "-0.5px" }}>
-        📊 Test Distribution
-      </h2>
-      {hasData ? (
-        <ResponsiveContainer width="100%" height={300}>
+    <ChartCard title="Test Distribution">
+      {data.length > 0 ? (
+        <ResponsiveContainer width="100%" height={280}>
           <PieChart>
-            <Pie data={data} dataKey="count" nameKey="testName" cx="50%" cy="50%" outerRadius={80} fill="#124D96" label>
-              {data.map((_, index) => (
-                <Cell key={`cell-${index}`} fill={TYPE_COLORS[index % TYPE_COLORS.length]} />
-              ))}
+            <Pie data={data} dataKey="count" nameKey="testName" cx="50%" cy="50%" outerRadius={90} label>
+              {data.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
             </Pie>
-            <Tooltip contentStyle={{ borderRadius: 8, border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }} />
-            <Legend wrapperStyle={{ paddingTop: 20 }} />
+            <Tooltip contentStyle={{ borderRadius: 10, border: 'none', boxShadow: '0 4px 16px rgba(18,77,150,0.15)', fontSize: 13 }} />
+            <Legend wrapperStyle={{ paddingTop: 16, fontSize: 12 }} />
           </PieChart>
         </ResponsiveContainer>
       ) : (
-        <div style={{ textAlign: "center", padding: "40px 0", color: "#00C49F", fontSize: "1rem", fontWeight: 500 }}>
-          Start taking tests to see your progress!
-        </div>
+        <div className="py-16 text-center text-sm font-medium" style={{ color: B.textLight }}>Start taking tests to see your distribution</div>
       )}
-    </div>
+    </ChartCard>
   );
-};
+}
 
-// Monthly Test Chart Component
-const MonthlyTestChart = ({ userDetails }: { userDetails: UserDetails }) => {
-  const processMonthlyData = () => {
-    if (!userDetails?.testsTaken) return [];
-
+// ── Activity Line ──────────────────────────────────────────────────────────────
+function MonthlyTestChart({ userDetails }: { userDetails: UserDetails }) {
+  const data = (() => {
     const today = new Date();
-    const thirtyDaysAgo = new Date(today);
-    thirtyDaysAgo.setDate(today.getDate() - 30);
-
-    const dailyCounts: Record<string, number> = {};
-
-    userDetails.testsTaken.forEach((test) => {
-      if (test.dateTaken) {
-        const testDate = new Date(test.dateTaken);
-        if (testDate >= thirtyDaysAgo && testDate <= today) {
-          const dateString = testDate.toISOString().split("T")[0];
-          dailyCounts[dateString] = (dailyCounts[dateString] || 0) + 1;
-        }
+    const ago30 = new Date(today); ago30.setDate(today.getDate() - 30);
+    const counts: Record<string, number> = {};
+    userDetails.testsTaken?.forEach(t => {
+      if (!t.dateTaken) return;
+      const d = new Date(t.dateTaken);
+      if (d >= ago30 && d <= today) {
+        const key = d.toISOString().split('T')[0];
+        counts[key] = (counts[key] || 0) + 1;
       }
     });
+    return Object.entries(counts).map(([date, tests]) => ({ date, tests })).sort((a, b) => a.date.localeCompare(b.date));
+  })();
 
-    return Object.entries(dailyCounts)
-      .map(([date, tests]) => ({
-        date,
-        tests,
-      }))
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  };
-
-  const data = processMonthlyData();
-  const hasData = data.length > 0;
-  const totalTests = data.reduce((sum, day) => sum + day.tests, 0);
+  const total = data.reduce((s, d) => s + d.tests, 0);
 
   return (
-    <div style={{ width: "100%", background: "#fff", borderRadius: 16, boxShadow: "0 8px 24px rgba(18, 77, 150, 0.12)", padding: 30, transition: "all 0.3s ease" }}>
-      <h2 style={{ textAlign: "center", fontWeight: "700", fontSize: "1.5rem", marginBottom: 25, color: "#124D96", letterSpacing: "-0.5px" }}>
-        📈 Activity (Last 30 Days)
-      </h2>
-      {hasData ? (
+    <ChartCard title="Activity — Last 30 Days">
+      {data.length > 0 ? (
         <>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, marginBottom: 30 }}>
-            <div style={{ background: "linear-gradient(135deg, #124D96 0%, #1E5799 100%)", padding: 20, borderRadius: 12, color: "white", textAlign: "center", boxShadow: "0 4px 12px rgba(18, 77, 150, 0.2)" }}>
-              <div style={{ fontSize: "2rem", fontWeight: "700", marginBottom: 5 }}>{totalTests}</div>
-              <div style={{ fontSize: "0.85rem", opacity: 0.9 }}>Tests (30 days)</div>
+          <div className="grid grid-cols-3 gap-3 mb-5">
+            <div className="rounded-xl p-3 text-center" style={{ background: 'linear-gradient(135deg,#124D96,#0D3A72)', color: '#fff' }}>
+              <p className="text-2xl font-black">{total}</p>
+              <p className="text-xs opacity-80 mt-0.5">Total Tests</p>
             </div>
-            <div style={{ background: "linear-gradient(135deg, #00C49F 0%, #00a884 100%)", padding: 20, borderRadius: 12, color: "white", textAlign: "center", boxShadow: "0 4px 12px rgba(0, 196, 159, 0.2)" }}>
-              <div style={{ fontSize: "2rem", fontWeight: "700", marginBottom: 5 }}>{data.length}</div>
-              <div style={{ fontSize: "0.85rem", opacity: 0.9 }}>Active Days</div>
+            <div className="rounded-xl p-3 text-center" style={{ background: 'linear-gradient(135deg,#059669,#047857)', color: '#fff' }}>
+              <p className="text-2xl font-black">{data.length}</p>
+              <p className="text-xs opacity-80 mt-0.5">Active Days</p>
             </div>
-            <div style={{ background: "linear-gradient(135deg, #FF8042 0%, #ff6627 100%)", padding: 20, borderRadius: 12, color: "white", textAlign: "center", boxShadow: "0 4px 12px rgba(255, 128, 66, 0.2)" }}>
-              <div style={{ fontSize: "2rem", fontWeight: "700", marginBottom: 5 }}>{Math.round((totalTests / data.length) * 10) / 10}</div>
-              <div style={{ fontSize: "0.85rem", opacity: 0.9 }}>Daily Avg</div>
+            <div className="rounded-xl p-3 text-center" style={{ background: 'linear-gradient(135deg,#D97706,#B45309)', color: '#fff' }}>
+              <p className="text-2xl font-black">{(total / data.length).toFixed(1)}</p>
+              <p className="text-xs opacity-80 mt-0.5">Daily Avg</p>
             </div>
           </div>
-          <ResponsiveContainer width="100%" height={350}>
+          <ResponsiveContainer width="100%" height={220}>
             <LineChart data={data}>
-              <defs>
-                <linearGradient id="lineGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#124D96" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#124D96" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="#999" />
-              <YAxis stroke="#999" />
-              <Tooltip contentStyle={{ borderRadius: 8, border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.15)", background: "#fff" }} />
-              <Legend wrapperStyle={{ paddingTop: 15 }} />
-              <Line type="monotone" dataKey="tests" stroke="#124D96" strokeWidth={3} name="Tests Completed" dot={{ fill: "#124D96", r: 4 }} activeDot={{ r: 6 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(18,77,150,0.08)" />
+              <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke={B.textLight} />
+              <YAxis stroke={B.textLight} />
+              <Tooltip contentStyle={{ borderRadius: 10, border: 'none', boxShadow: '0 4px 16px rgba(18,77,150,0.15)', fontSize: 13 }} />
+              <Line type="monotone" dataKey="tests" stroke={B.navy} strokeWidth={2.5} name="Tests" dot={{ fill: B.navy, r: 3 }} activeDot={{ r: 5 }} />
             </LineChart>
           </ResponsiveContainer>
         </>
       ) : (
-        <div style={{ textAlign: "center", padding: "60px 20px", color: "#00C49F", fontSize: "1rem", fontWeight: 500 }}>
-          No test activity in the last 30 days
-        </div>
+        <div className="py-16 text-center text-sm font-medium" style={{ color: B.textLight }}>No activity in the last 30 days</div>
       )}
-    </div>
+    </ChartCard>
   );
-};
+}
 
-// Individual Test Score Chart Component
-const TestScoreChart = ({ userDetails, testName }: { userDetails: UserDetails; testName: string }) => {
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}m ${remainingSeconds}s`;
-  };
+// ── Score Trend Area ───────────────────────────────────────────────────────────
+function TestScoreChart({ userDetails, testName }: { userDetails: UserDetails; testName: string }) {
+  const data = (userDetails.testsTaken || [])
+    .filter(t => t.testName.toUpperCase() === testName)
+    .sort((a, b) => new Date(a.dateTaken).getTime() - new Date(b.dateTaken).getTime())
+    .map((t, i) => ({ attempt: `Attempt ${i + 1}`, score: t.score, timeInSeconds: t.timeTaken }));
 
-  const processTestData = () => {
-    if (!userDetails?.testsTaken) return [];
-
-    return userDetails.testsTaken
-      .filter((test) => test.testName.toUpperCase() === testName.toUpperCase())
-      .sort((a, b) => new Date(a.dateTaken).getTime() - new Date(b.dateTaken).getTime())
-      .map((test, index) => ({
-        attempt: `Test ${index + 1}`,
-        score: test.score,
-        timeInSeconds: test.timeTaken,
-      }));
-  };
-
-  const data = processTestData();
-  const latestScore = data.length > 0 ? data[data.length - 1]?.score || 0 : 0;
-  const bestScore = data.length > 0 ? Math.max(...data.map((d) => d.score)) : 0;
+  const latest = data.at(-1)?.score ?? 0;
+  const best = data.length ? Math.max(...data.map(d => d.score)) : 0;
+  const testColor = TEST_COLORS[testName] ?? B.navy;
 
   return (
-    <div style={{ borderRadius: 8 }}>
-      {/* Score Summary */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 15, marginBottom: 30 }}>
-        <div style={{ background: "linear-gradient(135deg, #124D96 0%, #1E5799 100%)", padding: 20, borderRadius: 12, color: "white", textAlign: "center", boxShadow: "0 4px 12px rgba(18, 77, 150, 0.2)", transition: "transform 0.3s ease" }}>
-          <div style={{ fontSize: "1.75rem", fontWeight: "700", marginBottom: 5 }}>{latestScore}</div>
-          <div style={{ fontSize: "0.8rem", opacity: 0.9 }}>Latest Score</div>
-        </div>
-        <div style={{ background: "linear-gradient(135deg, #28a745 0%, #20c997 100%)", padding: 20, borderRadius: 12, color: "white", textAlign: "center", boxShadow: "0 4px 12px rgba(40, 167, 69, 0.2)", transition: "transform 0.3s ease" }}>
-          <div style={{ fontSize: "1.75rem", fontWeight: "700", marginBottom: 5 }}>{bestScore}</div>
-          <div style={{ fontSize: "0.8rem", opacity: 0.9 }}>Best Score</div>
-        </div>
-        <div style={{ background: "linear-gradient(135deg, #17a2b8 0%, #20c997 100%)", padding: 20, borderRadius: 12, color: "white", textAlign: "center", boxShadow: "0 4px 12px rgba(23, 162, 184, 0.2)", transition: "transform 0.3s ease" }}>
-          <div style={{ fontSize: "1.75rem", fontWeight: "700", marginBottom: 5 }}>{data.length}</div>
-          <div style={{ fontSize: "0.8rem", opacity: 0.9 }}>Attempts</div>
-        </div>
-        <div style={{ background: "linear-gradient(135deg, #FF8042 0%, #ff6627 100%)", padding: 20, borderRadius: 12, color: "white", textAlign: "center", boxShadow: "0 4px 12px rgba(255, 128, 66, 0.2)", transition: "transform 0.3s ease" }}>
-          <div style={{ fontSize: "1.75rem", fontWeight: "700", marginBottom: 5 }}>
-            {data.length > 0 ? formatTime(data[data.length - 1].timeInSeconds) : "0m 0s"}
+    <div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+        {[
+          { label: 'Latest Score', value: latest, bg: `linear-gradient(135deg,${testColor},${testColor}cc)` },
+          { label: 'Best Score', value: best, bg: 'linear-gradient(135deg,#059669,#047857)' },
+          { label: 'Attempts', value: data.length, bg: 'linear-gradient(135deg,#0891B2,#0E7490)' },
+          { label: 'Last Time', value: data.at(-1) ? fmtTime(data.at(-1)!.timeInSeconds) : '—', bg: 'linear-gradient(135deg,#D97706,#B45309)' },
+        ].map(({ label, value, bg }) => (
+          <div key={label} className="rounded-xl p-4 text-center" style={{ background: bg, color: '#fff' }}>
+            <p className="text-2xl font-black">{value}</p>
+            <p className="text-xs opacity-80 mt-0.5">{label}</p>
           </div>
-          <div style={{ fontSize: "0.8rem", opacity: 0.9 }}>Latest Time</div>
-        </div>
+        ))}
       </div>
 
-      {/* Area Chart */}
       {data.length > 0 ? (
-        <div style={{ background: "#fff", borderRadius: 16, boxShadow: "0 4px 12px rgba(0,0,0,0.08)", padding: 20 }}>
-          <ResponsiveContainer width="100%" height={350}>
-            <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 60 }}>
+        <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.90)', border: `1.5px solid ${testColor}25` }}>
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 50 }}>
               <defs>
-                <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#124D96" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#124D96" stopOpacity={0.1} />
+                <linearGradient id="scoreGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={testColor} stopOpacity={0.22} />
+                  <stop offset="95%" stopColor={testColor} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-              <XAxis dataKey="attempt" fontSize={11} stroke="#999" angle={-45} textAnchor="end" height={60} />
-              <YAxis domain={[0, 50]} fontSize={11} stroke="#999" />
-              <Tooltip contentStyle={{ borderRadius: 8, border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.15)", background: "#fff" }} formatter={(value) => [value, "Score"]} />
-              <Area type="monotone" dataKey="score" stroke="#124D96" strokeWidth={3} fillOpacity={1} fill="url(#colorScore)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(18,77,150,0.08)" />
+              <XAxis dataKey="attempt" fontSize={11} stroke={B.textLight} angle={-30} textAnchor="end" height={55} />
+              <YAxis domain={[0, 50]} fontSize={11} stroke={B.textLight} />
+              <Tooltip contentStyle={{ borderRadius: 10, border: 'none', boxShadow: '0 4px 16px rgba(18,77,150,0.15)', fontSize: 13 }} formatter={(v) => [v, 'Score']} />
+              <Area type="monotone" dataKey="score" stroke={testColor} strokeWidth={2.5} fillOpacity={1} fill="url(#scoreGrad)" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
       ) : (
-        <div style={{ textAlign: "center", padding: "40px", background: "#f8f9fa", borderRadius: 12, color: "#00C49F", fontSize: "1rem", fontWeight: 500 }}>
+        <div className="rounded-2xl py-16 text-center text-sm font-medium" style={{ background: 'rgba(237,249,255,0.6)', color: B.textLight }}>
           No attempts for this test yet
         </div>
       )}
     </div>
   );
-};
+}
 
+// ── Test selector buttons ──────────────────────────────────────────────────────
+const TEST_TABS = ['OIR', 'PPDT', 'TAT', 'WAT', 'SRT', 'LECTURETTE'];
+
+// ── Page ───────────────────────────────────────────────────────────────────────
 export default function UserDetails() {
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
-  const [selectedTest, setSelectedTest] = useState("OIR");
+  const [selectedTest, setSelectedTest] = useState('OIR');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading
-    setTimeout(() => {
-      setUserDetails(mockUserDetails);
-      setLoading(false);
-    }, 500);
+    const timer = setTimeout(() => { setUserDetails(mockUserDetails); setLoading(false); }, 500);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    window.dispatchEvent(new Event("auth-change"));
-    alert("You have been logged out successfully!");
-    window.location.href = "/";
+    localStorage.removeItem('token');
+    window.dispatchEvent(new Event('auth-change'));
+    alert('You have been logged out successfully!');
+    window.location.href = '/';
   };
 
-  const testButtons = [
-    { name: "OIR", darkBg: "#0f3d6b", lightBg: "#1E5799" },
-    { name: "PPDT", darkBg: "#009688", lightBg: "#00C49F" },
-    { name: "TAT", darkBg: "#e6940a", lightBg: "#FFA500" },
-    { name: "WAT", darkBg: "#e6692e", lightBg: "#FF8042" },
-    { name: "SRT", darkBg: "#6c63d2", lightBg: "#8884d8" },
-    { name: "LECTURETTE", darkBg: "#6bb36b", lightBg: "#82ca9d" },
-  ];
+  /* derived stats */
+  const totalAttempts = userDetails?.testsTaken?.length ?? 0;
+  const scores = userDetails?.testsTaken?.map(t => t.score) ?? [];
+  const avgScore = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length * 10) / 10 : 0;
+  const testTypesDone = new Set(userDetails?.testsTaken?.map(t => t.testName)).size;
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <p className="text-xl text-gray-600">Loading user details...</p>
+  /* initials from name */
+  const initials = userDetails?.name
+    ? userDetails.name.split(' ').map(n => n[0] || '').slice(0, 2).join('').toUpperCase()
+    : '?';
+
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-screen" style={{ background: `linear-gradient(160deg,${B.iceBlue},${B.iceMid})` }}>
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-10 h-10 border-4 rounded-full animate-spin" style={{ borderColor: B.iceMid, borderTopColor: B.navy }} />
+        <p className="text-sm font-semibold" style={{ color: B.textMuted }}>Loading your profile…</p>
       </div>
-    );
-  }
+    </div>
+  );
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#f5f7fa" }}>
-      <div style={{ maxWidth: 1400, margin: "0 auto", padding: "20px" }}>
+    <div style={{ minHeight: '100vh', background: `linear-gradient(160deg,${B.iceBlue} 0%,${B.iceMid} 40%,#c8e8f8 100%)` }}>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+
         {userDetails ? (
-          <div>
-            {/* Hero Section with Gradient */}
+          <>
+            {/* ── Hero card ── */}
             <div
-              style={{
-                background: "linear-gradient(135deg, #124D96 0%, #1E5799 50%, #00C49F 100%)",
-                borderRadius: 16,
-                padding: "50px 40px",
-                marginBottom: 40,
-                color: "white",
-                position: "relative",
-                overflow: "hidden",
-                boxShadow: "0 12px 40px rgba(18, 77, 150, 0.25)",
-              }}
+              className="relative rounded-2xl overflow-hidden px-8 py-10"
+              style={{ background: `linear-gradient(135deg,${B.navyDeep} 0%,${B.navyDark} 50%,${B.navy} 100%)`, boxShadow: '0 12px 40px rgba(18,77,150,0.28)' }}
             >
-              <div style={{ position: "absolute", top: 0, right: 0, opacity: 0.1, fontSize: "200px" }}>🎯</div>
-              
+              {/* Glow blobs */}
+              <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full pointer-events-none"
+                style={{ background: 'rgba(37,99,235,0.20)', filter: 'blur(40px)' }} />
+              <div className="absolute -bottom-12 -left-12 w-44 h-44 rounded-full pointer-events-none"
+                style={{ background: 'rgba(18,77,150,0.25)', filter: 'blur(32px)' }} />
+
+              {/* Logout button */}
               <button
                 onClick={handleLogout}
-                style={{
-                  position: "absolute",
-                  top: "25px",
-                  right: "25px",
-                  padding: "12px 24px",
-                  backgroundColor: "rgba(255, 255, 255, 0.2)",
-                  color: "white",
-                  border: "2px solid rgba(255, 255, 255, 0.5)",
-                  borderRadius: 8,
-                  fontSize: "0.9rem",
-                  fontWeight: "600",
-                  cursor: "pointer",
-                  transition: "all 0.3s ease",
-                  backdropFilter: "blur(10px)",
-                }}
-                onMouseOver={(e) => {
-                  const target = e.target as HTMLButtonElement;
-                  target.style.backgroundColor = "rgba(255, 255, 255, 0.3)";
-                  target.style.transform = "translateY(-2px)";
-                  target.style.boxShadow = "0 8px 20px rgba(0,0,0,0.2)";
-                }}
-                onMouseOut={(e) => {
-                  const target = e.target as HTMLButtonElement;
-                  target.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
-                  target.style.transform = "translateY(0)";
-                  target.style.boxShadow = "none";
-                }}
+                className="absolute top-6 right-6 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-105 active:scale-95"
+                style={{ background: 'rgba(255,255,255,0.12)', color: '#fff', border: '1.5px solid rgba(255,255,255,0.25)', backdropFilter: 'blur(8px)' }}
               >
-                🚪 Logout
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+                Logout
               </button>
 
-              <div style={{ position: "relative", zIndex: 1, maxWidth: "70%" }}>
-                <h1 style={{ fontWeight: "700", fontSize: "2.8rem", margin: 0, letterSpacing: "-1px", marginBottom: 10 }}>
-                  Welcome back, {userDetails.name}! 👋
-                </h1>
-                <p style={{ fontSize: "1.1rem", margin: 0, opacity: 0.95, fontWeight: 400 }}>
-                  Track your test performance and monitor your progress toward SSB success
-                </p>
+              <div className="relative z-10 flex items-center gap-5">
+                {/* Avatar initials */}
+                <div className="w-16 h-16 rounded-full flex items-center justify-center text-xl font-black shrink-0"
+                  style={{ background: 'rgba(255,255,255,0.15)', border: '2px solid rgba(255,255,255,0.30)', color: '#fff' }}>
+                  {initials}
+                </div>
+                <div>
+                  <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: B.iceDeep, opacity: 0.7 }}>SSB Aspirant</p>
+                  <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                    Welcome back, {userDetails.name}
+                  </h1>
+                  <p className="text-sm mt-1 font-medium" style={{ color: 'rgba(191,219,254,0.80)' }}>
+                    Track your performance and monitor your progress toward SSB success
+                  </p>
+                </div>
               </div>
             </div>
 
-            {/* Quick Stats Overview */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 20, marginBottom: 40 }}>
-              {(() => {
-                const testCounts: Record<string, number> = {};
-                const scores: number[] = [];
-                userDetails.testsTaken?.forEach((test) => {
-                  testCounts[test.testName] = (testCounts[test.testName] || 0) + 1;
-                  scores.push(test.score);
-                });
-                const totalAttempts = userDetails.testsTaken?.length || 0;
-                const avgScore = scores.length > 0 ? Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) / 10 : 0;
-                const testsCompleted = Object.keys(testCounts).length;
-
-                return (
-                  <>
-                    <div style={{ background: "#fff", borderRadius: 12, padding: 20, boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #e8ebf0", transition: "all 0.3s ease" }}>
-                      <div style={{ fontSize: "2.5rem", fontWeight: "700", color: "#124D96", marginBottom: 8 }}>{totalAttempts}</div>
-                      <div style={{ fontSize: "0.9rem", color: "#666", fontWeight: 500 }}>Total Attempts</div>
-                    </div>
-                    <div style={{ background: "#fff", borderRadius: 12, padding: 20, boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #e8ebf0", transition: "all 0.3s ease" }}>
-                      <div style={{ fontSize: "2.5rem", fontWeight: "700", color: "#00C49F", marginBottom: 8 }}>{avgScore}</div>
-                      <div style={{ fontSize: "0.9rem", color: "#666", fontWeight: 500 }}>Average Score</div>
-                    </div>
-                    <div style={{ background: "#fff", borderRadius: 12, padding: 20, boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #e8ebf0", transition: "all 0.3s ease" }}>
-                      <div style={{ fontSize: "2.5rem", fontWeight: "700", color: "#FF8042", marginBottom: 8 }}>{testsCompleted}</div>
-                      <div style={{ fontSize: "0.9rem", color: "#666", fontWeight: 500 }}>Test Types Done</div>
-                    </div>
-                  </>
-                );
-              })()}
+            {/* ── Overview stats ── */}
+            <div className="grid grid-cols-3 gap-4">
+              <StatTile value={totalAttempts} label="Total Attempts" accent={B.navy} />
+              <StatTile value={avgScore} label="Average Score" accent={B.blueMid} />
+              <StatTile value={testTypesDone} label="Test Types Done" accent={B.blue} />
             </div>
 
-            {/* Charts Container */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(450px, 1fr))", gap: 30, marginBottom: 40 }}>
+            {/* ── Overview charts ── */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <TotalTestChart userDetails={userDetails} />
               <MonthlyTestChart userDetails={userDetails} />
             </div>
 
-            {/* Test Score Selection Section */}
-            <div
-              style={{
-                margin: "0 auto",
-                padding: "40px",
-                backgroundColor: "#fff",
-                borderRadius: 16,
-                boxShadow: "0 8px 24px rgba(18, 77, 150, 0.12)",
-                maxWidth: 1200,
-                marginBottom: 40,
-              }}
-            >
-              <h2 style={{ textAlign: "center", fontSize: "2rem", fontWeight: "700", color: "#124D96", marginBottom: 35, letterSpacing: "-0.5px" }}>
-                📊 Detailed Performance Analysis
-              </h2>
+            {/* ── Detailed analysis ── */}
+            <div className="rounded-2xl p-6 sm:p-8" style={{ background: 'rgba(255,255,255,0.72)', border: '1.5px solid rgba(18,77,150,0.13)', backdropFilter: 'blur(10px)', boxShadow: '0 2px 12px rgba(18,77,150,0.07)' }}>
+              <div className="mb-7 pb-5" style={{ borderBottom: '1px solid rgba(18,77,150,0.08)' }}>
+                <p className="text-xs font-black tracking-widest uppercase mb-1" style={{ color: B.textLight }}>Performance</p>
+                <h2 className="text-xl font-extrabold" style={{ color: B.textDark }}>Detailed Score Analysis</h2>
+                <p className="text-sm mt-1" style={{ color: B.textMuted }}>Select a test type to explore your score trend</p>
+              </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: 35, alignItems: "start" }}>
-                {/* Test Type Buttons */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 12, height: "fit-content" }}>
-                  {testButtons.map((test, index) => (
-                    <button
-                      key={test.name}
-                      onClick={() => setSelectedTest(test.name)}
-                      style={{
-                        padding: "16px 20px",
-                        backgroundColor: selectedTest === test.name ? test.darkBg : "#f0f2f5",
-                        color: selectedTest === test.name ? "white" : "#124D96",
-                        border: selectedTest === test.name ? "none" : "2px solid #e0e0e0",
-                        borderRadius: 10,
-                        fontSize: "1rem",
-                        fontWeight: selectedTest === test.name ? "700" : "600",
-                        cursor: "pointer",
-                        transition: "all 0.3s ease",
-                        transform: selectedTest === test.name ? "translateX(8px)" : "translateX(0)",
-                        boxShadow: selectedTest === test.name ? "0 6px 16px rgba(0,0,0,0.15)" : "none",
-                        letterSpacing: "-0.3px",
-                      }}
-                      onMouseOver={(e) => {
-                        const target = e.target as HTMLButtonElement;
-                        if (selectedTest !== test.name) {
-                          target.style.backgroundColor = "#e8f0ff";
-                          target.style.borderColor = test.lightBg;
-                        }
-                      }}
-                      onMouseOut={(e) => {
-                        const target = e.target as HTMLButtonElement;
-                        if (selectedTest !== test.name) {
-                          target.style.backgroundColor = "#f0f2f5";
-                          target.style.borderColor = "#e0e0e0";
-                        }
-                      }}
-                    >
-                      {index === 0 ? "👁️" : index === 1 ? "🎨" : index === 2 ? "✏️" : index === 3 ? "📝" : index === 4 ? "💭" : "🎤"} {test.name}
-                    </button>
-                  ))}
+              <div className="flex flex-col lg:flex-row gap-6">
+                {/* Test selector */}
+                <div className="flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 lg:w-44 shrink-0">
+                  {TEST_TABS.map(name => {
+                    const active = selectedTest === name;
+                    const tc = TEST_COLORS[name] ?? B.navy;
+                    return (
+                      <button
+                        key={name}
+                        onClick={() => setSelectedTest(name)}
+                        className="shrink-0 lg:w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition-all duration-200 whitespace-nowrap flex items-center gap-2.5"
+                        style={{
+                          background: active ? `${tc}18` : 'transparent',
+                          color: active ? tc : B.textMuted,
+                          border: active ? `1.5px solid ${tc}40` : '1.5px solid rgba(18,77,150,0.10)',
+                          boxShadow: active ? `0 2px 12px ${tc}25` : 'none',
+                        }}
+                      >
+                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: tc }} />
+                        {name}
+                      </button>
+                    );
+                  })}
                 </div>
 
-                {/* Chart Area */}
-                <TestScoreChart userDetails={userDetails} testName={selectedTest} />
+                {/* Chart */}
+                <div className="flex-1 min-w-0">
+                  <TestScoreChart userDetails={userDetails} testName={selectedTest} />
+                </div>
               </div>
             </div>
-          </div>
+          </>
         ) : (
-          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
-            <p style={{ textAlign: "center", fontSize: "1.2rem", color: "#666" }}>
-              Unable to load user details
-            </p>
+          <div className="flex items-center justify-center h-64">
+            <p className="text-base font-medium" style={{ color: B.textMuted }}>Unable to load user details</p>
           </div>
         )}
       </div>
+
       <Footer />
     </div>
   );

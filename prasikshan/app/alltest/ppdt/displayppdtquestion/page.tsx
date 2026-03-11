@@ -27,6 +27,7 @@ export default function DisplayPPDTQuestion() {
   const [error, setError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [overallTimeLeft, setOverallTimeLeft] = useState(270); // 4.5 minutes total
+  const [userStory, setUserStory] = useState(""); // Store user's written story
 
   useEffect(() => {
     const fetchQuestion = async () => {
@@ -112,7 +113,7 @@ export default function DisplayPPDTQuestion() {
       score: calculatedScore,
       timeTaken: 270, // 30 sec image + 4 min story
       dateTaken: new Date().toISOString(),
-      responses: [], // Can be enhanced to capture user responses
+      responses: [{ story: userStory }], // Include user's story
     };
 
     const token = getAuthToken();
@@ -168,63 +169,6 @@ export default function DisplayPPDTQuestion() {
         <div className="bg-white rounded-lg shadow-lg p-8 text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-xl font-semibold text-gray-700">Loading PPDT Question...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (stage === "showStories") {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 py-8 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-lg shadow-lg p-8">
-            <h1 className="text-3xl font-bold text-blue-900 mb-2">✅ PPDT Test Completed!</h1>
-            <p className="text-gray-600 mb-6">
-              Test Duration: <span className="font-semibold">{formatTime(270 - overallTimeLeft)}</span>
-            </p>
-
-            <div className="space-y-6 mb-8">
-              {question && question.stories.map((story, index) => (
-                <div
-                  key={index}
-                  className="border border-gray-200 rounded-lg p-6 bg-gray-50"
-                >
-                  <div className="flex flex-col gap-4">
-                    <div className="flex items-center gap-3">
-                      <span className="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full font-semibold text-sm">
-                        {index + 1}
-                      </span>
-                      <h3 className="font-bold text-xl text-blue-900">
-                        {story.title.toUpperCase()}
-                      </h3>
-                    </div>
-                    <div className="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4 ml-11">
-                      <p className="text-gray-700 font-semibold text-sm mb-2">📝 Sample Story:</p>
-                      <p className="text-gray-800 leading-relaxed">{story.narration}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Learning Points */}
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-8">
-              <h3 className="font-bold text-yellow-800 mb-3">💡 Learning Points:</h3>
-              <ul className="space-y-2 text-yellow-700 text-sm">
-                <li>✓ Compare your story with these examples</li>
-                <li>✓ Notice how positive leadership qualities are highlighted</li>
-                <li>✓ Observe the logical flow from past to present to future</li>
-                <li>✓ Practice writing more positive and action-oriented stories</li>
-              </ul>
-            </div>
-
-            <button
-              onClick={goToAllTests}
-              className="w-full px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Go to All Tests
-            </button>
-          </div>
         </div>
       </div>
     );
@@ -291,7 +235,7 @@ export default function DisplayPPDTQuestion() {
                   <div className="bg-white rounded p-2">
                     <p className="text-gray-600 text-xs">Current Stage</p>
                     <p className="font-bold text-blue-600">
-                      {stage === "viewImage" ? "📷 Viewing" : stage === "waitStory" ? "✍️ Writing" : stage === "showStories" ? "📖 Results" : "⏳ Loading"}
+                      {stage === "loading" ? "⏳ Loading" : stage === "viewImage" ? "📷 Viewing" : stage === "waitStory" ? "✍️ Writing" : "📖 Results"}
                     </p>
                   </div>
                 </div>
@@ -369,22 +313,24 @@ export default function DisplayPPDTQuestion() {
               {/* Main Question Card */}
               <div className="bg-white rounded-2xl shadow-xl p-6 md:p-10 mb-6">
                 {/* Stage Display */}
-                <div className="text-center mb-8">
-                  <p className="text-gray-500 text-xs md:text-sm font-bold uppercase tracking-wider mb-4">
-                    {stage === "viewImage" ? "Image Observation" : stage === "waitStory" ? "Story Preparation" : "Loading..."}
-                  </p>
-                  
-                  <div className="flex flex-wrap justify-center gap-2 mb-6">
-                    <span className="inline-block px-4 py-2 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
-                      {stage === "viewImage" ? "📷 Observe" : stage === "waitStory" ? "✍️ Write" : "⏳ Loading"}
-                    </span>
-                    <span className={`inline-block px-4 py-2 text-xs font-bold rounded-full ${
-                      timeLeft <= 10 ? "bg-red-100 text-red-700 animate-pulse" : "bg-green-100 text-green-700"
-                    }`}>
-                      ⏱️ {stage === "viewImage" ? `${timeLeft}s` : formatTime(timeLeft)}
-                    </span>
+                {stage !== "showStories" && (
+                  <div className="text-center mb-8">
+                    <p className="text-gray-500 text-xs md:text-sm font-bold uppercase tracking-wider mb-4">
+                      {stage === "viewImage" ? "Image Observation" : stage === "waitStory" ? "Story Preparation" : "Loading..."}
+                    </p>
+                    
+                    <div className="flex flex-wrap justify-center gap-2 mb-6">
+                      <span className="inline-block px-4 py-2 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
+                        {stage === "viewImage" ? "📷 Observe" : stage === "waitStory" ? "✍️ Write" : "⏳ Loading"}
+                      </span>
+                      <span className={`inline-block px-4 py-2 text-xs font-bold rounded-full ${
+                        timeLeft <= 10 ? "bg-red-100 text-red-700 animate-pulse" : "bg-green-100 text-green-700"
+                      }`}>
+                        ⏱️ {stage === "viewImage" ? `${timeLeft}s` : formatTime(timeLeft)}
+                      </span>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Display Image */}
                 {(stage === "loading" || stage === "viewImage") && (
@@ -440,22 +386,24 @@ export default function DisplayPPDTQuestion() {
                   <div className="space-y-6">
                     <div className="bg-green-50 border-l-4 border-green-500 rounded-lg p-6">
                       <h3 className="font-bold text-green-900 mb-3">✍️ Story Writing Time</h3>
-                      <p className="text-gray-700 mb-4">
-                        Based on the image you observed, mentally prepare a complete story that includes:
+                      <p className="text-gray-700 mb-6">
+                        Based on the image you observed, write a complete story.
                       </p>
-                      <div className="grid md:grid-cols-3 gap-4">
-                        <div className="bg-white rounded-lg p-4 border border-green-200">
-                          <h4 className="font-bold text-green-800 mb-2">Past</h4>
-                          <p className="text-sm text-gray-600">What led to this situation?</p>
-                        </div>
-                        <div className="bg-white rounded-lg p-4 border border-green-200">
-                          <h4 className="font-bold text-green-800 mb-2">Present</h4>
-                          <p className="text-sm text-gray-600">What is happening now?</p>
-                        </div>
-                        <div className="bg-white rounded-lg p-4 border border-green-200">
-                          <h4 className="font-bold text-green-800 mb-2">Future</h4>
-                          <p className="text-sm text-gray-600">What will happen next?</p>
-                        </div>
+                      
+                      <textarea
+                        value={userStory}
+                        onChange={(e) => setUserStory(e.target.value)}
+                        placeholder="Write your story here..."
+                        className="w-full h-64 p-4 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none resize-none font-base text-gray-800"
+                      />
+                      
+                      <div className="flex justify-between items-center mt-4">
+                        <p className="text-sm text-gray-600">
+                          Characters: <span className="font-bold text-gray-800">{userStory.length}</span> / 2000
+                        </p>
+                        <p className={`text-sm font-semibold ${userStory.length < 50 ? 'text-yellow-600' : 'text-green-600'}`}>
+                          {userStory.length < 50 ? '📝 Keep writing...' : '✓ Good progress'}
+                        </p>
                       </div>
                     </div>
 
@@ -468,6 +416,79 @@ export default function DisplayPPDTQuestion() {
                         <li>• Focus on action and problem-solving</li>
                       </ul>
                     </div>
+                  </div>
+                )}
+
+                {/* Show Stories / Results Stage */}
+                {stage === "showStories" && (
+                  <div className="animate-fade-in">
+                    <h1 className="text-3xl font-bold text-blue-900 mb-2">✅ PPDT Test Completed!</h1>
+                    <p className="text-gray-600 mb-8">
+                      Test Duration: <span className="font-semibold">{formatTime(270 - overallTimeLeft)}</span>
+                    </p>
+
+                    <div className="space-y-6 mb-8">
+                      {/* User's Story section */}
+                      <div className="border border-green-200 rounded-lg p-6 bg-green-50">
+                        <div className="flex flex-col gap-4">
+                          <div className="flex items-center gap-3">
+                            <span className="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 bg-green-600 text-white rounded-full font-semibold text-sm">
+                              👤
+                            </span>
+                            <h3 className="font-bold text-xl text-green-900">
+                              YOUR STORY
+                            </h3>
+                          </div>
+                          <div className="bg-white border-l-4 border-green-500 rounded-lg p-4 ml-11">
+                            <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">
+                              {userStory || <span className="italic text-gray-500">No story provided.</span>}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <h3 className="text-xl font-bold text-blue-900 mt-8 mb-4 border-b pb-2">Sample Stories</h3>
+
+                      {question && question.stories.map((story, index) => (
+                        <div
+                          key={index}
+                          className="border border-gray-200 rounded-lg p-6 bg-gray-50"
+                        >
+                          <div className="flex flex-col gap-4">
+                            <div className="flex items-center gap-3">
+                              <span className="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full font-semibold text-sm">
+                                {index + 1}
+                              </span>
+                              <h3 className="font-bold text-xl text-blue-900">
+                                {story.title.toUpperCase()}
+                              </h3>
+                            </div>
+                            <div className="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4 ml-11">
+                              <p className="text-gray-700 font-semibold text-sm mb-2">📝 Sample Story:</p>
+                              <p className="text-gray-800 leading-relaxed">{story.narration}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Learning Points */}
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-8">
+                      <h3 className="font-bold text-yellow-800 mb-3">💡 Learning Points:</h3>
+                      <ul className="space-y-2 text-yellow-700 text-sm">
+                        <li>✓ Compare your story with these examples</li>
+                        <li>✓ Notice how positive leadership qualities are highlighted</li>
+                        <li>✓ Observe the logical flow from past to present to future</li>
+                        <li>✓ Practice writing more positive and action-oriented stories</li>
+                      </ul>
+                    </div>
+
+                    <button
+                      onClick={goToAllTests}
+                      className="w-full px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Go to All Tests
+                    </button>
                   </div>
                 )}
               </div>
