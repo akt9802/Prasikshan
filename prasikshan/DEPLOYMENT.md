@@ -31,7 +31,18 @@ Fill in:
 
 1. Build the Docker image:
 ```bash
-docker build -t prasikshan .
+# Source environment variables and build
+set -a && source .env && set +a
+docker build \
+  --build-arg MONGODB_URI="$MONGODB_URI" \
+  --build-arg JWT_SECRET="$JWT_SECRET" \
+  --build-arg SMTP_HOST="$SMTP_HOST" \
+  --build-arg SMTP_PORT="$SMTP_PORT" \
+  --build-arg SMTP_USER="$SMTP_USER" \
+  --build-arg SMTP_PASS="$SMTP_PASS" \
+  --build-arg SMTP_FROM_EMAIL="$SMTP_FROM_EMAIL" \
+  --build-arg SMTP_FROM_NAME="$SMTP_FROM_NAME" \
+  -t prasikshan .
 ```
 
 2. Run the container:
