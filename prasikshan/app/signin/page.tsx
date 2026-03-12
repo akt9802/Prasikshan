@@ -64,7 +64,14 @@ export default function SigninPage() {
           router.push("/alltest");
         }, 500);
       } else {
-        setError(data.message || "Sign-in failed!");
+        if (data.requiresVerification) {
+          setError(data.message);
+          setTimeout(() => {
+            router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
+          }, 2000);
+        } else {
+          setError(data.message || "Sign-in failed!");
+        }
       }
     } catch (error) {
       console.error("Error during sign-in:", error);
@@ -117,12 +124,20 @@ export default function SigninPage() {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="password"
-                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                  >
-                    Password
-                  </label>
+                  <div className="flex justify-between items-center mb-2">
+                    <label
+                      htmlFor="password"
+                      className="block text-sm font-medium text-gray-900 dark:text-white"
+                    >
+                      Password
+                    </label>
+                    <Link
+                      href="/forgot-password"
+                      className="text-sm font-medium text-blue-600 hover:underline dark:text-blue-500"
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
                   <div className="relative">
                     <input
                       type={showPassword ? "text" : "password"}
@@ -190,7 +205,7 @@ export default function SigninPage() {
                 </button>
 
                 <p className="text-sm font-light text-gray-500 dark:text-gray-400 text-center">
-                  Don't have an account yet?{" "}
+                  Don&apos;t have an account yet?{" "}
                   <Link
                     href="/signup"
                     className="font-medium text-blue-600 hover:underline dark:text-blue-500"
@@ -201,9 +216,9 @@ export default function SigninPage() {
               </form>
             </div>
           </div>
-        </div>
-      </section>
+        </div >
+      </section >
       <Footer />
-    </div>
+    </div >
   );
 }

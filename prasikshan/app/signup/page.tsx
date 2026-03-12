@@ -60,14 +60,14 @@ export default function SignupPage() {
           localStorage.setItem("user", JSON.stringify(data.user));
         }
 
-        setSuccess(data.message || "Account created successfully! Redirecting to signin...");
+        setSuccess(data.message || "Account created successfully! Redirecting to verification...");
 
         // Dispatch events to notify about auth change
         window.dispatchEvent(new Event("auth-change"));
 
-        // Redirect to signin page for login
+        // Redirect to verify email page
         setTimeout(() => {
-          router.push("/signin");
+          router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
         }, 1500);
       } else {
         setError(data.message || "Signup failed!");

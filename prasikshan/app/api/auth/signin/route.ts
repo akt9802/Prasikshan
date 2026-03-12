@@ -34,6 +34,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (!existingUser.isVerified) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Please verify your email address. Check your inbox for the OTP.',
+          requiresVerification: true,
+        },
+        { status: 403 }
+      );
+    }
+
     // Validate password
     const isPasswordValid = await bcrypt.compare(password, existingUser.password);
 

@@ -28,7 +28,14 @@ export const setUserData = (user: any) => {
 export const getUserData = (): any => {
   if (typeof window !== 'undefined') {
     const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
+    if (user) {
+      try {
+        return JSON.parse(user);
+      } catch (e) {
+        console.error("Failed to parse user data from localStorage:", e);
+        return null;
+      }
+    }
   }
   return null;
 };
