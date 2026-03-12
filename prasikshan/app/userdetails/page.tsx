@@ -238,7 +238,6 @@ export default function UserDetails() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     window.dispatchEvent(new Event('auth-change'));
-    alert('You have been logged out successfully!');
     window.location.href = '/';
   };
 

@@ -5,498 +5,481 @@ import Footer from "@/components/footer/Footer";
 import { getAuthToken } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 
-interface Story {
-  title: string;
-  narration: string;
+// ── Brand palette ─────────────────────────────────────────────────────────────
+const B = {
+  navy: '#124D96',
+  navyDark: '#0D3A72',
+  navyDeep: '#0A2A55',
+  blueMid: '#2563EB',
+  iceBlue: '#EDF9FF',
+  iceMid: '#D7F1FF',
+  textDark: '#0F172A',
+  textMid: '#334155',
+  textMuted: '#475569',
+  textLight: '#94A3B8',
+};
+
+interface Story { title: string; narration: string; }
+interface PPDTQuestion { _id: number; image: string; stories: Story[]; }
+
+type Stage = "loading" | "viewImage" | "waitStory" | "showStories";
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function fmtTime(s: number) {
+  return `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
 }
 
-interface PPDTQuestion {
-  _id: number;
-  image: string;
-  stories: Story[];
-}
+// ── Stage steps ───────────────────────────────────────────────────────────────
+const STEPS = [
+  { key: "viewImage", label: "Observe Image" },
+  { key: "waitStory", label: "Write Story" },
+  { key: "showStories", label: "Results" },
+];
 
 export default function DisplayPPDTQuestion() {
   const router = useRouter();
-  const [stage, setStage] = useState<"loading" | "viewImage" | "waitStory" | "showStories">("loading");
-  const [timeLeft, setTimeLeft] = useState(30); // 30 sec for image
+  const [stage, setStage] = useState<Stage>("loading");
+  const [timeLeft, setTimeLeft] = useState(30);
   const [question, setQuestion] = useState<PPDTQuestion | null>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [score, setScore] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [overallTimeLeft, setOverallTimeLeft] = useState(270); // 4.5 minutes total
-  const [userStory, setUserStory] = useState(""); // Store user's written story
+  const [overallTimeLeft, setOverallTimeLeft] = useState(270);
+  const [userStory, setUserStory] = useState("");
+  const [wordCount, setWordCount] = useState(0);
 
+  // ── Fetch ──────────────────────────────────────────────────────────────────
   useEffect(() => {
     const fetchQuestion = async () => {
       try {
-        const response = await fetch('/api/ppdtquestions');
-        if (!response.ok) {
-          throw new Error('Failed to fetch PPDT question');
-        }
+        const response = await fetch("/api/ppdtquestions");
+        if (!response.ok) throw new Error("Failed to fetch PPDT question");
         const result = await response.json();
-        if (result.success) {
-          setQuestion(result.data);
-        } else {
-          throw new Error(result.error || 'Failed to fetch PPDT question');
-        }
+        if (result.success) setQuestion(result.data);
+        else throw new Error(result.error || "Failed to fetch PPDT question");
       } catch (err) {
-        console.error('Error fetching PPDT question:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch question');
+        setError(err instanceof Error ? err.message : "Failed to fetch question");
       }
     };
-
     fetchQuestion();
   }, []);
 
-  // Overall test timer
+  // ── Overall timer ──────────────────────────────────────────────────────────
   useEffect(() => {
     if (stage === "loading" || stage === "showStories") return;
-
     if (overallTimeLeft > 0) {
-      const timer = setTimeout(() => setOverallTimeLeft(overallTimeLeft - 1), 1000);
-      return () => clearTimeout(timer);
+      const t = setTimeout(() => setOverallTimeLeft(v => v - 1), 1000);
+      return () => clearTimeout(t);
     } else {
-      // Overall time expired, show stories
       setStage("showStories");
       handleSubmitPPDT();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [overallTimeLeft, stage]);
 
+  // ── Stage timer ────────────────────────────────────────────────────────────
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    
+    let t: NodeJS.Timeout;
     if (stage === "viewImage" && timeLeft > 0 && imageLoaded) {
-      timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+      t = setTimeout(() => setTimeLeft(v => v - 1), 1000);
     } else if (stage === "viewImage" && timeLeft === 0) {
-      setStage("waitStory");
-      setTimeLeft(240); // 4 minutes for story
+      setStage("waitStory"); setTimeLeft(240);
     } else if (stage === "waitStory" && timeLeft > 0) {
-      timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+      t = setTimeout(() => setTimeLeft(v => v - 1), 1000);
     } else if (stage === "waitStory" && timeLeft === 0) {
-      setStage("showStories");
-      handleSubmitPPDT();
+      setStage("showStories"); handleSubmitPPDT();
     }
-    
-    return () => clearTimeout(timer);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeLeft, stage, imageLoaded]);
 
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  const stopTimer = () => {
-    if (stage === "waitStory") {
-      setStage("showStories");
-      handleSubmitPPDT();
-    }
-  };
-
-  const goToAllTests = () => {
-    router.push("/alltest");
-  };
-
-  // Submit PPDT test result to backend
   const handleSubmitPPDT = async () => {
-    if (submitted) return; // Prevent double submission
-    
-    const calculatedScore = 1; // Basic scoring logic - can be enhanced
-    setScore(calculatedScore);
+    if (submitted) return;
     setSubmitted(true);
-
-    const testResult = {
-      testName: "PPDT Test",
-      score: calculatedScore,
-      timeTaken: 270, // 30 sec image + 4 min story
-      dateTaken: new Date().toISOString(),
-      responses: [{ story: userStory }], // Include user's story
-    };
-
     const token = getAuthToken();
-    if (!token) {
-      console.warn('No auth token found, skipping result submission');
-      return;
-    }
-
+    if (!token) return;
     try {
-      console.log('📊 PPDT: Submitting test result...', testResult);
-      const response = await fetch('/api/ppdtquestions/result', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(testResult),
+      await fetch("/api/ppdtquestions/result", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          testName: "PPDT Test", score: 1, timeTaken: 270,
+          dateTaken: new Date().toISOString(), responses: [{ story: userStory }],
+        }),
       });
-
-      const result = await response.json();
-      console.log('📊 PPDT: API Response:', result);
-
-      if (result.success) {
-        console.log('✅ PPDT test result saved successfully');
-      } else {
-        console.error('❌ Failed to save PPDT test result:', result.error || result.message);
-      }
-    } catch (err) {
-      console.error('❌ Network error saving PPDT test result:', err);
-    }
+    } catch { /* silent */ }
   };
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100">
-        <div className="bg-white rounded-lg shadow-lg p-8 text-center max-w-md">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">Error</h2>
-          <p className="text-gray-700 mb-6">{error}</p>
-          <button
-            onClick={() => router.push("/alltest")}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Go to All Tests
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const handleStoryChange = (v: string) => {
+    setUserStory(v);
+    setWordCount(v.trim() === "" ? 0 : v.trim().split(/\s+/).length);
+  };
 
-  if (!question) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100">
-        <div className="bg-white rounded-lg shadow-lg p-8 text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-xl font-semibold text-gray-700">Loading PPDT Question...</p>
-        </div>
-      </div>
-    );
-  }
+  const isTimeCritical = stage === "viewImage" ? timeLeft <= 10 : timeLeft <= 60;
+  const stageIndex = stage === "viewImage" ? 0 : stage === "waitStory" ? 1 : 2;
+  const overallPct = Math.round((270 - overallTimeLeft) / 270 * 100);
 
+  // ── Loading / Error states ─────────────────────────────────────────────────
+  const Centered = ({ children }: { children: React.ReactNode }) => (
+    <div className="flex items-center justify-center min-h-screen"
+      style={{ background: `linear-gradient(160deg,${B.iceBlue},${B.iceMid})` }}>
+      {children}
+    </div>
+  );
+
+  if (error) return (
+    <Centered>
+      <div className="max-w-md w-full p-8 rounded-2xl text-center"
+        style={{ background: 'rgba(255,255,255,0.82)', border: '1.5px solid rgba(220,38,38,0.22)', backdropFilter: 'blur(12px)' }}>
+        <div className="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'rgba(220,38,38,0.10)' }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+        </div>
+        <p className="font-semibold mb-5" style={{ color: '#DC2626' }}>{error}</p>
+        <button onClick={() => router.push("/alltest")}
+          className="px-6 py-2.5 rounded-xl font-bold text-sm text-white"
+          style={{ background: `linear-gradient(90deg,${B.navyDark},${B.navy})` }}>
+          Go to All Tests
+        </button>
+      </div>
+    </Centered>
+  );
+
+  if (!question) return (
+    <Centered>
+      <div className="flex flex-col items-center gap-4 p-10 rounded-2xl"
+        style={{ background: 'rgba(255,255,255,0.78)', border: '1.5px solid rgba(18,77,150,0.13)', backdropFilter: 'blur(12px)' }}>
+        <div className="w-12 h-12 border-4 rounded-full animate-spin"
+          style={{ borderColor: B.iceMid, borderTopColor: B.navy }} />
+        <p className="text-sm font-semibold" style={{ color: B.textMuted }}>Loading PPDT question…</p>
+      </div>
+    </Centered>
+  );
+
+  // ── Main render ────────────────────────────────────────────────────────────
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100">
-        {/* Header with Controls */}
-        <div className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                {sidebarOpen ? (
-                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                ) : (
-                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                )}
-              </button>
-              <h1 className="text-xl md:text-2xl font-bold text-gray-800">PPDT Test</h1>
-            </div>
-            <div className={`flex items-center gap-4 ${
-              overallTimeLeft <= 60 ? "text-red-600" : "text-blue-600"
-            }`}>
-              <div className="text-right">
-                <p className="text-xs text-gray-600 font-semibold">OVERALL TIME</p>
-                <p className="text-2xl font-bold">{formatTime(overallTimeLeft)}</p>
+      {/* ── Sticky top bar ── */}
+      <div className="sticky top-0 z-40 px-4 py-3"
+        style={{ background: `linear-gradient(135deg,${B.navyDeep},${B.navy})`, boxShadow: '0 4px 20px rgba(10,42,85,0.35)' }}>
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 flex-wrap">
+          {/* Title */}
+          <div>
+            <p className="text-xs font-black tracking-widest uppercase" style={{ color: 'rgba(190,227,248,0.65)' }}>Psychology Test</p>
+            <h1 className="text-lg font-black text-white leading-tight">Picture Perception & Discussion</h1>
+          </div>
+
+          {/* Step progress (hidden on small) */}
+          <div className="hidden md:flex items-center gap-1">
+            {STEPS.map((s, i) => {
+              const done = i < stageIndex;
+              const active = i === stageIndex;
+              return (
+                <React.Fragment key={s.key}>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-black"
+                      style={{ background: done ? '#4ADE80' : active ? '#fff' : 'rgba(255,255,255,0.18)', color: done ? '#fff' : active ? B.navy : 'rgba(190,227,248,0.5)' }}>
+                      {done ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg> : i + 1}
+                    </div>
+                    <span className="text-xs font-bold" style={{ color: active ? '#fff' : done ? '#4ADE80' : 'rgba(190,227,248,0.5)' }}>{s.label}</span>
+                  </div>
+                  {i < STEPS.length - 1 && <div className="w-8 h-px mx-1" style={{ background: done ? '#4ADE80' : 'rgba(255,255,255,0.20)' }} />}
+                </React.Fragment>
+              );
+            })}
+          </div>
+
+          {/* Timer + overall */}
+          <div className="flex items-center gap-3 shrink-0">
+            {stage !== "showStories" && (
+              <div className={`flex items-center gap-2 px-4 py-2 rounded-xl font-black text-xl ${isTimeCritical ? 'animate-pulse' : ''}`}
+                style={{ background: isTimeCritical ? 'rgba(220,38,38,0.25)' : 'rgba(255,255,255,0.12)', color: isTimeCritical ? '#F87171' : '#fff', border: isTimeCritical ? '1.5px solid rgba(220,38,38,0.40)' : '1.5px solid rgba(255,255,255,0.15)' }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                {stage === "viewImage" ? `${timeLeft}s` : fmtTime(timeLeft)}
               </div>
-            </div>
+            )}
           </div>
         </div>
 
-        <div className="flex">
-          {/* Left Sidebar - Collapsible on Mobile */}
-          {sidebarOpen && (
-            <div className="fixed left-0 top-20 h-[calc(100vh-80px)] w-full sm:w-64 bg-white border-r border-gray-200 shadow-lg lg:shadow-none overflow-y-auto p-4 space-y-4 z-40 lg:z-auto lg:static lg:h-auto lg:top-auto lg:shadow-none lg:relative">
-              {/* Progress Card */}
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
-                <p className="text-gray-700 text-xs font-bold uppercase mb-3">Progress</p>
-                <div className="mb-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-3xl font-bold text-blue-600">
-                      {stage === "loading" ? "0" : stage === "viewImage" ? "1" : stage === "waitStory" ? "2" : "3"}
-                    </span>
-                    <span className="text-sm text-gray-600">of 3 stages</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div
-                      className="bg-gradient-to-r from-blue-500 to-blue-600 h-2.5 rounded-full transition-all duration-300"
-                      style={{ 
-                        width: `${stage === "loading" ? 0 : stage === "viewImage" ? 33 : stage === "waitStory" ? 66 : 100}%` 
-                      }}
-                    ></div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 gap-2 text-sm">
-                  <div className="bg-white rounded p-2">
-                    <p className="text-gray-600 text-xs">Current Stage</p>
-                    <p className="font-bold text-blue-600">
-                      {stage === "loading" ? "⏳ Loading" : stage === "viewImage" ? "📷 Viewing" : stage === "waitStory" ? "✍️ Writing" : "📖 Results"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Stage Timer Card */}
-              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border border-green-200">
-                <p className="text-gray-700 text-xs font-bold uppercase mb-3">
-                  {stage === "viewImage" ? "Image Timer" : "Story Timer"}
-                </p>
-                <p className={`text-4xl font-bold mb-2 ${
-                  timeLeft <= 10 ? "text-red-600 animate-pulse" : "text-green-600"
-                }`}>
-                  {stage === "viewImage" ? `${timeLeft}s` : formatTime(timeLeft)}
-                </p>
-                <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                  <div
-                    className={`h-1.5 rounded-full transition-all duration-300 ${
-                      timeLeft <= 10 ? "bg-red-600" : "bg-green-600"
-                    }`}
-                    style={{ 
-                      width: `${stage === "viewImage" ? (timeLeft / 30) * 100 : (timeLeft / 240) * 100}%` 
-                    }}
-                  ></div>
-                </div>
-                <p className="text-xs text-gray-600 mt-2">
-                  {stage === "viewImage" ? `Auto-advance in ${timeLeft}s` : `Auto-submit in ${formatTime(timeLeft)}`}
-                </p>
-              </div>
-
-              {/* Statistics Card */}
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border border-purple-200">
-                <p className="text-gray-700 text-xs font-bold uppercase mb-3">Statistics</p>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center bg-white rounded-lg px-3 py-2">
-                    <span className="text-sm text-gray-600">Completion</span>
-                    <span className="font-bold text-purple-600">
-                      {Math.round((270 - overallTimeLeft) / 270 * 100)}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center bg-white rounded-lg px-3 py-2">
-                    <span className="text-sm text-gray-600">Time Elapsed</span>
-                    <span className="font-bold text-purple-600">
-                      {formatTime(270 - overallTimeLeft)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Submit Button Card */}
-              {stage === "waitStory" && (
-                <button
-                  onClick={stopTimer}
-                  className="w-full px-4 py-3 md:py-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold rounded-lg transition-all text-sm md:text-base shadow-lg"
-                >
-                  ✓ Finish & Submit Story
-                </button>
-              )}
-
-              {/* Close button for mobile */}
-              <button
-                onClick={() => setSidebarOpen(false)}
-                className="lg:hidden w-full py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-colors"
-              >
-                Close Panel
-              </button>
+        {/* Overall progress bar */}
+        {stage !== "showStories" && (
+          <div className="max-w-7xl mx-auto mt-2">
+            <div className="h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.15)' }}>
+              <div className="h-full rounded-full transition-all duration-1000"
+                style={{ width: `${overallPct}%`, background: 'linear-gradient(90deg,#60A5FA,#4ADE80)' }} />
             </div>
-          )}
+          </div>
+        )}
+      </div>
 
-          {/* Main Content Area */}
-          <div className={`flex-1 ${
-            sidebarOpen ? "hidden lg:flex lg:flex-col" : "flex flex-col"
-          } min-h-[calc(100vh-80px)]`}>
-            <div className="max-w-4xl mx-auto w-full px-4 py-6 md:py-8">
-              {/* Main Question Card */}
-              <div className="bg-white rounded-2xl shadow-xl p-6 md:p-10 mb-6">
-                {/* Stage Display */}
-                {stage !== "showStories" && (
-                  <div className="text-center mb-8">
-                    <p className="text-gray-500 text-xs md:text-sm font-bold uppercase tracking-wider mb-4">
-                      {stage === "viewImage" ? "Image Observation" : stage === "waitStory" ? "Story Preparation" : "Loading..."}
-                    </p>
-                    
-                    <div className="flex flex-wrap justify-center gap-2 mb-6">
-                      <span className="inline-block px-4 py-2 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
-                        {stage === "viewImage" ? "📷 Observe" : stage === "waitStory" ? "✍️ Write" : "⏳ Loading"}
-                      </span>
-                      <span className={`inline-block px-4 py-2 text-xs font-bold rounded-full ${
-                        timeLeft <= 10 ? "bg-red-100 text-red-700 animate-pulse" : "bg-green-100 text-green-700"
-                      }`}>
-                        ⏱️ {stage === "viewImage" ? `${timeLeft}s` : formatTime(timeLeft)}
-                      </span>
-                    </div>
+      <div className="min-h-screen" style={{ background: `linear-gradient(160deg,${B.iceBlue},${B.iceMid},#c8e8f8)` }}>
+        <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col lg:flex-row gap-5">
+
+          {/* ── Main content ── */}
+          <div className="flex-1 min-w-0 space-y-5">
+
+            {/* ─ Stage: View Image ─ */}
+            {(stage === "loading" || stage === "viewImage") && (
+              <div className="rounded-2xl overflow-hidden"
+                style={{ background: 'rgba(255,255,255,0.78)', backdropFilter: 'blur(14px)', border: '1.5px solid rgba(18,77,150,0.13)', boxShadow: '0 4px 20px rgba(18,77,150,0.09)' }}>
+
+                {/* image stage header */}
+                <div className="px-6 pt-6 pb-4 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(18,77,150,0.08)' }}>
+                  <div>
+                    <span className="text-xs font-black tracking-widest uppercase px-2.5 py-1 rounded-full" style={{ background: `rgba(18,77,150,0.08)`, color: B.navy }}>
+                      Stage 1 · Image Observation
+                    </span>
+                    <p className="text-xs mt-2 font-medium" style={{ color: B.textMuted }}>Observe closely — image disappears when timer ends</p>
                   </div>
-                )}
+                  {stage === "viewImage" && (
+                    <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-black text-2xl ${isTimeCritical ? 'animate-pulse' : ''}`}
+                      style={{ background: isTimeCritical ? 'rgba(220,38,38,0.10)' : `rgba(18,77,150,0.08)`, color: isTimeCritical ? '#DC2626' : B.navy }}>
+                      {timeLeft}s
+                    </div>
+                  )}
+                </div>
 
-                {/* Display Image */}
-                {(stage === "loading" || stage === "viewImage") && (
-                  <div className="flex justify-center mb-8 relative">
+                {/* image + countdown bar */}
+                <div className="p-6">
+                  {stage === "viewImage" && (
+                    <div className="h-1.5 rounded-full mb-5 overflow-hidden" style={{ background: B.iceMid }}>
+                      <div className="h-full rounded-full transition-all duration-1000"
+                        style={{ width: `${(timeLeft / 30) * 100}%`, background: isTimeCritical ? '#DC2626' : `linear-gradient(90deg,${B.navy},${B.blueMid})` }} />
+                    </div>
+                  )}
+
+                  <div className="flex justify-center relative min-h-[300px]">
                     {!imageLoaded && (
-                      <div className="absolute inset-0 flex justify-center items-center bg-gray-100 rounded-xl min-h-[400px]">
-                        <div className="text-center">
-                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                          <p className="text-gray-500 font-semibold">Loading image...</p>
+                      <div className="absolute inset-0 flex items-center justify-center rounded-2xl" style={{ background: B.iceMid }}>
+                        <div className="flex flex-col items-center gap-3">
+                          <div className="w-10 h-10 border-4 rounded-full animate-spin" style={{ borderColor: B.iceMid, borderTopColor: B.navy }} />
+                          <p className="text-xs font-semibold" style={{ color: B.textMuted }}>Loading image…</p>
                         </div>
                       </div>
                     )}
-                    <img
-                      src={question.image}
-                      alt="PPDT Scene"
-                      className={`rounded-xl border-4 border-blue-200 max-w-full max-h-[500px] object-contain shadow-lg transition-all duration-500 ${
-                        imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
-                      }`}
-                      onLoad={() => {
-                        setImageLoaded(true);
-                        if (stage === "loading") {
-                          setStage("viewImage");
-                        }
-                      }}
-                      onError={(e) => {
-                        console.error("Image failed to load:", question.image);
-                        const target = e.target as HTMLImageElement;
-                        target.src = "https://via.placeholder.com/600x400?text=Image+Not+Available";
-                        setImageLoaded(true);
-                        if (stage === "loading") {
-                          setStage("viewImage");
-                        }
-                      }}
-                    />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={question.image} alt="PPDT Scene"
+                      className={`rounded-2xl max-w-full max-h-[500px] object-contain transition-all duration-700 ${imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
+                      style={{ border: '2px solid rgba(18,77,150,0.15)', boxShadow: '0 8px 30px rgba(18,77,150,0.14)' }}
+                      onLoad={() => { setImageLoaded(true); if (stage === "loading") setStage("viewImage"); }}
+                      onError={e => {
+                        (e.target as HTMLImageElement).src = "https://via.placeholder.com/600x400?text=Image+Not+Available";
+                        setImageLoaded(true); if (stage === "loading") setStage("viewImage");
+                      }} />
                   </div>
-                )}
+                </div>
 
-                {/* Instructions during image viewing */}
-                {stage === "viewImage" && (
-                  <div className="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-6 mb-8">
-                    <h3 className="font-bold text-blue-900 mb-3">📝 Observation Guidelines:</h3>
-                    <ul className="text-gray-700 space-y-2 text-sm">
-                      <li>• Note the characters: age, gender, expressions</li>
-                      <li>• Observe the setting and mood of the scene</li>
-                      <li>• Think about what might be happening</li>
-                      <li>• Consider the relationships between characters</li>
-                    </ul>
-                  </div>
-                )}
 
-                {/* Story Writing Instructions */}
-                {stage === "waitStory" && (
-                  <div className="space-y-6">
-                    <div className="bg-green-50 border-l-4 border-green-500 rounded-lg p-6">
-                      <h3 className="font-bold text-green-900 mb-3">✍️ Story Writing Time</h3>
-                      <p className="text-gray-700 mb-6">
-                        Based on the image you observed, write a complete story.
-                      </p>
-                      
-                      <textarea
-                        value={userStory}
-                        onChange={(e) => setUserStory(e.target.value)}
-                        placeholder="Write your story here..."
-                        className="w-full h-64 p-4 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none resize-none font-base text-gray-800"
-                      />
-                      
-                      <div className="flex justify-between items-center mt-4">
-                        <p className="text-sm text-gray-600">
-                          Characters: <span className="font-bold text-gray-800">{userStory.length}</span> / 2000
-                        </p>
-                        <p className={`text-sm font-semibold ${userStory.length < 50 ? 'text-yellow-600' : 'text-green-600'}`}>
-                          {userStory.length < 50 ? '📝 Keep writing...' : '✓ Good progress'}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-                      <h4 className="font-bold text-yellow-800 mb-3">💡 Remember:</h4>
-                      <ul className="text-yellow-700 space-y-1 text-sm">
-                        <li>• Keep your story positive and constructive</li>
-                        <li>• Show leadership and officer-like qualities</li>
-                        <li>• Make it realistic and logical</li>
-                        <li>• Focus on action and problem-solving</li>
-                      </ul>
-                    </div>
-                  </div>
-                )}
-
-                {/* Show Stories / Results Stage */}
-                {stage === "showStories" && (
-                  <div className="animate-fade-in">
-                    <h1 className="text-3xl font-bold text-blue-900 mb-2">✅ PPDT Test Completed!</h1>
-                    <p className="text-gray-600 mb-8">
-                      Test Duration: <span className="font-semibold">{formatTime(270 - overallTimeLeft)}</span>
-                    </p>
-
-                    <div className="space-y-6 mb-8">
-                      {/* User's Story section */}
-                      <div className="border border-green-200 rounded-lg p-6 bg-green-50">
-                        <div className="flex flex-col gap-4">
-                          <div className="flex items-center gap-3">
-                            <span className="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 bg-green-600 text-white rounded-full font-semibold text-sm">
-                              👤
-                            </span>
-                            <h3 className="font-bold text-xl text-green-900">
-                              YOUR STORY
-                            </h3>
-                          </div>
-                          <div className="bg-white border-l-4 border-green-500 rounded-lg p-4 ml-11">
-                            <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">
-                              {userStory || <span className="italic text-gray-500">No story provided.</span>}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <h3 className="text-xl font-bold text-blue-900 mt-8 mb-4 border-b pb-2">Sample Stories</h3>
-
-                      {question && question.stories.map((story, index) => (
-                        <div
-                          key={index}
-                          className="border border-gray-200 rounded-lg p-6 bg-gray-50"
-                        >
-                          <div className="flex flex-col gap-4">
-                            <div className="flex items-center gap-3">
-                              <span className="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full font-semibold text-sm">
-                                {index + 1}
-                              </span>
-                              <h3 className="font-bold text-xl text-blue-900">
-                                {story.title.toUpperCase()}
-                              </h3>
-                            </div>
-                            <div className="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4 ml-11">
-                              <p className="text-gray-700 font-semibold text-sm mb-2">📝 Sample Story:</p>
-                              <p className="text-gray-800 leading-relaxed">{story.narration}</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Learning Points */}
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-8">
-                      <h3 className="font-bold text-yellow-800 mb-3">💡 Learning Points:</h3>
-                      <ul className="space-y-2 text-yellow-700 text-sm">
-                        <li>✓ Compare your story with these examples</li>
-                        <li>✓ Notice how positive leadership qualities are highlighted</li>
-                        <li>✓ Observe the logical flow from past to present to future</li>
-                        <li>✓ Practice writing more positive and action-oriented stories</li>
-                      </ul>
-                    </div>
-
-                    <button
-                      onClick={goToAllTests}
-                      className="w-full px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      Go to All Tests
-                    </button>
-                  </div>
-                )}
               </div>
-            </div>
+            )}
+
+            {/* ─ Stage: Write Story ─ */}
+            {stage === "waitStory" && (
+              <div className="rounded-2xl overflow-hidden"
+                style={{ background: 'rgba(255,255,255,0.78)', backdropFilter: 'blur(14px)', border: '1.5px solid rgba(18,77,150,0.13)', boxShadow: '0 4px 20px rgba(18,77,150,0.09)' }}>
+
+                <div className="px-6 pt-6 pb-4 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(18,77,150,0.08)' }}>
+                  <div>
+                    <span className="text-xs font-black tracking-widest uppercase px-2.5 py-1 rounded-full" style={{ background: 'rgba(5,150,105,0.10)', color: '#059669' }}>
+                      Stage 2 · Story Writing
+                    </span>
+                    <p className="text-xs mt-2 font-medium" style={{ color: B.textMuted }}>Write a creative & positive story based on the image</p>
+                  </div>
+                  <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-black text-xl ${isTimeCritical ? 'animate-pulse' : ''}`}
+                    style={{ background: isTimeCritical ? 'rgba(220,38,38,0.10)' : 'rgba(5,150,105,0.08)', color: isTimeCritical ? '#DC2626' : '#059669' }}>
+                    {fmtTime(timeLeft)}
+                  </div>
+                </div>
+
+                {/* timer bar */}
+                <div className="px-6 pt-4">
+                  <div className="h-1.5 rounded-full overflow-hidden" style={{ background: B.iceMid }}>
+                    <div className="h-full rounded-full transition-all duration-1000"
+                      style={{ width: `${(timeLeft / 240) * 100}%`, background: isTimeCritical ? '#DC2626' : 'linear-gradient(90deg,#059669,#047857)' }} />
+                  </div>
+                </div>
+
+                <div className="p-6 space-y-4">
+                  <textarea value={userStory} onChange={e => handleStoryChange(e.target.value)}
+                    placeholder="Begin your story here… Set the scene, introduce the characters, describe what's happening and how it resolves. Aim for a positive, officer-like narrative."
+                    className="w-full h-72 px-5 py-4 rounded-xl resize-none text-sm leading-relaxed transition-all duration-200 focus:outline-none"
+                    style={{ background: 'rgba(237,249,255,0.70)', border: '2px solid rgba(18,77,150,0.14)', color: B.textDark, fontFamily: 'inherit' }}
+                    onFocus={e => (e.target.style.borderColor = B.navy)}
+                    onBlur={e => (e.target.style.borderColor = 'rgba(18,77,150,0.14)')} />
+
+                  {/* word / char stats */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex gap-4 text-xs font-semibold" style={{ color: B.textMuted }}>
+                      <span>{wordCount} <span style={{ color: B.textLight }}>words</span></span>
+                      <span>{userStory.length} <span style={{ color: B.textLight }}>chars</span></span>
+                    </div>
+                    <span className="text-xs font-bold px-2.5 py-1 rounded-full"
+                      style={{ background: wordCount < 30 ? 'rgba(217,119,6,0.10)' : 'rgba(5,150,105,0.10)', color: wordCount < 30 ? '#D97706' : '#059669' }}>
+                      {wordCount < 30 ? 'Keep writing…' : 'Good progress'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ─ Stage: Results ─ */}
+            {stage === "showStories" && (
+              <div className="space-y-5">
+                {/* hero */}
+                <div className="rounded-2xl p-8 relative overflow-hidden text-center"
+                  style={{ background: `linear-gradient(135deg,${B.navyDeep},${B.navy})`, boxShadow: '0 12px 40px rgba(18,77,150,0.28)' }}>
+                  <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full pointer-events-none"
+                    style={{ background: 'rgba(37,99,235,0.18)', filter: 'blur(30px)' }} />
+                  <p className="text-xs font-black tracking-widest uppercase mb-2" style={{ color: 'rgba(190,227,248,0.65)' }}>PPDT — Picture Perception & Discussion</p>
+                  <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3"
+                    style={{ background: 'rgba(74,222,128,0.20)', border: '2px solid rgba(74,222,128,0.40)' }}>
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  </div>
+                  <h2 className="text-2xl font-black text-white mb-1">Test Completed!</h2>
+                  <p className="text-sm font-medium" style={{ color: 'rgba(190,227,248,0.70)' }}>
+                    Completed in <span className="text-white font-black">{fmtTime(270 - overallTimeLeft)}</span>
+                  </p>
+                </div>
+
+                {/* your story */}
+                <div className="rounded-2xl p-6"
+                  style={{ background: 'rgba(255,255,255,0.78)', backdropFilter: 'blur(12px)', border: '1.5px solid rgba(18,77,150,0.13)' }}>
+                  <div className="flex items-center gap-3 mb-4 pb-4" style={{ borderBottom: '1px solid rgba(18,77,150,0.08)' }}>
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                      style={{ background: 'rgba(5,150,105,0.12)', border: '1.5px solid rgba(5,150,105,0.25)' }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                    </div>
+                    <h3 className="font-extrabold" style={{ color: B.textDark }}>Your Story</h3>
+                  </div>
+                  <div className="rounded-xl p-4 text-sm leading-relaxed" style={{ background: 'rgba(5,150,105,0.05)', border: '1.5px solid rgba(5,150,105,0.18)', color: B.textDark, whiteSpace: 'pre-wrap' }}>
+                    {userStory || <span className="italic" style={{ color: B.textLight }}>No story was written.</span>}
+                  </div>
+                  {userStory && (
+                    <p className="text-xs font-semibold mt-2" style={{ color: B.textLight }}>
+                      {userStory.trim().split(/\s+/).length} words · {userStory.length} characters
+                    </p>
+                  )}
+                </div>
+
+                {/* sample stories */}
+                <div className="rounded-2xl p-6"
+                  style={{ background: 'rgba(255,255,255,0.78)', backdropFilter: 'blur(12px)', border: '1.5px solid rgba(18,77,150,0.13)' }}>
+                  <h3 className="font-extrabold mb-5 pb-4" style={{ color: B.textDark, borderBottom: '1px solid rgba(18,77,150,0.08)' }}>
+                    Sample Stories — for comparison
+                  </h3>
+                  <div className="flex flex-col gap-4">
+                    {question.stories.map((story, i) => (
+                      <div key={i} className="rounded-xl p-5"
+                        style={{ background: 'rgba(18,77,150,0.04)', border: '1.5px solid rgba(18,77,150,0.12)' }}>
+                        <div className="flex items-center gap-3 mb-3">
+                          <span className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black text-white"
+                            style={{ background: `linear-gradient(135deg,${B.navyDark},${B.navy})` }}>{i + 1}</span>
+                          <h4 className="font-extrabold text-sm" style={{ color: B.navy }}>{story.title}</h4>
+                        </div>
+                        <p className="text-sm leading-relaxed" style={{ color: B.textMid }}>{story.narration}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+
+
+                {/* actions */}
+                <div className="flex gap-3">
+                  <button onClick={() => router.push("/alltest/ppdt")}
+                    className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all hover:opacity-90 active:scale-95"
+                    style={{ background: `linear-gradient(90deg,${B.navyDark},${B.navy})`, color: '#fff', boxShadow: '0 4px 16px rgba(18,77,150,0.28)' }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 .49-3.52" /></svg>
+                    Retake Test
+                  </button>
+                  <button onClick={() => router.push("/alltest")}
+                    className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all hover:opacity-90 active:scale-95"
+                    style={{ background: 'rgba(255,255,255,0.78)', color: B.textMid, border: '1.5px solid rgba(18,77,150,0.18)', backdropFilter: 'blur(8px)' }}>
+                    All Tests
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* ── Sidebar ── */}
+          {stage !== "showStories" && (
+            <div className="lg:w-64 shrink-0 flex flex-col gap-4">
+
+              {/* Stage progress */}
+              <div className="rounded-2xl p-5"
+                style={{ background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(10px)', border: '1.5px solid rgba(18,77,150,0.12)' }}>
+                <p className="text-xs font-black tracking-widest uppercase mb-4" style={{ color: B.textLight }}>Progress</p>
+                <div className="flex flex-col gap-3">
+                  {STEPS.map((s, i) => {
+                    const done = i < stageIndex;
+                    const active = i === stageIndex;
+                    return (
+                      <div key={s.key} className="flex items-center gap-3">
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shrink-0"
+                          style={{ background: done ? 'linear-gradient(135deg,#15803D,#047857)' : active ? `linear-gradient(135deg,${B.navyDark},${B.navy})` : B.iceMid, color: done || active ? '#fff' : B.textLight }}>
+                          {done ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg> : i + 1}
+                        </div>
+                        <span className="text-sm font-bold" style={{ color: active ? B.textDark : done ? '#15803D' : B.textLight }}>{s.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Time stats */}
+              <div className="rounded-2xl p-5"
+                style={{ background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(10px)', border: '1.5px solid rgba(18,77,150,0.12)' }}>
+                <p className="text-xs font-black tracking-widest uppercase mb-4" style={{ color: B.textLight }}>Time</p>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold" style={{ color: B.textMuted }}>Overall remaining</span>
+                    <span className="text-sm font-black" style={{ color: B.navy }}>{fmtTime(overallTimeLeft)}</span>
+                  </div>
+                  <div className="h-1.5 rounded-full overflow-hidden" style={{ background: B.iceMid }}>
+                    <div className="h-full rounded-full transition-all duration-1000"
+                      style={{ width: `${(overallTimeLeft / 270) * 100}%`, background: `linear-gradient(90deg,${B.navy},${B.blueMid})` }} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold" style={{ color: B.textMuted }}>Elapsed</span>
+                    <span className="text-xs font-black" style={{ color: B.textMuted }}>{fmtTime(270 - overallTimeLeft)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Word count (only in story stage) */}
+              {stage === "waitStory" && (
+                <div className="rounded-2xl p-5"
+                  style={{ background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(10px)', border: '1.5px solid rgba(18,77,150,0.12)' }}>
+                  <p className="text-xs font-black tracking-widest uppercase mb-4" style={{ color: B.textLight }}>Story stats</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="text-center p-3 rounded-xl" style={{ background: 'rgba(18,77,150,0.06)' }}>
+                      <p className="text-xl font-black" style={{ color: B.navy }}>{wordCount}</p>
+                      <p className="text-xs font-semibold mt-0.5" style={{ color: B.textLight }}>Words</p>
+                    </div>
+                    <div className="text-center p-3 rounded-xl" style={{ background: 'rgba(18,77,150,0.06)' }}>
+                      <p className="text-xl font-black" style={{ color: B.navy }}>{userStory.length}</p>
+                      <p className="text-xs font-semibold mt-0.5" style={{ color: B.textLight }}>Chars</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+
+
+              {/* Submit (story stage) */}
+              {stage === "waitStory" && (
+                <button onClick={() => { setStage("showStories"); handleSubmitPPDT(); }}
+                  className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-black text-sm transition-all hover:opacity-90 active:scale-95"
+                  style={{ background: 'linear-gradient(90deg,#15803D,#047857)', color: '#fff', boxShadow: '0 6px 20px rgba(21,128,61,0.30)' }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  Finish & Submit Story
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
-      
+
       <Footer />
     </>
   );

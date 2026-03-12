@@ -2,7 +2,21 @@
 
 import { useState, useEffect } from "react";
 import Footer from "@/components/footer/Footer";
-import { useRouter } from "next/navigation";
+
+// ── Brand palette ─────────────────────────────────────────────────────────────
+const B = {
+  navy: '#124D96',
+  navyDark: '#0D3A72',
+  navyDeep: '#0A2A55',
+  blueMid: '#2563EB',
+  blueLight: '#60A5FA',
+  iceBlue: '#EDF9FF',
+  iceMid: '#D7F1FF',
+  textDark: '#0F172A',
+  textMid: '#334155',
+  textMuted: '#475569',
+  textLight: '#94A3B8',
+};
 
 interface Question {
   _id: string;
@@ -12,29 +26,27 @@ interface Question {
 }
 
 export default function DisplayOirQuestion() {
-  const router = useRouter();
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<(string | null)[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(40 * 60); // 40 minutes in seconds
+  const [timeLeft, setTimeLeft] = useState(40 * 60);
   const [markedForReview, setMarkedForReview] = useState<Set<number>>(new Set());
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  // ── Fetch ────────────────────────────────────────────────────────────────────
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
         setLoading(true);
-        const response = await fetch("/api/oirquestions");
-        const data = await response.json();
-
-        if (data.success && data.data && data.data.length > 0) {
+        const res = await fetch("/api/oirquestions");
+        const data = await res.json();
+        if (data.success && data.data?.length > 0) {
           setQuestions(data.data);
           setAnswers(new Array(data.data.length).fill(null));
-          setMarkedForReview(new Set());
         } else {
           setError(data.message || "Failed to fetch questions");
         }
@@ -44,213 +56,178 @@ export default function DisplayOirQuestion() {
         setLoading(false);
       }
     };
-
     fetchQuestions();
   }, []);
 
-  // Timer effect
+  // ── Timer ────────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (showResults) return;
-    
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          setShowResults(true);
-          return 0;
-        }
-        return prev - 1;
-      });
+    const t = setInterval(() => {
+      setTimeLeft(prev => { if (prev <= 1) { setShowResults(true); return 0; } return prev - 1; });
     }, 1000);
-
-    return () => clearInterval(timer);
+    return () => clearInterval(t);
   }, [showResults]);
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const handleAnswerSelect = (selectedOption: string) => {
-    const newAnswers = [...answers];
-    newAnswers[currentQuestionIndex] = selectedOption;
-    setAnswers(newAnswers);
-  };
-
-  const toggleMarkForReview = () => {
-    const newMarked = new Set(markedForReview);
-    if (newMarked.has(currentQuestionIndex)) {
-      newMarked.delete(currentQuestionIndex);
-    } else {
-      newMarked.add(currentQuestionIndex);
-    }
-    setMarkedForReview(newMarked);
-  };
-
-  const calculateScore = () => {
-    let correct = 0;
-    questions.forEach((question, index) => {
-      if (answers[index] === question.answer) {
-        correct++;
-      }
-    });
-    return correct;
-  };
-
-  const submitTest = async () => {
-    console.log("Submit Test button clicked");
-    if (!submitted) {
-      setShowResults(true);
-    }
-  };
-
-  // Auto-submit when timer expires
+  // ── Auto-submit ───────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (showResults && !submitted && questions.length > 0) {
-      console.log("Timer expired or submit clicked, auto-submitting...");
-      
-      const performSubmit = async () => {
-        try {
-          setSubmitting(true);
-          console.log("=== Auto Submit Called ===");
-
-          // Get token from localStorage
-          const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-          console.log("Token from localStorage:", token ? "Found" : "Not found");
-
-          if (token) {
-            // Calculate score
-            const score = calculateScore();
-            const timeTaken = 40 * 60 - timeLeft;
-
-            // Create responses array
-            const responses = questions.map((q, idx) => ({
-              _id: q._id,
-              question: q.question,
-              selectedAnswer: answers[idx] || null,
-              correctAnswer: q.answer,
-              isCorrect: answers[idx] === q.answer,
-            }));
-
-            // Submit results to backend
-            const testData = {
-              testName: "OIR",
-              score: score,
-              timeTaken: timeTaken,
-              dateTaken: new Date().toISOString(),
-              responses: responses,
-            };
-
-            console.log("Test data:", { testName: testData.testName, score: testData.score, timeTaken: testData.timeTaken });
-            console.log("Sending request to /api/oirquestions/result");
-
-            const response = await fetch("/api/oirquestions/result", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify(testData),
-            });
-
-            console.log("Response status:", response.status);
-            const responseData = await response.json();
-            console.log("Response data:", responseData);
-
-            if (!response.ok) {
-              console.error("Failed to submit test result:", responseData);
-            } else {
-              console.log("Test result saved successfully");
-            }
-          }
-
-          setSubmitted(true);
-        } catch (err) {
-          console.error("Error in auto-submit:", err);
-          setSubmitted(true);
-        } finally {
-          setSubmitting(false);
+    if (!showResults || submitted || questions.length === 0) return;
+    const performSubmit = async () => {
+      try {
+        setSubmitting(true);
+        const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+        if (token) {
+          const score = calcScore();
+          const timeTaken = 40 * 60 - timeLeft;
+          const responses = questions.map((q, i) => ({
+            _id: q._id, question: q.question,
+            selectedAnswer: answers[i] || null,
+            correctAnswer: q.answer,
+            isCorrect: answers[i] === q.answer,
+          }));
+          await fetch("/api/oirquestions/result", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ testName: "OIR", score, timeTaken, dateTaken: new Date().toISOString(), responses }),
+          });
         }
-      };
-
-      performSubmit();
-    }
+        setSubmitted(true);
+      } catch { setSubmitted(true); }
+      finally { setSubmitting(false); }
+    };
+    performSubmit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showResults, submitted]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="bg-white rounded-lg shadow-lg p-8 text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-xl font-semibold text-gray-700">Loading OIR questions...</p>
-        </div>
-      </div>
-    );
-  }
+  const calcScore = () => questions.reduce((acc, q, i) => acc + (answers[i] === q.answer ? 1 : 0), 0);
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="bg-white rounded-lg shadow-lg p-8 text-center max-w-md">
-          <p className="text-xl font-semibold text-red-600">{error}</p>
-        </div>
-      </div>
-    );
-  }
+  const fmtTime = (s: number) =>
+    `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
 
+  const toggleReview = () => {
+    const s = new Set(markedForReview);
+    s.has(currentQ) ? s.delete(currentQ) : s.add(currentQ);
+    setMarkedForReview(s);
+  };
+
+  const answeredCount = answers.filter(a => a !== null).length;
+  const isTimeCritical = timeLeft < 300; // last 5 min
+
+  // ── Loading ──────────────────────────────────────────────────────────────────
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-screen"
+      style={{ background: `linear-gradient(160deg,${B.iceBlue},${B.iceMid})` }}>
+      <div className="flex flex-col items-center gap-4 p-10 rounded-2xl"
+        style={{ background: 'rgba(255,255,255,0.78)', border: '1.5px solid rgba(18,77,150,0.13)', backdropFilter: 'blur(12px)' }}>
+        <div className="w-12 h-12 border-4 rounded-full animate-spin"
+          style={{ borderColor: B.iceMid, borderTopColor: B.navy }} />
+        <p className="text-sm font-semibold" style={{ color: B.textMuted }}>Loading OIR questions…</p>
+      </div>
+    </div>
+  );
+
+  // ── Error ────────────────────────────────────────────────────────────────────
+  if (error) return (
+    <div className="flex items-center justify-center min-h-screen"
+      style={{ background: `linear-gradient(160deg,${B.iceBlue},${B.iceMid})` }}>
+      <div className="max-w-md w-full p-8 rounded-2xl text-center"
+        style={{ background: 'rgba(255,255,255,0.80)', border: '1.5px solid rgba(220,38,38,0.22)', backdropFilter: 'blur(12px)' }}>
+        <div className="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'rgba(220,38,38,0.10)' }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+        </div>
+        <p className="font-semibold text-base" style={{ color: '#DC2626' }}>{error}</p>
+      </div>
+    </div>
+  );
+
+  // ── Results ──────────────────────────────────────────────────────────────────
   if (showResults) {
-    const score = calculateScore();
-    const percentage = Math.round((score / questions.length) * 100);
+    const score = calcScore();
+    const pct = Math.round((score / questions.length) * 100);
+    const passed = pct >= 60;
+    const timeTaken = 40 * 60 - timeLeft;
+    const mins = Math.floor(timeTaken / 60);
+    const secs = timeTaken % 60;
 
     return (
       <>
-        <div className="flex justify-center items-center min-h-[calc(100vh-160px)] bg-gradient-to-b from-blue-100 to-blue-300 px-4 py-8">
-          <div className="bg-white rounded-lg shadow-lg p-8 max-w-4xl w-full">
-            <h1 className="text-3xl font-bold text-center mb-6 text-gray-800">OIR Test Results</h1>
+        <div className="min-h-screen px-4 py-10"
+          style={{ background: `linear-gradient(160deg,${B.iceBlue},${B.iceMid},#c8e8f8)` }}>
+          <div className="max-w-3xl mx-auto space-y-5">
 
-            <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6 mb-6 text-center">
-              <p className="text-5xl font-bold text-blue-600 mb-2">{score}/{questions.length}</p>
-              <p className="text-2xl font-semibold text-gray-700 mb-2">Score: {percentage}%</p>
-              <p className="text-gray-600">Keep practicing to improve your performance!</p>
-            </div>
-
-            <div className="space-y-4 mb-6 max-h-96 overflow-y-auto">
-              {questions.map((question, index) => (
-                <div key={question._id} className="border rounded-lg p-4 bg-gray-50">
-                  <p className="font-semibold text-gray-800 mb-2">
-                    Q{index + 1}: {question.question}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600">
-                        Your answer: <span className={answers[index] === question.answer ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}>{answers[index] || "Not answered"}</span>
-                      </p>
-                      {answers[index] !== question.answer && (
-                        <p className="text-sm text-green-600 font-semibold">
-                          Correct answer: {question.answer}
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-2xl">
-                      {answers[index] === question.answer ? "✓" : "✗"}
-                    </div>
-                  </div>
+            {/* Score hero */}
+            <div className="rounded-2xl p-8 relative overflow-hidden text-center"
+              style={{ background: `linear-gradient(135deg,${B.navyDeep},${B.navy})`, boxShadow: '0 12px 40px rgba(18,77,150,0.28)' }}>
+              <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full pointer-events-none"
+                style={{ background: 'rgba(37,99,235,0.18)', filter: 'blur(30px)' }} />
+              <p className="text-xs font-black tracking-widest uppercase mb-2" style={{ color: 'rgba(190,227,248,0.65)' }}>OIR — Officer Intelligence Rating</p>
+              <p className="text-6xl font-black text-white mb-1">{score}<span className="text-3xl opacity-50">/{questions.length}</span></p>
+              <p className="text-2xl font-black mb-3" style={{ color: passed ? '#4ADE80' : '#F87171' }}>{pct}%</p>
+              <div className="flex justify-center gap-6 mt-4">
+                <div className="text-center">
+                  <p className="text-xs font-bold" style={{ color: 'rgba(190,227,248,0.65)' }}>Time Taken</p>
+                  <p className="text-lg font-black text-white">{mins}m {secs}s</p>
                 </div>
-              ))}
+                <div className="text-center">
+                  <p className="text-xs font-bold" style={{ color: 'rgba(190,227,248,0.65)' }}>Marked</p>
+                  <p className="text-lg font-black text-white">{markedForReview.size}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs font-bold" style={{ color: 'rgba(190,227,248,0.65)' }}>Skipped</p>
+                  <p className="text-lg font-black text-white">{questions.length - answeredCount}</p>
+                </div>
+              </div>
             </div>
 
-            <div className="flex gap-4">
-              <button
-                onClick={() => window.location.href = "/alltest/oir"}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-md transition duration-300"
-              >
+            {/* Answer review */}
+            <div className="rounded-2xl p-6"
+              style={{ background: 'rgba(255,255,255,0.78)', backdropFilter: 'blur(12px)', border: '1.5px solid rgba(18,77,150,0.13)' }}>
+              <h2 className="text-base font-extrabold mb-5 pb-4" style={{ color: B.textDark, borderBottom: '1px solid rgba(18,77,150,0.08)' }}>
+                Answer Review
+              </h2>
+              <div className="flex flex-col gap-3 max-h-[480px] overflow-y-auto pr-1">
+                {questions.map((q, i) => {
+                  const correct = answers[i] === q.answer;
+                  return (
+                    <div key={q._id} className="rounded-xl p-4"
+                      style={{ background: correct ? 'rgba(21,128,61,0.05)' : 'rgba(220,38,38,0.05)', border: `1.5px solid ${correct ? 'rgba(21,128,61,0.20)' : 'rgba(220,38,38,0.18)'}` }}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <p className="text-sm font-bold mb-1.5" style={{ color: B.textDark }}>Q{i + 1}. {q.question}</p>
+                          <p className="text-xs font-medium" style={{ color: correct ? '#15803D' : '#B91C1C' }}>
+                            Your answer: <span className="font-bold">{answers[i] || 'Not answered'}</span>
+                          </p>
+                          {!correct && (
+                            <p className="text-xs font-medium mt-0.5" style={{ color: '#15803D' }}>
+                              Correct: <span className="font-bold">{q.answer}</span>
+                            </p>
+                          )}
+                        </div>
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                          style={{ background: correct ? 'rgba(21,128,61,0.12)' : 'rgba(220,38,38,0.10)' }}>
+                          {correct
+                            ? <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#15803D" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                            : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B91C1C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3">
+              <button onClick={() => window.location.href = '/alltest/oir'}
+                className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all hover:opacity-90 active:scale-95"
+                style={{ background: `linear-gradient(90deg,${B.navyDark},${B.navy})`, color: '#fff', boxShadow: '0 4px 16px rgba(18,77,150,0.28)' }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 .49-3.52" /></svg>
                 Retake Test
               </button>
-              <button
-                onClick={() => window.location.href = "/"}
-                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-md transition duration-300"
-              >
-                Home
+              <button onClick={() => window.location.href = '/alltest'}
+                className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all hover:opacity-90 active:scale-95"
+                style={{ background: 'rgba(255,255,255,0.75)', color: B.textMid, border: `1.5px solid rgba(18,77,150,0.18)`, backdropFilter: 'blur(8px)' }}>
+                All Tests
               </button>
             </div>
           </div>
@@ -260,183 +237,202 @@ export default function DisplayOirQuestion() {
     );
   }
 
-  const currentQuestion = questions[currentQuestionIndex];
+  const q = questions[currentQ];
+  if (!q) return null;
 
-  if (!currentQuestion) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="bg-white rounded-lg shadow-lg p-8 text-center">
-          <p className="text-xl font-semibold text-red-600">No questions available</p>
-        </div>
-      </div>
-    );
-  }
+  // dot colours for navigator
+  const dotStyle = (idx: number) => {
+    const isCur = idx === currentQ;
+    const isAns = answers[idx] !== null;
+    const isMark = markedForReview.has(idx);
+    if (isCur) return { background: `linear-gradient(135deg,${B.navyDark},${B.navy})`, color: '#fff', boxShadow: '0 2px 8px rgba(18,77,150,0.30)' };
+    if (isMark && isAns) return { background: 'linear-gradient(135deg,#D97706,#B45309)', color: '#fff' };
+    if (isMark) return { background: 'linear-gradient(135deg,#F59E0B,#D97706)', color: '#fff' };
+    if (isAns) return { background: 'linear-gradient(135deg,#15803D,#047857)', color: '#fff' };
+    return { background: B.iceMid, color: B.textMuted };
+  };
 
+  // ── Quiz UI ───────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-300 p-4 mb-4 rounded-t-lg flex justify-between items-center">
-        <div>
-          <h1 className="text-xl font-bold text-gray-800">🧠 Officer Intelligence Rating (OIR)</h1>
-          <p className="text-sm text-gray-600">Question Type: Multiple Choice</p>
-        </div>
-        <div className="text-right">
-          <p className="text-sm text-gray-600">Time Left</p>
-          <p className={`text-2xl font-bold ${timeLeft < 300 ? 'text-red-600' : 'text-blue-600'}`}>
-            {formatTime(timeLeft)}
-          </p>
+    <>
+      {/* ── Sticky top bar ── */}
+      <div className="sticky top-0 z-40 px-4 py-3"
+        style={{ background: `linear-gradient(135deg,${B.navyDeep},${B.navy})`, boxShadow: '0 4px 20px rgba(10,42,85,0.35)' }}>
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-black tracking-widest uppercase" style={{ color: 'rgba(190,227,248,0.65)' }}>Intelligence Test</p>
+            <h1 className="text-lg font-black text-white leading-tight">Officer Intelligence Rating</h1>
+          </div>
+
+          {/* Progress micro-bar */}
+          <div className="hidden sm:flex flex-col items-center gap-1 flex-1 max-w-xs">
+            <div className="flex justify-between w-full text-xs font-bold" style={{ color: 'rgba(190,227,248,0.70)' }}>
+              <span>{answeredCount} answered</span>
+              <span>{questions.length - answeredCount} remaining</span>
+            </div>
+            <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.15)' }}>
+              <div className="h-full rounded-full transition-all duration-500"
+                style={{ width: `${(answeredCount / questions.length) * 100}%`, background: '#4ADE80' }} />
+            </div>
+          </div>
+
+          {/* Timer */}
+          <div className="flex items-center gap-3 shrink-0">
+            <div className={`flex items-center gap-2 px-4 py-2 rounded-xl font-black text-xl ${isTimeCritical ? 'animate-pulse' : ''}`}
+              style={{ background: isTimeCritical ? 'rgba(220,38,38,0.25)' : 'rgba(255,255,255,0.12)', color: isTimeCritical ? '#F87171' : '#fff', border: isTimeCritical ? '1.5px solid rgba(220,38,38,0.40)' : '1.5px solid rgba(255,255,255,0.15)' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+              {fmtTime(timeLeft)}
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="flex gap-4">
-        {/* Main Content - Left Side */}
-        <div className="flex-1 bg-white rounded-lg shadow-md p-6">
-          {/* Question Header */}
-          <div className="mb-6 pb-4 border-b border-gray-200">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-semibold text-gray-600 mb-2">
-                  Question {currentQuestionIndex + 1} of {questions.length}
-                </p>
-                <h2 className="text-xl font-bold text-gray-800">{currentQuestion.question}</h2>
-              </div>
+      {/* ── Layout ── */}
+      <div className="min-h-screen" style={{ background: `linear-gradient(160deg,${B.iceBlue},${B.iceMid},#c8e8f8)` }}>
+        <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col lg:flex-row gap-5">
+
+          {/* ── Question panel ── */}
+          <div className="flex-1 min-w-0 rounded-2xl p-6 sm:p-8"
+            style={{ background: 'rgba(255,255,255,0.78)', backdropFilter: 'blur(14px)', border: '1.5px solid rgba(18,77,150,0.13)', boxShadow: '0 4px 20px rgba(18,77,150,0.09)' }}>
+
+            {/* Question header */}
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-black tracking-widest uppercase px-2.5 py-1 rounded-full"
+                style={{ background: `rgba(18,77,150,0.08)`, color: B.navy }}>
+                Q {currentQ + 1} / {questions.length}
+              </span>
+              <span className="text-xs font-bold" style={{ color: B.textLight }}>MCQ · Single correct</span>
             </div>
-          </div>
 
-          {/* Options */}
-          <div className="space-y-3 mb-8">
-            {currentQuestion.options.map((option, idx) => (
-              <button
-                key={idx}
-                onClick={() => handleAnswerSelect(option)}
-                className={`w-full p-4 text-left rounded-lg border-2 transition duration-200 font-semibold ${
-                  answers[currentQuestionIndex] === option
-                    ? "border-blue-600 bg-blue-50 text-blue-900"
-                    : "border-gray-300 bg-white text-gray-700 hover:border-blue-400 hover:bg-blue-50"
-                }`}
-              >
-                <span className="flex items-center">
-                  <span className="w-6 h-6 rounded-full border-2 mr-3 flex items-center justify-center font-bold"
-                    style={{
-                      borderColor: answers[currentQuestionIndex] === option ? "#1e40af" : "#d1d5db",
-                      backgroundColor: answers[currentQuestionIndex] === option ? "#1e40af" : "transparent",
-                      color: answers[currentQuestionIndex] === option ? "white" : "#666"
-                    }}>
-                    {String.fromCharCode(65 + idx)}
-                  </span>
-                  {option}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          {/* Navigation Buttons */}
-          <div className="flex gap-4 justify-between pt-4 border-t border-gray-200">
-            <div className="flex gap-2">
-              <button
-                onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}
-                disabled={currentQuestionIndex === 0}
-                className="bg-gray-400 hover:bg-gray-500 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-2 px-6 rounded-md transition"
-              >
-                ← Previous
-              </button>
-              <button
-                onClick={() => setCurrentQuestionIndex(Math.min(questions.length - 1, currentQuestionIndex + 1))}
-                disabled={currentQuestionIndex === questions.length - 1}
-                className="bg-gray-400 hover:bg-gray-500 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-2 px-6 rounded-md transition"
-              >
-                Next →
-              </button>
+            {/* Progress bar under header */}
+            <div className="h-1 rounded-full mb-6 overflow-hidden" style={{ background: B.iceMid }}>
+              <div className="h-full rounded-full transition-all duration-500"
+                style={{ width: `${((currentQ + 1) / questions.length) * 100}%`, background: `linear-gradient(90deg,${B.navy},${B.blueMid})` }} />
             </div>
-            <button
-              onClick={toggleMarkForReview}
-              className={`font-semibold py-2 px-6 rounded-md transition ${
-                markedForReview.has(currentQuestionIndex)
-                  ? 'bg-orange-500 hover:bg-orange-600 text-white'
-                  : 'bg-gray-300 hover:bg-gray-400 text-gray-800'
-              }`}
-            >
-              {markedForReview.has(currentQuestionIndex) ? '★ Marked for Review' : '☆ Mark for Review'}
-            </button>
-          </div>
-        </div>
 
-        {/* Sidebar - Right Side */}
-        <div className="w-80 bg-white rounded-lg shadow-md p-6">
-          {/* Status Legend */}
-          <div className="mb-6 pb-4 border-b border-gray-200">
-            <h3 className="font-bold text-gray-800 mb-4">Question Status</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-green-500 rounded-full"></div>
-                <span className="text-gray-700">Answered</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-gray-300 rounded-full"></div>
-                <span className="text-gray-700">Not Answered</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-orange-500 rounded-full"></div>
-                <span className="text-gray-700">Marked for Review</span>
-              </div>
-            </div>
-          </div>
+            {/* Question text */}
+            <h2 className="text-xl font-extrabold leading-snug mb-7" style={{ color: B.textDark }}>
+              {q.question}
+            </h2>
 
-          {/* Question Navigator */}
-          <div>
-            <h3 className="font-bold text-gray-800 mb-4">Choose a Question</h3>
-            <div className="grid grid-cols-5 gap-2 mb-4 max-h-96 overflow-y-auto">
-              {questions.map((_, idx) => {
-                const isAnswered = answers[idx] !== null;
-                const isMarked = markedForReview.has(idx);
-                const isCurrent = idx === currentQuestionIndex;
-                
-                let bgColor = 'bg-gray-300 text-gray-700 hover:bg-gray-400';
-                
-                if (isCurrent) {
-                  bgColor = 'bg-blue-600 text-white';
-                } else if (isMarked && isAnswered) {
-                  bgColor = 'bg-orange-600 text-white';
-                } else if (isMarked) {
-                  bgColor = 'bg-orange-400 text-white';
-                } else if (isAnswered) {
-                  bgColor = 'bg-green-500 text-white';
-                }
-
+            {/* Options */}
+            <div className="flex flex-col gap-3 mb-8">
+              {q.options.map((opt, idx) => {
+                const sel = answers[currentQ] === opt;
                 return (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentQuestionIndex(idx)}
-                    className={`w-10 h-10 rounded-lg font-semibold transition ${bgColor}`}
-                  >
-                    {idx + 1}
+                  <button key={idx} onClick={() => { const a = [...answers]; a[currentQ] = opt; setAnswers(a); }}
+                    className="w-full text-left flex items-center gap-4 px-5 py-4 rounded-xl font-semibold text-sm transition-all duration-200"
+                    style={{
+                      background: sel ? `rgba(18,77,150,0.07)` : 'rgba(237,249,255,0.75)',
+                      border: sel ? `2px solid ${B.navy}` : '2px solid rgba(18,77,150,0.12)',
+                      color: sel ? B.navy : B.textMid,
+                      transform: sel ? 'scale(1.01)' : 'scale(1)',
+                      boxShadow: sel ? `0 4px 14px rgba(18,77,150,0.14)` : 'none',
+                    }}>
+                    <span className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shrink-0 transition-all duration-200"
+                      style={{ background: sel ? B.navy : 'rgba(18,77,150,0.10)', color: sel ? '#fff' : B.navy }}>
+                      {String.fromCharCode(65 + idx)}
+                    </span>
+                    {opt}
                   </button>
                 );
               })}
             </div>
-          </div>
 
-          {/* Summary Stats */}
-          <div className="mt-6 pt-4 border-t border-gray-200">
-            <div className="space-y-2 text-sm text-gray-700">
-              <p><span className="font-semibold">Answered:</span> {answers.filter(a => a !== null).length}/{questions.length}</p>
-              <p><span className="font-semibold">Not Answered:</span> {answers.filter(a => a === null).length}</p>
-              <p><span className="font-semibold">Marked:</span> {markedForReview.size}</p>
+            {/* Navigation row */}
+            <div className="flex items-center justify-between pt-5" style={{ borderTop: '1px solid rgba(18,77,150,0.08)' }}>
+              <button onClick={() => setCurrentQ(Math.max(0, currentQ - 1))} disabled={currentQ === 0}
+                className="flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm transition-all hover:opacity-90 active:scale-95 disabled:opacity-35 disabled:cursor-not-allowed"
+                style={{ background: 'rgba(18,77,150,0.07)', color: B.textMid, border: '1.5px solid rgba(18,77,150,0.14)' }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+                Previous
+              </button>
+
+              <button onClick={toggleReview}
+                className="flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-xs transition-all hover:opacity-90"
+                style={{
+                  background: markedForReview.has(currentQ) ? 'rgba(217,119,6,0.12)' : 'rgba(18,77,150,0.06)',
+                  color: markedForReview.has(currentQ) ? '#D97706' : B.textMuted,
+                  border: markedForReview.has(currentQ) ? '1.5px solid rgba(217,119,6,0.35)' : '1.5px solid rgba(18,77,150,0.12)',
+                }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill={markedForReview.has(currentQ) ? '#D97706' : 'none'} stroke={markedForReview.has(currentQ) ? '#D97706' : 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+                {markedForReview.has(currentQ) ? 'Marked' : 'Mark for review'}
+              </button>
+
+              <button onClick={() => setCurrentQ(Math.min(questions.length - 1, currentQ + 1))} disabled={currentQ === questions.length - 1}
+                className="flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm transition-all hover:opacity-90 active:scale-95 disabled:opacity-35 disabled:cursor-not-allowed"
+                style={{ background: `linear-gradient(90deg,${B.navyDark},${B.navy})`, color: '#fff', boxShadow: '0 4px 14px rgba(18,77,150,0.25)' }}>
+                Next
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+              </button>
             </div>
           </div>
 
-          {/* Submit Button */}
-          <button
-            onClick={submitTest}
-            disabled={submitting}
-            className="w-full mt-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-500 text-white font-bold py-3 px-4 rounded-lg transition"
-          >
-            {submitting ? "⏳ Submitting..." : "Submit Test"}
-          </button>
+          {/* ── Sidebar ── */}
+          <div className="lg:w-72 shrink-0 flex flex-col gap-4">
+
+            {/* Stats strip */}
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { label: 'Answered', val: answeredCount, color: '#15803D', bg: 'rgba(21,128,61,0.08)', border: 'rgba(21,128,61,0.22)' },
+                { label: 'Skipped', val: questions.length - answeredCount, color: B.textMuted, bg: 'rgba(18,77,150,0.05)', border: 'rgba(18,77,150,0.14)' },
+                { label: 'Flagged', val: markedForReview.size, color: '#D97706', bg: 'rgba(217,119,6,0.08)', border: 'rgba(217,119,6,0.22)' },
+              ].map(({ label, val, color, bg, border }) => (
+                <div key={label} className="rounded-xl p-3 text-center" style={{ background: bg, border: `1.5px solid ${border}`, backdropFilter: 'blur(8px)' }}>
+                  <p className="text-xl font-black" style={{ color }}>{val}</p>
+                  <p className="text-xs font-semibold mt-0.5" style={{ color: B.textLight }}>{label}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Legend */}
+            <div className="rounded-2xl p-4"
+              style={{ background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(10px)', border: '1.5px solid rgba(18,77,150,0.12)' }}>
+              <p className="text-xs font-black tracking-widest uppercase mb-3" style={{ color: B.textLight }}>Legend</p>
+              <div className="flex flex-col gap-2">
+                {[
+                  { color: `linear-gradient(135deg,${B.navyDark},${B.navy})`, label: 'Current' },
+                  { color: 'linear-gradient(135deg,#15803D,#047857)', label: 'Answered' },
+                  { color: 'linear-gradient(135deg,#F59E0B,#D97706)', label: 'Flagged' },
+                  { color: B.iceMid, label: 'Not visited', text: B.textMuted },
+                ].map(({ color, label, text }) => (
+                  <div key={label} className="flex items-center gap-2.5">
+                    <div className="w-5 h-5 rounded-md shrink-0" style={{ background: color }} />
+                    <span className="text-xs font-semibold" style={{ color: text || B.textMid }}>{label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Question navigator */}
+            <div className="rounded-2xl p-4 flex-1"
+              style={{ background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(10px)', border: '1.5px solid rgba(18,77,150,0.12)' }}>
+              <p className="text-xs font-black tracking-widest uppercase mb-3" style={{ color: B.textLight }}>Questions</p>
+              <div className="grid grid-cols-5 gap-1.5 max-h-72 overflow-y-auto">
+                {questions.map((_, idx) => (
+                  <button key={idx} onClick={() => setCurrentQ(idx)}
+                    className="w-10 h-10 rounded-lg text-xs font-black transition-all duration-200 hover:scale-110"
+                    style={dotStyle(idx)}>
+                    {idx + 1}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Submit */}
+            <button onClick={() => setShowResults(true)} disabled={submitting}
+              className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-black text-sm transition-all hover:opacity-90 active:scale-95 disabled:opacity-60"
+              style={{ background: 'linear-gradient(90deg,#15803D,#047857)', color: '#fff', boxShadow: '0 6px 20px rgba(21,128,61,0.30)' }}>
+              {submitting
+                ? <><div className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: 'rgba(255,255,255,0.4)', borderTopColor: '#fff' }} /> Submitting…</>
+                : <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg> Submit Test</>
+              }
+            </button>
+          </div>
         </div>
       </div>
 
       <Footer />
-    </div>
+    </>
   );
 }
