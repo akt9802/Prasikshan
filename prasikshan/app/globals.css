@@ -24,3 +24,25 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ── Marquee Animation ── */
+.marquee-container {
+  display: flex;
+  width: max-content;
+  gap: 24px;
+  animation: marquee 40s linear infinite;
+}
+
+.marquee-container:hover {
+  animation-play-state: paused;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(calc(-50% - 12px));
+  }
+}

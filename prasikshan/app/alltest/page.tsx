@@ -378,7 +378,6 @@ export default function Alltest() {
           className="py-14 px-4 md:px-8"
           style={{
             background: `linear-gradient(135deg, ${B.navyDeep} 0%, ${B.navyDark} 50%, ${B.navy} 100%)`,
-            borderBottom: `3px solid rgba(255,255,255,0.06)`,
           }}
         >
           <div className="max-w-7xl mx-auto">

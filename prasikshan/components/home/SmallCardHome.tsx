@@ -76,14 +76,19 @@ export default function SmallCardHome({ name, title, text }: SmallCardHomeProps)
       {/* Reviewer info */}
       <div className="flex items-center gap-3">
         <div
-          className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+          className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110"
           style={{ background: `linear-gradient(135deg,${B.iceBlue},${B.iceMid})`, border: `1.5px solid rgba(18,77,150,0.18)`, color: B.navy }}
         >
           <UserIcon />
         </div>
-        <div>
-          <p className="text-sm font-bold leading-none mb-0.5" style={{ color: B.textDark }}>{name}</p>
-          <p className="text-xs font-medium" style={{ color: B.textLight }}>{title}</p>
+        <div className="flex-1">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <p className="text-sm font-bold leading-none" style={{ color: B.textDark }}>{name}</p>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="#2563EB" className="shrink-0">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+            </svg>
+          </div>
+          <p className="text-[10px] font-black uppercase tracking-wider opacity-60" style={{ color: B.navy }}>{title}</p>
         </div>
       </div>
     </div>

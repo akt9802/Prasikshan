@@ -1,154 +1,114 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { FiMenu, FiX } from 'react-icons/fi';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { FiMenu, FiX } from "react-icons/fi";
+import Link from "next/link";
 
 export default function Header() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const toggleMenu = () => setIsOpen(!isOpen);
+
+  const navLinks = [
+    { name: "Home", href: "/" },
+    { name: "About SSB", href: "/aboutssb" },
+  ];
 
   return (
     <header
-      style={{
-        backgroundColor: '#124D96',
-        color: 'white',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100%',
-        zIndex: 50,
-      }}
+      className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 ${scrolled
+          ? "bg-[#0A2A55EE] backdrop-blur-2xl border-b border-white/5 py-4 shadow-[0_10px_40px_rgba(0,0,0,0.3)]"
+          : "bg-[#0A2A55] py-7"
+        }`}
     >
-      <div
-        style={{
-          height: 60,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          paddingLeft: '80px',
-          paddingRight: '80px',
-        }}
-      >
-        {/* Logo */}
-        <div
-          style={{ cursor: 'pointer', fontWeight: 'bold', fontSize: '24px' }}
-          onClick={() => router.push('/')}
-        >
-          Prasikshan
-        </div>
+      <div className="max-w-7xl mx-auto px-8 md:px-16 flex items-center justify-between">
+        {/* Logo Section */}
+        <Link href="/" className="group flex flex-col">
+          <span className="text-2xl font-black text-white tracking-[-0.04em] leading-none transition-all group-hover:text-blue-400">
+            PRASIKSHAN<span className="text-blue-500">.</span>
+          </span>
+          <span className="text-[9px] font-black uppercase tracking-[0.4em] text-blue-500/80 mt-1 opacity-0 group-hover:opacity-100 transition-all translate-y-1 group-hover:translate-y-0">
+            SSB Command Platform
+          </span>
+        </Link>
 
         {/* Desktop Nav */}
-        <nav
-          className="hidden md:flex gap-6 items-center"
-          style={{ fontSize: '14px' }}
-        >
-          <a
-            onClick={() => router.push('/')}
-            style={{ cursor: 'pointer', color: 'white', textDecoration: 'none' }}
-          >
-            Home
-          </a>
-          <a
-            onClick={() => router.push('/aboutssb')}
-            style={{ cursor: 'pointer', color: 'white', textDecoration: 'none' }}
-          >
-            About SSB
-          </a>
+        <nav className="hidden md:flex items-center gap-10">
+          <div className="flex items-center gap-8 mr-4">
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                href={link.href}
+                className="relative text-xs font-black uppercase tracking-widest text-slate-300 hover:text-white transition-all group py-2"
+              >
+                {link.name}
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 group-hover:w-full" />
+              </Link>
+            ))}
+          </div>
+
           <button
-            onClick={() => router.push('/signin')}
-            style={{
-              backgroundColor: '#00FF11',
-              borderRadius: '5px',
-              color: 'black',
-              padding: '8px 40px',
-              fontWeight: 'bold',
-              border: 'none',
-              cursor: 'pointer',
-            }}
+            onClick={() => router.push("/signin")}
+            className="group relative px-10 py-3.5 bg-blue-600 text-white font-black text-xs uppercase tracking-widest rounded-2xl overflow-hidden shadow-[0_8px_24px_rgba(37,99,235,0.3)] active:scale-95 transition-all"
           >
-            SignIn
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+            <span className="relative z-10">Ascend to Rank</span>
           </button>
         </nav>
 
         {/* Mobile Hamburger */}
-        <div className="md:hidden">
-          <button
-            onClick={toggleMenu}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'white',
-              fontSize: '1.8rem',
-              cursor: 'pointer',
-            }}
-          >
-            {isOpen ? <FiX /> : <FiMenu />}
-          </button>
-        </div>
+        <button
+          onClick={toggleMenu}
+          className="md:hidden w-11 h-11 flex items-center justify-center text-white bg-white/5 hover:bg-white/10 rounded-2xl border border-white/5 transition-all"
+        >
+          {isOpen ? <FiX size={22} /> : <FiMenu size={22} />}
+        </button>
       </div>
 
       {/* Mobile Dropdown */}
-      {isOpen && (
-        <div
-          style={{
-            backgroundColor: '#124D96',
-            display: 'flex',
-            flexDirection: 'column',
-            padding: '10px 20px',
-          }}
-        >
-          <a
+      <div
+        className={`fixed inset-0 top-[80px] bg-[#0A2A55] z-[90] md:hidden transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1) ${isOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"
+          }`}
+      >
+        <div className="p-8 flex flex-col gap-5">
+          {navLinks.map((link, idx) => (
+            <Link
+              key={link.name}
+              href={link.href}
+              onClick={() => setIsOpen(false)}
+              className="group p-6 rounded-3xl bg-white/5 border border-white/5 flex items-center justify-between transition-all hover:bg-white/10 active:scale-98"
+              style={{ transitionDelay: `${idx * 50}ms` }}
+            >
+              <span className="text-sm font-black uppercase tracking-[0.2em] text-white">
+                {link.name}
+              </span>
+              <svg className="text-blue-500 opacity-0 group-hover:opacity-100 transition-all -translate-x-4 group-hover:translate-x-0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+            </Link>
+          ))}
+          <button
             onClick={() => {
-              router.push('/');
+              router.push("/signin");
               setIsOpen(false);
             }}
-            style={{
-              padding: '10px 0',
-              borderBottom: '1px solid #1E5CA8',
-              cursor: 'pointer',
-              color: 'white',
-              textDecoration: 'none',
-            }}
+            className="w-full py-6 mt-4 rounded-3xl bg-blue-600 text-white font-black uppercase tracking-[0.3em] text-xs shadow-2xl active:scale-95 flex items-center justify-center gap-3 transition-all"
           >
-            Home
-          </a>
-          <a
-            onClick={() => {
-              router.push('/aboutssb');
-              setIsOpen(false);
-            }}
-            style={{
-              padding: '10px 0',
-              borderBottom: '1px solid #1E5CA8',
-              cursor: 'pointer',
-              color: 'white',
-              textDecoration: 'none',
-            }}
-          >
-            About SSB
-          </a>
-          <a
-            onClick={() => {
-              router.push('/signin');
-              setIsOpen(false);
-            }}
-            style={{
-              padding: '10px 0',
-              borderBottom: '1px solid #1E5CA8',
-              cursor: 'pointer',
-              color: 'white',
-              textDecoration: 'none',
-            }}
-          >
-            SignIn
-          </a>
+            Begin Enrollment
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+          </button>
         </div>
-      )}
+      </div>
     </header>
   );
 }

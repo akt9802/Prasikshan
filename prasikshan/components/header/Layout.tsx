@@ -27,7 +27,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     };
 
     window.addEventListener('auth-change', handleAuthChange);
-    
+
     // Also listen for storage changes (cross-tab communication)
     window.addEventListener('storage', handleAuthChange);
 
@@ -42,7 +42,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     return (
       <>
         <Header />
-        <div style={{ marginTop: '60px' }}>{children}</div>
+        <main className="pt-[90px] md:pt-[110px]">{children}</main>
       </>
     );
   }
@@ -50,7 +50,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>
       {isSignedIn ? <LoginHeader /> : <Header />}
-      <div style={{ marginTop: '60px' }}>{children}</div>
+      <main className="bg-[#0A2A55] pt-[84px] md:pt-[96px] min-h-screen">
+        {children}
+      </main>
     </>
   );
 }
