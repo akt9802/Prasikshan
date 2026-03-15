@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Prashikshan - SSB Exam Preparation",
-  description: "Your trusted platform for SSB interview preparation",
+  description: "Your trusted platform for SSB interview prepar\\/assefaviconation.png",
 };
 
 export default function RootLayout({
