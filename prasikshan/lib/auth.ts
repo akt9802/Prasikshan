@@ -55,6 +55,26 @@ export const isAuthenticated = (): boolean => {
   return !!getAuthToken();
 };
 
+export const isAdmin = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    return user?.role === 'admin';
+  } catch {
+    return false;
+  }
+};
+
+export const getUserRole = (): string | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    return user?.role || null;
+  } catch {
+    return null;
+  }
+};
+
 // Fetch with auth header
 export const fetchWithAuth = async (
   url: string,

@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { isAdmin } from "@/lib/auth";
 
 // ── Brand palette ─────────────────────────────────────────────────────────────
 const B = {
@@ -411,8 +413,50 @@ function SubmitBtn({ submitted }: { submitted: boolean }) {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function AdminPage() {
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState<Tab>('OIR');
+    const [authorized, setAuthorized] = useState(false);
+    const [loading, setLoading] = useState(true);
     const tc = TEST_COLORS[activeTab];
+
+    useEffect(() => {
+        // Check if user is admin
+        if (isAdmin()) {
+            setAuthorized(true);
+        }
+        setLoading(false);
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen" style={{ background: `linear-gradient(160deg,${B.iceBlue},${B.iceMid})` }}>
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-10 h-10 border-4 rounded-full animate-spin" style={{ borderColor: B.iceMid, borderTopColor: B.navy }} />
+                    <p className="text-sm font-semibold" style={{ color: B.textMuted }}>Verifying access…</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!authorized) {
+        return (
+            <div className="flex items-center justify-center min-h-screen" style={{ background: `linear-gradient(160deg,${B.iceBlue},${B.iceMid})` }}>
+                <div className="flex flex-col items-center gap-6 text-center">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                    <div>
+                        <p className="text-lg font-semibold" style={{ color: B.textDark }}>Access Denied</p>
+                        <p className="text-sm mt-1" style={{ color: B.textLight }}>You don't have permission to access this page</p>
+                    </div>
+                    <button
+                        onClick={() => router.push('/')}
+                        className="px-6 py-2.5 rounded-lg font-semibold text-sm transition-all hover:opacity-80 active:scale-95"
+                        style={{ background: B.navy, color: '#fff' }}>
+                        Go Back Home
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     const FORMS: Record<Tab, React.ReactNode> = {
         OIR: <OirForm />, PPDT: <PpdtForm />, TAT: <TatForm />,

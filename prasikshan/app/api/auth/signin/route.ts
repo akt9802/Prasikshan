@@ -78,7 +78,14 @@ export async function POST(req: NextRequest) {
         success: true,
         message: 'Sign-in successful',
         token,
-        user: userResponse,
+        user: {
+          id: userResponse._id,
+          username: userResponse.username,
+          email: userResponse.email,
+          fullName: userResponse.fullName,
+          role: userResponse.role || 'user',
+          isVerified: userResponse.isVerified,
+        },
       },
       { status: 200 }
     );

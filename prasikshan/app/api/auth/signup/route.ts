@@ -61,6 +61,7 @@ export async function POST(req: NextRequest) {
       isVerified: false,
       verifyOtp: otp,
       verifyOtpExpiry: otpExpiry,
+      role: 'user',
     });
 
     // Send OTP via email

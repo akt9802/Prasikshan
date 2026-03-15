@@ -22,6 +22,7 @@ export interface IUser extends Document {
   verifyOtpExpiry?: Date;
   resetPasswordOtp?: string;
   resetPasswordOtpExpiry?: Date;
+  role: 'user' | 'admin';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -89,6 +90,11 @@ const UserSchema = new Schema<IUser>(
         },
       ],
       default: [],
+    },
+    role: {
+      type: String,
+      enum: ['user', 'admin'],
+      default: 'user',
     },
   },
   {
