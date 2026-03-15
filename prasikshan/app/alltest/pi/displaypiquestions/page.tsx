@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import Footer from "@/components/footer/Footer";
 
 interface PiQuestion {
   _id: string;
@@ -409,8 +408,6 @@ export default function DisplayPiQuestion() {
           </div>
         </div>
       </div>
-
-      <Footer />
     </>
   );
 }

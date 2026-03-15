@@ -1,58 +1,149 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import React from "react";
+import Link from "next/link";
 import Footer from "@/components/footer/Footer";
 
-export default function FiveQuestion() {
-  const router = useRouter();
+// ── Brand palette ─────────────────────────────────────────────────────────────
+const B = {
+  navy: '#124D96',
+  navyDark: '#0D3A72',
+  navyDeep: '#0A2A55',
+  blueMid: '#2563EB',
+  iceBlue: '#EDF9FF',
+  iceMid: '#D7F1FF',
+  textDark: '#0F172A',
+  textMid: '#334155',
+  textMuted: '#475569',
+  textLight: '#94A3B8',
+};
 
-  const handleStartQuiz = () => {
-    router.push("/fivequestion/displayfivequestion");
-  };
+export default function FiveQuestion() {
+  const instructions = [
+    {
+      id: 1,
+      title: "Quick Assessment",
+      desc: "Five questions designed to assess your quick thinking and foundational knowledge.",
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
+    },
+    {
+      id: 2,
+      title: "Time Management",
+      desc: "Limited time per question encourages swift decision-making and focused responses.",
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+    },
+    {
+      id: 3,
+      title: "Thoughtful Answers",
+      desc: "Answer each question carefully, applying your knowledge without excessive deliberation.",
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+    },
+    {
+      id: 4,
+      title: "No Negative Mark",
+      desc: "Score is based on correct answers. Attempt all questions to maximize your total score.",
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+    },
+    {
+      id: 5,
+      title: "Browser Stability",
+      desc: "Do not refresh or close the browser window during the quiz to avoid test disruption.",
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+    },
+    {
+      id: 6,
+      title: "Performance Tracking",
+      desc: "Your performance is recorded and added to your overall progress in the platform.",
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>
+    }
+  ];
 
   return (
     <>
-      <div className="flex justify-center items-center min-h-[calc(100vh-160px)] bg-gradient-to-b from-blue-100 to-blue-300 px-4">
-        <div className="bg-blue-100 border border-gray-300 p-6 md:p-8 rounded-md w-full max-w-4xl">
-          <h1 className="text-3xl md:text-4xl font-bold text-center mb-6 text-blue-800">
-            Instructions [Five Question Quiz]
-          </h1>
-
-          <div className="bg-white border border-gray-300 rounded-md p-4 md:p-6" style={{ fontFamily: "Poppins" }}>
-            <ol className="list-decimal list-inside space-y-3 text-gray-700 text-base md:text-lg">
-              <li>
-                There will be a total of <b>five questions</b> in this quiz to assess your quick thinking and knowledge.
-              </li>
-              <li>
-                You will have a <b>limited time</b> to answer each question. Manage your time wisely.
-              </li>
-              <li>
-                Answer each question properly to the best of your ability without overthinking.
-              </li>
-              <li>
-                <b>No negative marking</b> - attempt all questions to maximize your score.
-              </li>
-              <li>
-                Do not refresh or close the browser window during the quiz, as it may disrupt the test.
-              </li>
-              <li>
-                Maintain focus and avoid distractions while attempting the questions.
-              </li>
-              <li>
-                Your performance will be evaluated and added to your overall progress record.
-              </li>
-            </ol>
+      <div className="min-h-screen flex flex-col" style={{ background: `linear-gradient(160deg, ${B.iceBlue} 0%, ${B.iceMid} 100%)` }}>
+        {/* Hero Section */}
+        <div className="relative overflow-hidden pt-16 pb-20 px-4" style={{ background: `linear-gradient(135deg, ${B.navyDeep}, ${B.navyDark})` }}>
+          <div className="absolute top-0 right-0 w-1/3 h-full opacity-10 pointer-events-none">
+            <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <path d="M0 0 L100 0 L100 100 Z" fill="white" />
+            </svg>
           </div>
 
-          {/* Start Button */}
-          <div className="flex justify-center mt-8">
-            <button
-              onClick={handleStartQuiz}
-              className="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-8 rounded-md shadow-md transition duration-300 ease-in-out hover:shadow-lg"
-              style={{ cursor: "pointer" }}
-            >
-              Start Quiz
-            </button>
+          <div className="max-w-5xl mx-auto text-center relative z-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-6" style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)' }}>
+              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-blue-100">Knowledge Check · Quick Test</span>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-black text-white mb-4 leading-tight">
+              Five Question <span className="text-cyan-300">Quiz</span>
+            </h1>
+            <p className="text-lg font-medium max-w-2xl mx-auto" style={{ color: 'rgba(190,227,248,0.7)' }}>
+              Test your knowledge with a quick and focused assessment. Answer five carefully curated questions to evaluate your understanding and decision-making ability.
+            </p>
+          </div>
+        </div>
+
+        {/* Content Section */}
+        <div className="flex-1 -mt-10 px-4 pb-16 relative z-20">
+          <div className="max-w-5xl mx-auto">
+            {/* Instructions Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+              {instructions.map((item) => (
+                <div key={item.id} className="rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl group"
+                  style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(12px)', border: '1.5px solid rgba(18,77,150,0.12)' }}>
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-5 transition-all duration-300 group-hover:rotate-6 shadow-lg"
+                    style={{ background: `linear-gradient(135deg, ${B.navy}, ${B.blueMid})`, color: '#fff' }}>
+                    {item.icon}
+                  </div>
+                  <h3 className="text-lg font-black mb-2" style={{ color: B.textDark }}>{item.title}</h3>
+                  <p className="text-sm font-medium leading-relaxed" style={{ color: B.textMid }}>{item.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Test Format Summary */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+              <div className="rounded-2xl p-6 flex items-center gap-5" style={{ background: 'rgba(37,99,235,0.05)', border: '1.5px solid rgba(37,99,235,0.15)' }}>
+                <div className="w-14 h-14 rounded-full flex items-center justify-center shrink-0" style={{ background: 'rgba(37,99,235,0.1)', color: '#2563EB' }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                </div>
+                <div>
+                  <p className="text-xs font-black uppercase tracking-widest text-[#2563EB] mb-1">Duration</p>
+                  <p className="text-2xl font-black" style={{ color: B.textDark }}>Quick Round</p>
+                </div>
+              </div>
+              <div className="rounded-2xl p-6 flex items-center gap-5" style={{ background: 'rgba(21,128,61,0.05)', border: '1.5px solid rgba(21,128,61,0.15)' }}>
+                <div className="w-14 h-14 rounded-full flex items-center justify-center shrink-0" style={{ background: 'rgba(21,128,61,0.1)', color: '#15803D' }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
+                </div>
+                <div>
+                  <p className="text-xs font-black uppercase tracking-widest text-[#15803D] mb-1">Questions</p>
+                  <p className="text-2xl font-black" style={{ color: B.textDark }}>5 Questions</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Final Call to Action */}
+            <div className="rounded-2xl p-8 text-center"
+              style={{ background: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(8px)', border: '1.5px dashed rgba(18,77,150,0.25)' }}>
+              <div className="flex flex-col md:flex-row items-center justify-center gap-8">
+                <div className="text-left md:max-w-md">
+                  <h3 className="text-xl font-black mb-2" style={{ color: B.textDark }}>Ready to begin the quiz?</h3>
+                  <p className="text-sm font-medium" style={{ color: B.textMuted }}>
+                    Click start to begin the five-question assessment. Stay focused, manage your time well, and attempt all questions to achieve your best score.
+                  </p>
+                </div>
+                <Link
+                  href="/fivequestion/displayfivequestion"
+                  className="group relative flex items-center gap-3 px-10 py-4 rounded-xl font-black text-lg text-white transition-all overflow-hidden shadow-2xl active:scale-95"
+                  style={{ background: `linear-gradient(90deg, ${B.navyDark}, ${B.navy})` }}
+                >
+                  <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                  Start Quiz
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </div>

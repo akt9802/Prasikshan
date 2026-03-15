@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Footer from "@/components/footer/Footer";
 import { useRouter } from "next/navigation";
 
 interface WatQuestion {
@@ -487,8 +486,6 @@ export default function DisplayWATQuestion() {
 
 
       </div>
-
-      <Footer />
     </>
   );
 }

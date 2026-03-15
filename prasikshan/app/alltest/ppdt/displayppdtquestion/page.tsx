@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Footer from "@/components/footer/Footer";
 import { getAuthToken } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 
@@ -480,7 +479,6 @@ export default function DisplayPPDTQuestion() {
         </div>
       </div>
 
-      <Footer />
     </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Footer from "@/components/footer/Footer";
 
 // ── Brand palette ─────────────────────────────────────────────────────────────
 const B = {
@@ -232,7 +231,6 @@ export default function DisplayOirQuestion() {
             </div>
           </div>
         </div>
-        <Footer />
       </>
     );
   }
@@ -431,8 +429,6 @@ export default function DisplayOirQuestion() {
           </div>
         </div>
       </div>
-
-      <Footer />
     </>
   );
 }

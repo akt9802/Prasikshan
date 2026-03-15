@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import Footer from "@/components/footer/Footer";
 
 // ── Brand palette ─────────────────────────────────────────────────────────────
 const B = {
@@ -455,7 +454,6 @@ export default function DisplayLecturetteQuestion() {
             </div>
           </div>
         </div>
-        <Footer />
       </>
     );
   }
@@ -676,8 +674,6 @@ export default function DisplayLecturetteQuestion() {
           </main>
         </div>
       </div>
-
-      <Footer />
     </>
   );
 }

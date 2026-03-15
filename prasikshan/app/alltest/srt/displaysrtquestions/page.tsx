@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Footer from "@/components/footer/Footer";
 import { useRouter } from "next/navigation";
 
 interface SrtQuestion {
@@ -479,8 +478,6 @@ export default function DisplaySrtQuestion() {
           </div>
         </div>
       </div>
-
-      <Footer />
     </>
   );
 }
