@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { clearAuth } from "@/lib/auth";
 import Footer from "@/components/footer/Footer";
 import {
   PieChart, Pie, Cell, LineChart, Line, AreaChart, Area,
@@ -236,7 +237,7 @@ export default function UserDetails() {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    clearAuth();
     window.dispatchEvent(new Event('auth-change'));
     window.location.href = '/';
   };
