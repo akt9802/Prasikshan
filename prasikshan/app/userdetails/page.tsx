@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { clearAuth } from "@/lib/auth";
 import Footer from "@/components/footer/Footer";
 import {
@@ -227,19 +228,67 @@ const TEST_TABS = ['OIR', 'PPDT', 'TAT', 'WAT', 'SRT', 'LECTURETTE'];
 
 // ── Page ───────────────────────────────────────────────────────────────────────
 export default function UserDetails() {
+  const router = useRouter();
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [selectedTest, setSelectedTest] = useState('OIR');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => { setUserDetails(mockUserDetails); setLoading(false); }, 500);
-    return () => clearTimeout(timer);
-  }, []);
+    const fetchUserDetails = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          router.push('/signin');
+          return;
+        }
+
+        const res = await fetch('/api/auth/userdetails', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+
+        if (data.success && data.user) {
+          // Fetch test history separately from the user model
+          // For now map the user data + fetch full user with testsTaken
+          const userRes = await fetch('/api/user/profile', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          
+          if (userRes.ok) {
+            const userData = await userRes.json();
+            setUserDetails({
+              name: userData.user?.fullName || userData.user?.username || data.user.username,
+              email: data.user.email,
+              testsTaken: userData.user?.testsTaken || [],
+            });
+          } else {
+            // Fallback: use what we have from userdetails
+            setUserDetails({
+              name: data.user.fullName || data.user.username,
+              email: data.user.email,
+              testsTaken: [],
+            });
+          }
+        } else {
+          setError('Failed to load user details');
+        }
+      } catch (err) {
+        console.error('Error fetching user details:', err);
+        setError('An error occurred while loading your profile');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserDetails();
+  }, [router]);
 
   const handleLogout = () => {
     clearAuth();
     window.dispatchEvent(new Event('auth-change'));
-    window.location.href = '/';
+    // Use router.push for reliable navigation after clearing auth
+    router.push('/');
   };
 
   /* derived stats */
@@ -258,6 +307,19 @@ export default function UserDetails() {
       <div className="flex flex-col items-center gap-4">
         <div className="w-10 h-10 border-4 rounded-full animate-spin" style={{ borderColor: B.iceMid, borderTopColor: B.navy }} />
         <p className="text-sm font-semibold" style={{ color: B.textMuted }}>Loading your profile…</p>
+      </div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="flex items-center justify-center min-h-screen" style={{ background: `linear-gradient(160deg,${B.iceBlue},${B.iceMid})` }}>
+      <div className="text-center p-8 rounded-2xl" style={{ background: 'rgba(255,255,255,0.80)' }}>
+        <p className="text-base font-semibold mb-4" style={{ color: '#DC2626' }}>{error}</p>
+        <button onClick={() => router.push('/signin')}
+          className="px-6 py-2.5 rounded-xl font-bold text-sm text-white"
+          style={{ background: `linear-gradient(90deg,${B.navyDark},${B.navy})` }}>
+          Sign In Again
+        </button>
       </div>
     </div>
   );

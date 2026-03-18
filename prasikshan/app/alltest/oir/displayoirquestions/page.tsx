@@ -33,6 +33,7 @@ export default function DisplayOirQuestion() {
   const [showResults, setShowResults] = useState(false);
   const [timeLeft, setTimeLeft] = useState(40 * 60);
   const [markedForReview, setMarkedForReview] = useState<Set<number>>(new Set());
+  const [setName, setSetName] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -45,6 +46,7 @@ export default function DisplayOirQuestion() {
         const data = await res.json();
         if (data.success && data.data?.length > 0) {
           setQuestions(data.data);
+          setSetName(data.setName || null);
           setAnswers(new Array(data.data.length).fill(null));
         } else {
           setError(data.message || "Failed to fetch questions");
@@ -258,7 +260,9 @@ export default function DisplayOirQuestion() {
         style={{ background: `linear-gradient(135deg,${B.navyDeep},${B.navy})`, boxShadow: '0 4px 20px rgba(10,42,85,0.35)' }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-black tracking-widest uppercase" style={{ color: 'rgba(190,227,248,0.65)' }}>Intelligence Test</p>
+            <p className="text-xs font-black tracking-widest uppercase" style={{ color: 'rgba(190,227,248,0.65)' }}>
+              Intelligence Test {setName ? `— ${setName}` : ''}
+            </p>
             <h1 className="text-lg font-black text-white leading-tight">Officer Intelligence Rating</h1>
           </div>
 

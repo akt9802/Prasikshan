@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { FiMenu, FiX, FiUser } from "react-icons/fi";
 import Link from "next/link";
-import { isAdmin } from "@/lib/auth";
 
 export default function LoginHeader() {
   const router = useRouter();
@@ -22,7 +21,27 @@ export default function LoginHeader() {
   }, []);
 
   useEffect(() => {
-    setIsAdminUser(isAdmin());
+    const fetchUserRole = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const res = await fetch('/api/auth/userdetails', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+
+        if (data.success && data.user?.role === 'admin') {
+          setIsAdminUser(true);
+        } else {
+          setIsAdminUser(false);
+        }
+      } catch {
+        setIsAdminUser(false);
+      }
+    };
+
+    fetchUserRole();
   }, []);
 
   const toggleMenu = () => setIsOpen(!isOpen);

@@ -5,7 +5,7 @@ import User from '@/models/User';
 
 export async function GET(req: NextRequest) {
   try {
-    // 1. Extract the Bearer token from the Authorization header
+    // 1. Extract the Bearer token
     const authHeader = req.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
@@ -16,11 +16,9 @@ export async function GET(req: NextRequest) {
 
     const token = authHeader.slice(7);
     const secret = process.env.JWT_SECRET;
-    if (!secret) {
-      throw new Error('JWT_SECRET is not configured');
-    }
+    if (!secret) throw new Error('JWT_SECRET is not configured');
 
-    // 2. Verify and decode the token
+    // 2. Verify token
     let decoded: { userId: string };
     try {
       decoded = jwt.verify(token, secret) as { userId: string };
@@ -31,7 +29,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // 3. Connect to DB and fetch fresh user data
+    // 3. Fetch full user data including testsTaken
     await connectDB();
     const user = await User.findById(decoded.userId).select('-password');
 
@@ -42,7 +40,6 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // 4. Return the fresh user data including role
     return NextResponse.json(
       {
         success: true,
@@ -53,12 +50,13 @@ export async function GET(req: NextRequest) {
           fullName: user.fullName,
           role: user.role || 'user',
           isVerified: user.isVerified,
+          testsTaken: user.testsTaken || [],
         },
       },
       { status: 200 }
     );
   } catch (error: any) {
-    console.error('Error fetching user details:', error);
+    console.error('Error fetching user profile:', error);
     return NextResponse.json(
       { success: false, message: 'Internal server error', error: error.message },
       { status: 500 }

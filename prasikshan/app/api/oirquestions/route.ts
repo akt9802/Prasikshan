@@ -1,45 +1,65 @@
 import connectDB from '@/lib/db';
-import OirQuestion from '@/models/OirQuestion';
-import { NextResponse } from 'next/server';
+import OirSet from '@/models/OirSet';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     // Connect to database
     console.log('Connecting to database...');
     await connectDB();
     console.log('Database connected successfully');
 
-    // Check if OIR questions exist
-    const totalCount = await OirQuestion.countDocuments();
-    console.log(`Total OIR questions in database: ${totalCount}`);
+    // Get query parameter for setId or setName if provided
+    const { searchParams } = new URL(request.url);
+    const setName = searchParams.get('setName');
 
-    if (totalCount === 0) {
+    let oirSet;
+
+    if (setName) {
+      // Fetch specific set by name
+      oirSet = await OirSet.findOne({ setName });
+    } else {
+      // Fetch a random set if none specified
+      const totalSets = await OirSet.countDocuments();
+      if (totalSets === 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: 'No OIR sets available. Please run the createOirSets script first.',
+            count: 0,
+          },
+          { status: 400 }
+        );
+      }
+
+      const randomIndex = Math.floor(Math.random() * totalSets);
+      oirSet = await OirSet.findOne().skip(randomIndex);
+    }
+
+    if (!oirSet) {
       return NextResponse.json(
         {
           success: false,
-          message: 'No OIR questions available. Please seed questions first by visiting /api/oirquestions/seed',
+          message: 'Requested OIR set not found.',
           count: 0,
         },
-        { status: 400 }
+        { status: 404 }
       );
     }
 
-    // Fetch 40 random OIR questions using aggregation
-    console.log('Fetching 40 random OIR questions...');
-    const questions = await OirQuestion.aggregate([{ $sample: { size: Math.min(40, totalCount) } }]);
-    console.log(`Successfully fetched ${questions.length} OIR questions`);
+    console.log(`Successfully fetched ${oirSet.questions.length} OIR questions from ${oirSet.setName}`);
 
     return NextResponse.json(
       {
         success: true,
-        data: questions,
-        count: questions.length,
+        data: oirSet.questions,
+        setName: oirSet.setName,
+        count: oirSet.questions.length,
       },
       { status: 200 }
     );
   } catch (error: any) {
     console.error('Error fetching OIR questions:', error);
-    console.error('Error stack:', error.stack);
     return NextResponse.json(
       {
         success: false,
