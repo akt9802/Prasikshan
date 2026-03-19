@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 
 // ── Brand palette ─────────────────────────────────────────────────────────────
@@ -16,7 +16,20 @@ const B = {
 };
 
 export default function Footer() {
-  const [userCount] = useState(5420);
+  const [userCount, setUserCount] = useState<number>(0);
+
+  useEffect(() => {
+    fetch('/api/users/count')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && typeof data.count === 'number') {
+          // If you want to stack this count artificially for marketing, you could do: setUsers(5420 + data.count) 
+          // For true metric, we set strictly what the DB returns:
+          setUserCount(data.count);
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   const links = {
     tests: [
@@ -30,7 +43,7 @@ export default function Footer() {
       { name: "Home", href: "/" },
       { name: "About SSB", href: "/aboutssb" },
       { name: "Global Ranking", href: "/ranking" },
-      { name: "Admin Console", href: "/admin" },
+      { name: "Admin Console", href: "#", textOnly: true },
     ],
     legal: [
       { name: "Privacy Policy", href: "#" },
@@ -91,10 +104,17 @@ export default function Footer() {
             <ul className="space-y-4">
               {links.platform.map((link) => (
                 <li key={link.name}>
-                  <Link href={link.href} className="text-slate-400 hover:text-blue-400 text-sm font-semibold transition-colors flex items-center gap-2 group">
-                    <span className="w-1 h-1 rounded-full bg-blue-500/0 group-hover:bg-blue-500 transition-all" />
-                    {link.name}
-                  </Link>
+                  {link.textOnly ? (
+                    <span className="text-slate-500 hover:text-slate-400 text-sm font-semibold transition-colors flex items-center gap-2 cursor-default">
+                      <span className="w-1 h-1 rounded-full bg-slate-600/50 transition-all" />
+                      {link.name}
+                    </span>
+                  ) : (
+                    <Link href={link.href!} className="text-slate-400 hover:text-blue-400 text-sm font-semibold transition-colors flex items-center gap-2 group">
+                      <span className="w-1 h-1 rounded-full bg-blue-500/0 group-hover:bg-blue-500 transition-all" />
+                      {link.name}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
