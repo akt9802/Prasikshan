@@ -1,52 +1,72 @@
-import connectDB from "@/lib/db";
-import { NextResponse } from "next/server";
+import connectDB from '@/lib/db';
+import SrtSet from '@/models/SrtSet';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    console.log("🔍 SRT API: Starting fetch...");
-    const conn = await connectDB();
-    console.log("✅ SRT API: Database connected");
+    console.log('🔌 SRT API: Connecting to database...');
+    await connectDB();
+    console.log('✅ SRT API: Database connected');
 
-    // Get the collection directly from the connection
-    const db = conn.connection.db;
-    const srtCollection = db.collection("SRT");
-    
-    // Count documents directly
-    const totalCount = await srtCollection.countDocuments();
-    console.log(`📊 SRT API: Total count from SRT collection: ${totalCount}`);
+    // Optional query param: ?setName=Set%201
+    const { searchParams } = new URL(request.url);
+    const setName = searchParams.get('setName');
 
-    if (totalCount === 0) {
+    let srtSet;
+
+    if (setName) {
+      // Fetch a specific set by name
+      srtSet = await SrtSet.findOne({ setName });
+    } else {
+      // Fetch a random set
+      const totalSets = await SrtSet.countDocuments();
+
+      if (totalSets === 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              'No SRT sets available. Please run the createSrtSets script first.',
+            data: [],
+            count: 0,
+          },
+          { status: 424 }
+        );
+      }
+
+      const randomIndex = Math.floor(Math.random() * totalSets);
+      srtSet = await SrtSet.findOne().skip(randomIndex);
+    }
+
+    if (!srtSet) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            "No SRT questions available. Please seed the database first by visiting /api/srtquestions/seed",
+          error: 'Requested SRT set not found.',
           data: [],
           count: 0,
         },
-        { status: 424 }
+        { status: 404 }
       );
     }
 
-    // Get 60 random SRT questions (or less if not enough in DB)
-    const questions = await srtCollection
-      .aggregate([{ $sample: { size: Math.min(60, totalCount) } }])
-      .toArray();
-
-    console.log(`✅ SRT API: Fetched ${questions.length} SRT questions`);
+    console.log(
+      `✅ SRT API: Fetched ${srtSet.questions.length} questions from "${srtSet.setName}"`
+    );
 
     return NextResponse.json({
       success: true,
-      data: questions,
-      count: questions.length,
+      data: srtSet.questions,   // [{ situation, sample_reaction }, ...]
+      setName: srtSet.setName,
+      count: srtSet.questions.length,
     });
   } catch (error) {
-    console.error("❌ SRT API Error:", error);
+    console.error('❌ SRT API Error:', error);
     return NextResponse.json(
       {
         success: false,
-        error: "Failed to fetch SRT questions",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Failed to fetch SRT questions',
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );

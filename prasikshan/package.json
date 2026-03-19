@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "create-oir-sets": "npx ts-node --compiler-options '{\"module\":\"commonjs\"}' script/createOirSets.ts",
+    "create-wat-sets": "npx ts-node --compiler-options '{\"module\":\"commonjs\"}' script/createWatSets.ts"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

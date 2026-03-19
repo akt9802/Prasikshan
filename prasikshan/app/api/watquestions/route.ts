@@ -1,53 +1,72 @@
-import connectDB from "@/lib/db";
-import WatQuestion from "@/models/WatQuestion";
-import { NextResponse } from "next/server";
+import connectDB from '@/lib/db';
+import WatSet from '@/models/WatSet';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    console.log("🔍 WAT API: Starting fetch...");
-    const conn = await connectDB();
-    console.log("✅ WAT API: Database connected");
+    console.log('🔌 WAT API: Connecting to database...');
+    await connectDB();
+    console.log('✅ WAT API: Database connected');
 
-    // Get the collection directly from the connection
-    const db = conn.connection.db;
-    const watCollection = db.collection("WAT");
-    
-    // Count documents directly
-    const totalCount = await watCollection.countDocuments();
-    console.log(`📊 WAT API: Total count from WAT collection: ${totalCount}`);
+    // Optional query param: ?setName=Set%201
+    const { searchParams } = new URL(request.url);
+    const setName = searchParams.get('setName');
 
-    if (totalCount === 0) {
+    let watSet;
+
+    if (setName) {
+      // Fetch a specific set by name
+      watSet = await WatSet.findOne({ setName });
+    } else {
+      // Fetch a random set
+      const totalSets = await WatSet.countDocuments();
+
+      if (totalSets === 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              'No WAT sets available. Please run the createWatSets script first.',
+            data: [],
+            count: 0,
+          },
+          { status: 424 }
+        );
+      }
+
+      const randomIndex = Math.floor(Math.random() * totalSets);
+      watSet = await WatSet.findOne().skip(randomIndex);
+    }
+
+    if (!watSet) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            "No WAT questions available. Please seed the database first by visiting /api/watquestions/seed",
+          error: 'Requested WAT set not found.',
           data: [],
           count: 0,
         },
-        { status: 424 }
+        { status: 404 }
       );
     }
 
-    // Get 60 random WAT questions (or less if not enough in DB)
-    const questions = await watCollection
-      .aggregate([{ $sample: { size: Math.min(60, totalCount) } }])
-      .toArray();
-
-    console.log(`✅ WAT API: Fetched ${questions.length} WAT questions`);
+    console.log(
+      `✅ WAT API: Fetched ${watSet.questions.length} questions from "${watSet.setName}"`
+    );
 
     return NextResponse.json({
       success: true,
-      data: questions,
-      count: questions.length,
+      data: watSet.questions,   // [{ word, sentences }, ...]
+      setName: watSet.setName,
+      count: watSet.questions.length,
     });
   } catch (error) {
-    console.error("❌ WAT API Error:", error);
+    console.error('❌ WAT API Error:', error);
     return NextResponse.json(
       {
         success: false,
-        error: "Failed to fetch WAT questions",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: 'Failed to fetch WAT questions',
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );
