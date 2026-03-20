@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import OirSetBuilder from "@/components/admin/OirSetBuilder";
 import WatSetBuilder from "@/components/admin/WatSetBuilder";
 import SrtSetBuilder from "@/components/admin/SrtSetBuilder";
+import PpdtSetBuilder from "@/components/admin/PpdtSetBuilder";
 
 // ── Brand palette ─────────────────────────────────────────────────────────────
 const B = {
@@ -170,7 +171,8 @@ export default function AdminPage() {
         {activeTab === 'OIR' && <OirSetBuilder token={token} />}
         {activeTab === 'WAT' && <WatSetBuilder token={token} />}
         {activeTab === 'SRT' && <SrtSetBuilder token={token} />}
-        {activeTab !== 'OIR' && activeTab !== 'WAT' && activeTab !== 'SRT' && <ComingSoon tab={activeTab} />}
+        {activeTab === 'PPDT' && <PpdtSetBuilder token={token} />}
+        {activeTab !== 'OIR' && activeTab !== 'WAT' && activeTab !== 'SRT' && activeTab !== 'PPDT' && <ComingSoon tab={activeTab} />}
       </div>
     </div>
   );

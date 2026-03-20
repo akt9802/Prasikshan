@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { getAuthToken } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 
@@ -247,6 +248,7 @@ export default function DisplayPPDTQuestion() {
                   )}
 
                   <div className="flex justify-center relative min-h-[300px]">
+
                     {!imageLoaded && (
                       <div className="absolute inset-0 flex items-center justify-center rounded-2xl" style={{ background: B.iceMid }}>
                         <div className="flex flex-col items-center gap-3">
@@ -255,15 +257,20 @@ export default function DisplayPPDTQuestion() {
                         </div>
                       </div>
                     )}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={question.image} alt="PPDT Scene"
-                      className={`rounded-2xl max-w-full max-h-[500px] object-contain transition-all duration-700 ${imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
-                      style={{ border: '2px solid rgba(18,77,150,0.15)', boxShadow: '0 8px 30px rgba(18,77,150,0.14)' }}
-                      onLoad={() => { setImageLoaded(true); if (stage === "loading") setStage("viewImage"); }}
-                      onError={e => {
-                        (e.target as HTMLImageElement).src = "https://via.placeholder.com/600x400?text=Image+Not+Available";
-                        setImageLoaded(true); if (stage === "loading") setStage("viewImage");
-                      }} />
+                    <div className={`relative w-full max-w-[800px] h-[500px] rounded-2xl transition-all duration-700 ${imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
+                         style={{ border: '2px solid rgba(18,77,150,0.15)', boxShadow: '0 8px 30px rgba(18,77,150,0.14)', overflow: 'hidden' }}>
+                      <Image 
+                        src={question.image || "https://res.cloudinary.com/dsi70dfkn/image/upload/v1/placeholder-image"} 
+                        alt="PPDT Scene"
+                        fill
+                        className="object-contain"
+                        onLoad={() => { setImageLoaded(true); if (stage === "loading") setStage("viewImage"); }}
+                        onError={(e: any) => {
+                          e.currentTarget.src = "https://via.placeholder.com/600x400?text=Image+Not+Available";
+                          setImageLoaded(true); if (stage === "loading") setStage("viewImage");
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
 
