@@ -575,24 +575,15 @@ export default function DisplayLecturetteQuestion() {
               {/* Challenge Card */}
               <div className="bg-white/70 backdrop-blur-2xl rounded-[2.5rem] p-4 md:p-8 shadow-2xl border border-white">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8 pb-8 border-b border-slate-100">
-                  <div>
+                  <div className="w-full flex-1">
                     <span className="inline-block px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest mb-3">Target Objective</span>
-                    <h2 className="text-3xl font-black text-slate-900 tracking-tight leading-tight max-w-xl">
+                    <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight max-w-3xl">
                       {question?.topic || "Awaiting Topic Assignment..."}
                     </h2>
                   </div>
-                  <div className="shrink-0 flex items-center gap-4">
-                    <div className="text-right">
-                      <p className="text-[10px] font-black uppercase text-slate-400">Sequence</p>
-                      <p className="text-xl font-black text-slate-900">#{question?.topic_id || 0}/10</p>
-                    </div>
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-indigo-50 text-indigo-600 border border-indigo-100">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
-                    </div>
-                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="flex flex-col gap-12">
                   {/* Visual Port */}
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
@@ -625,6 +616,13 @@ export default function DisplayLecturetteQuestion() {
                         <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
                         <div className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
                       </div>
+
+                      {prepStarted && (
+                        <div className={`absolute top-4 right-4 px-4 py-2 rounded-xl backdrop-blur-md border flex items-center gap-2.5 shadow-lg transition-colors ${preparationTimeLeft <= 30 ? "bg-rose-500/90 border-rose-400 text-white animate-pulse" : "bg-black/60 border-white/20 text-white"}`}>
+                          <div className={`w-2 h-2 rounded-full ${preparationTimeLeft <= 30 ? "bg-white" : "bg-rose-500 animate-pulse"}`} />
+                          <span className="text-sm font-black tabular-nums tracking-widest">{formatTime(preparationTimeLeft)}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
