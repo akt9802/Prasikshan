@@ -1,5 +1,5 @@
 import connectDB from "@/lib/db";
-import TatQuestion from "@/models/TatQuestion";
+import TatSet from "@/models/TatSet";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -8,25 +8,27 @@ export async function GET() {
         await connectDB();
         console.log("✅ TAT API: Database connected");
 
-        // Fetch 12 random questions according to TAT rules
-        const randomQuestions = await TatQuestion.aggregate([
-            { $sample: { size: 12 } },
+        // Fetch a random TAT Set (which already contains 12 pictures)
+        const randomSets = await TatSet.aggregate([
+            { $sample: { size: 1 } },
         ]);
 
-        if (!randomQuestions || randomQuestions.length === 0) {
-            console.warn("No TAT questions found in the database");
+        if (!randomSets || randomSets.length === 0) {
+            console.warn("No TAT sets found in the database");
             return NextResponse.json(
                 {
                     success: false,
-                    error: "No TAT questions found in the database",
+                    error: "No TAT sets found in the database",
                     data: [],
                 },
                 { status: 404 }
             );
         }
 
+        const selectedSet = randomSets[0];
+
         // Ensure all documents have necessary structures like images mapped directly
-        const fixedQuestions = randomQuestions.map((question) => ({
+        const fixedQuestions = selectedSet.questions.map((question: any) => ({
             ...question,
             image: question.image,
         }));

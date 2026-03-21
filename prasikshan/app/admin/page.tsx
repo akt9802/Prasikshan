@@ -7,6 +7,9 @@ import OirSetBuilder from "@/components/admin/OirSetBuilder";
 import WatSetBuilder from "@/components/admin/WatSetBuilder";
 import SrtSetBuilder from "@/components/admin/SrtSetBuilder";
 import PpdtSetBuilder from "@/components/admin/PpdtSetBuilder";
+import TatSetBuilder from "@/components/admin/TatSetBuilder";
+import LecturetteBuilder from "@/components/admin/LecturetteBuilder";
+import PiBuilder from "@/components/admin/PiBuilder";
 
 // ── Brand palette ─────────────────────────────────────────────────────────────
 const B = {
@@ -172,7 +175,10 @@ export default function AdminPage() {
         {activeTab === 'WAT' && <WatSetBuilder token={token} />}
         {activeTab === 'SRT' && <SrtSetBuilder token={token} />}
         {activeTab === 'PPDT' && <PpdtSetBuilder token={token} />}
-        {activeTab !== 'OIR' && activeTab !== 'WAT' && activeTab !== 'SRT' && activeTab !== 'PPDT' && <ComingSoon tab={activeTab} />}
+        {activeTab === 'TAT' && <TatSetBuilder token={token} />}
+        {activeTab === 'LECTURETTE' && <LecturetteBuilder token={token} />}
+        {activeTab === 'PI' && <PiBuilder token={token} />}
+        {activeTab !== 'OIR' && activeTab !== 'WAT' && activeTab !== 'SRT' && activeTab !== 'PPDT' && activeTab !== 'TAT' && activeTab !== 'LECTURETTE' && activeTab !== 'PI' && <ComingSoon tab={activeTab} />}
       </div>
     </div>
   );
