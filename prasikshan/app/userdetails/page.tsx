@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { clearAuth } from "@/lib/auth";
+import apiClient from "@/lib/axios";
 import Footer from "@/components/footer/Footer";
 import {
   PieChart, Pie, Cell, LineChart, Line, AreaChart, Area,
@@ -243,20 +244,18 @@ export default function UserDetails() {
           return;
         }
 
-        const res = await fetch('/api/auth/userdetails', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
+        // The apiClient automatically attaches the Bearer token from localStorage
+        // and handles 401/403 token expirations and retries cleanly.
+        const res = await apiClient.get('/auth/userdetails');
+        const data = res.data;
 
         if (data.success && data.user) {
           // Fetch test history separately from the user model
           // For now map the user data + fetch full user with testsTaken
-          const userRes = await fetch('/api/user/profile', {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const userRes = await apiClient.get('/user/profile');
           
-          if (userRes.ok) {
-            const userData = await userRes.json();
+          if (userRes.status === 200) {
+            const userData = userRes.data;
             setUserDetails({
               name: userData.user?.fullName || userData.user?.username || data.user.username,
               email: data.user.email,

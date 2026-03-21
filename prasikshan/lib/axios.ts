@@ -53,8 +53,8 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // If error is 401 (Unauthorized) and we haven't already retried this original request
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // If error is 401 (Unauthorized) or 403 (Forbidden) and we haven't already retried this original request
+    if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry) {
       // If we are already refreshing the token, add original request to a queue
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
