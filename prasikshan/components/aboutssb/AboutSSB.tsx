@@ -227,7 +227,7 @@ function AboutSSB() {
           style={{ background: 'rgba(255,255,255,0.60)', border: `2px solid rgba(18,77,150,0.14)`, backdropFilter: 'blur(12px)' }}
         >
           <Image
-            src="/about-ssb-images/trio.png"
+            src="https://res.cloudinary.com/dsi70dfkn/image/upload/v1774096528/trio_x3jjyf.png"
             alt="Three branches of Indian Armed Forces"
             width={300}
             height={300}

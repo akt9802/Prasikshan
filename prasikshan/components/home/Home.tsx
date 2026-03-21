@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Typewriter } from 'react-simple-typewriter';
 import SmallCardHome from './SmallCardHome';
 import Footer from '../footer/Footer';
@@ -256,6 +257,23 @@ export default function Home() {
       </div>
 
       <Footer />
+      
+      {/* ── Hidden Image Preloader for About SSB Page ── */}
+      <div className="hidden absolute opacity-0 pointer-events-none -z-50">
+        {[
+          "https://res.cloudinary.com/dsi70dfkn/image/upload/v1774096524/pop_lsfrhr.jpg",
+          "https://res.cloudinary.com/dsi70dfkn/image/upload/v1774096529/img2_xi3mob.jpg",
+          "https://res.cloudinary.com/dsi70dfkn/image/upload/v1774096541/img3_mua3rz.jpg",
+          "https://res.cloudinary.com/dsi70dfkn/image/upload/v1774096542/img4_ankygf.jpg",
+          "https://res.cloudinary.com/dsi70dfkn/image/upload/v1774096495/img5_gceizm.jpg",
+          "https://res.cloudinary.com/dsi70dfkn/image/upload/v1774096536/img6_qulhwp.jpg",
+          "https://res.cloudinary.com/dsi70dfkn/image/upload/v1774096545/img7_xe3nxg.jpg",
+          "https://res.cloudinary.com/dsi70dfkn/image/upload/v1774096511/img8_ktfhxn.jpg",
+          "https://res.cloudinary.com/dsi70dfkn/image/upload/v1774096528/trio_x3jjyf.png",
+        ].map((src, index) => (
+          <Image key={index} src={src} alt="preload" width={10} height={10} priority />
+        ))}
+      </div>
     </>
   );
 }
