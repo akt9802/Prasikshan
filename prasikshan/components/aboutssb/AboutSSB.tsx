@@ -101,14 +101,14 @@ const SSB_CENTERS = [
 ];
 
 const IMAGES = [
-  "/about-ssb-images/pop.jpeg",
-  "/about-ssb-images/img2.jpeg",
-  "/about-ssb-images/img3.jpeg",
-  "/about-ssb-images/img4.jpeg",
-  "/about-ssb-images/img5.jpeg",
-  "/about-ssb-images/img6.jpeg",
-  "/about-ssb-images/img7.jpeg",
-  "/about-ssb-images/img8.jpeg",
+  "https://res.cloudinary.com/dsi70dfkn/image/upload/v1774096524/pop_lsfrhr.jpg",
+  "https://res.cloudinary.com/dsi70dfkn/image/upload/v1774096529/img2_xi3mob.jpg",
+  "https://res.cloudinary.com/dsi70dfkn/image/upload/v1774096541/img3_mua3rz.jpg",
+  "https://res.cloudinary.com/dsi70dfkn/image/upload/v1774096542/img4_ankygf.jpg",
+  "https://res.cloudinary.com/dsi70dfkn/image/upload/v1774096495/img5_gceizm.jpg",
+  "https://res.cloudinary.com/dsi70dfkn/image/upload/v1774096536/img6_qulhwp.jpg",
+  "https://res.cloudinary.com/dsi70dfkn/image/upload/v1774096545/img7_xe3nxg.jpg",
+  "https://res.cloudinary.com/dsi70dfkn/image/upload/v1774096511/img8_ktfhxn.jpg",
 ];
 
 // ── Section header helper ─────────────────────────────────────────────────────

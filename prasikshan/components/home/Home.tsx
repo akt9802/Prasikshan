@@ -87,7 +87,7 @@ export default function Home() {
       <div
         className="relative w-full h-[600px] md:h-[700px] lg:h-[750px] overflow-hidden"
         style={{
-          backgroundImage: `url('/home-image-logo.jpg')`,
+          backgroundImage: `url('https://res.cloudinary.com/dsi70dfkn/image/upload/v1774096233/home-image-logo_swpyvw.jpg')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed',
