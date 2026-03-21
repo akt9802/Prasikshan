@@ -569,7 +569,14 @@ Prasikshan is proudly open source because we believe:
 ## 🚧 Roadmap & Future Plans
 
 ### 🔄 Current Status
-> **Platform Update:** Prasikshan is currently undergoing major improvements and will be redeployed soon with enhanced features and performance optimizations.
+> **Platform Update:** Prasikshan is constantly evolving. In our latest architectural update, we've deployed major performance and security enhancements!
+
+✨ **Recent Upgrades:**
+- **Comprehensive Admin Set Builders**: Fully integrated interactive Set Builders for OIR, WAT, SRT, TAT, PPDT, Lecturette, and PI inside a sleek, unified Admin Dashboard featuring tabbed navigation.
+- **Advanced TAT & PPDT Handling**: Seamless integration between our testing suites and Cloudinary. Process complete 12-picture thematic sets for TAT natively while allowing admins to embed benchmark reference stories right alongside uploaded pictures!
+- **Enterprise-Grade Authentication**: Implemented a robust dual-token JWT architecture (15-min Access Tokens + Rotating 7-day Refresh Tokens) secured via HTTP-Only cookies.
+- **Seamless Session Management**: Added a background Axios interceptor to silently catch `401/403` token expirations and automatically refresh them without disrupting the user flow.
+- **Cloudinary Global CDN Migration**: Offloaded high-resolution core assets and test images directly to Cloudinary's Global CDN. This massively unblocks Next.js server threads, reduces bandwidth costs, and turbo-charges initial page load speeds!
 
 ### 🎯 Upcoming Features (Q2 2026)
 
