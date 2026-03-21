@@ -1,99 +1,88 @@
-# 🎯 Prasikshan - SSB Preparation Platform
+# 🎯 Prasikshan - Elite SSB Preparation Platform
 
-A comprehensive web application for Services Selection Board (SSB) test preparation, designed to help Indian Armed Forces aspirants practice and excel in their selection process.
+**The ultimate digital training ground for Indian Armed Forces aspirants - master every SSB test with AI-powered analytics and community-driven excellence.**
 
-![Next.js](https://img.shields.io/badge/Next.js-16.1.6-black?style=for-the-badge&logo=next.js)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)
-![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green?style=for-the-badge&logo=mongodb)
-![Docker](https://img.shields.io/badge/Docker-Ready-blue?style=for-the-badge&logo=docker)
+Transform your SSB preparation journey with comprehensive test modules, real-time performance tracking, and competitive rankings that mirror the actual selection process.
 
-## 🌟 Features
+## Features
 
-### 📚 Complete Test Modules
-- **OIR (Officer Intelligence Rating)** - Logical and analytical reasoning
-- **PPDT (Picture Perception & Discussion)** - Visual perception and storytelling
-- **TAT (Thematic Apperception Test)** - Psychological assessment through images
-- **WAT (Word Association Test)** - Subconscious thinking patterns
-- **SRT (Situation Reaction Test)** - Decision-making scenarios
-- **Lecturette** - Public speaking and presentation skills
-- **PI (Personal Interview)** - Comprehensive interview preparation
+### Complete SSB Test Suite
 
-### 🔐 Authentication & Security
-- JWT-based authentication with email verification
-- OTP-based password recovery
-- Server-side route protection with middleware
-- Secure password hashing with bcrypt
-- Protected API endpoints
+| Test Module | Purpose | Skills Tested | Format |
+|-------------|---------|---------------|---------|
+| **OIR** | Officer Intelligence Rating | Logical reasoning, analytical thinking | Multiple choice questions |
+| **PPDT** | Picture Perception & Discussion | Visual perception, storytelling, leadership | Image analysis + group discussion |
+| **TAT** | Thematic Apperception Test | Psychological assessment, creativity | Story writing from images |
+| **WAT** | Word Association Test | Subconscious thinking patterns | Quick word responses |
+| **SRT** | Situation Reaction Test | Decision-making, problem-solving | Scenario-based responses |
+| **Lecturette** | Public Speaking | Communication, confidence, knowledge | Timed presentations |
+| **PI** | Personal Interview | Personality assessment, leadership | Comprehensive Q&A preparation |
 
-### 📊 Analytics & Progress Tracking
-- Detailed performance analytics with interactive charts
-- Score trends and improvement tracking
-- Test completion statistics
-- Percentile rankings and leaderboards
-- Monthly activity monitoring
+### 🎯 Core Platform Features
 
-### 👥 Community Features
-- Real-time ranking system
-- Community leaderboards with tier system (Bronze/Silver/Gold)
-- User profiles with achievement tracking
-- Streak counters and engagement metrics
+<div align="center">
 
-### 🛠 Admin Panel
-- Content management system for all test types
-- Question upload and management
-- User analytics and monitoring
-- Test result tracking
+| **Authentication** | **Analytics** | **Community** | **Admin Panel** |
+|:---:|:---:|:---:|:---:|
+| JWT + Email Verification | Performance Charts | Real-time Rankings | Content Management |
+| OTP Password Recovery | Progress Tracking | Tier System (🥉🥈🥇) | User Analytics |
+| Secure Route Protection | Score Trends | Streak Counters | Question Upload |
+| Server-side Middleware | Percentile Analysis | Leaderboards | Result Monitoring |
+
+</div>
 
 ## 🚀 Tech Stack
 
-### Frontend
-- **Next.js 16.1.6** - React framework with App Router
-- **TypeScript** - Type-safe development
-- **Tailwind CSS 4** - Utility-first styling
-- **Recharts** - Interactive data visualization
-- **React Icons** - Comprehensive icon library
+### Frontend Powerhouse
+[![Next.js](https://img.shields.io/badge/Next.js-16.1.6-black?style=flat-square&logo=next.js)](https://nextjs.org/) **App Router** - React framework with server-side rendering  
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/) **Type Safety** - Enhanced developer experience  
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/) **Utility-First** - Rapid UI development  
+[![Recharts](https://img.shields.io/badge/Recharts-2.8-FF6B6B?style=flat-square)](https://recharts.org/) **Data Visualization** - Interactive analytics charts  
+[![React Icons](https://img.shields.io/badge/React_Icons-5.0-61DAFB?style=flat-square&logo=react)](https://react-icons.github.io/react-icons/) **Icon Library** - Comprehensive icon set  
 
-### Backend
-- **Next.js API Routes** - Serverless backend
-- **MongoDB** - NoSQL database with Mongoose ODM
-- **JWT** - Secure authentication tokens
-- **Nodemailer** - Email service integration
-- **Bcrypt** - Password hashing
+### Backend Infrastructure
+[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=flat-square&logo=mongodb)](https://www.mongodb.com/) **NoSQL Database** - Scalable document storage  
+[![Mongoose](https://img.shields.io/badge/Mongoose-8.0-880000?style=flat-square)](https://mongoosejs.com/) **ODM** - Elegant MongoDB object modeling  
+[![JWT](https://img.shields.io/badge/JWT-Auth-000000?style=flat-square&logo=json-web-tokens)](https://jwt.io/) **Authentication** - Secure token-based auth  
+[![Nodemailer](https://img.shields.io/badge/Nodemailer-6.9-339933?style=flat-square&logo=node.js)](https://nodemailer.com/) **Email Service** - SMTP integration  
+[![Bcrypt](https://img.shields.io/badge/Bcrypt-5.1-FF6B35?style=flat-square)](https://www.npmjs.com/package/bcrypt) **Security** - Password hashing  
 
 ### DevOps & Deployment
-- **Docker** - Containerized deployment
-- **Nginx** - Reverse proxy and load balancing
-- **Docker Compose** - Multi-container orchestration
+[![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=flat-square&logo=docker)](https://www.docker.com/) **Containerization** - Consistent deployments  
+[![Nginx](https://img.shields.io/badge/Nginx-Proxy-009639?style=flat-square&logo=nginx)](https://nginx.org/) **Reverse Proxy** - Load balancing & SSL  
+[![Cloudinary](https://img.shields.io/badge/Cloudinary-CDN-3448C5?style=flat-square&logo=cloudinary)](https://cloudinary.com/) **Media Management** - Image optimization
 
-## 📋 Prerequisites
+## 📋 Quick Start
 
-- Node.js 20+ 
-- MongoDB Atlas account or local MongoDB instance
-- SMTP service (Brevo/SendGrid) for email functionality
-- Docker & Docker Compose (for deployment)
+### Prerequisites
+- **Node.js 20+** 
+- **MongoDB Atlas** account or local MongoDB instance 
+- **SMTP service** (Brevo/SendGrid) for email functionality 
+- **Cloudinary** account for image optimization 
+- **Docker & Docker Compose** (for deployment) 
 
-## 🛠 Installation & Setup
+### ⚡ Installation
 
-### 1. Clone the Repository
+**1. Clone the Repository**
 ```bash
-git clone https://github.com/yourusername/prasikshan.git
-cd prasikshan
+git clone https://github.com/akt9802/Prasikshan.git
+cd Prasikshan/prasikshan
 ```
 
-### 2. Install Dependencies
+**2. Install Dependencies**
 ```bash
 npm install
 ```
 
-### 3. Environment Configuration
-Create a `.env` file in the root directory:
+**3. Environment Setup**
+Create a `.env` file in the `prasikshan` directory:
 
 ```env
 # MongoDB Connection
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/prasikshan?retryWrites=true&w=majority
 
 # JWT Secret (generate a secure random string)
-JWT_SECRET=your_super_secure_jwt_secret_key_here
+JWT_SECRET=your_super_secure_jwt_secret_key_minimum_32_characters
 
 # Email Service Configuration (Brevo SMTP)
 SMTP_HOST=smtp-relay.brevo.com
@@ -103,207 +92,742 @@ SMTP_PASS=your_brevo_smtp_key
 SMTP_FROM_EMAIL=noreply@yourdomain.com
 SMTP_FROM_NAME=Prasikshan Platform
 
-# Optional: Node Environment
+# Cloudinary Configuration (Image Optimization & Uploads)
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+CLOUDINARY_URL=cloudinary://your_api_key:your_api_secret@your_cloud_name
+
+# Environment
 NODE_ENV=development
 ```
 
-### 4. Database Setup
-The application will automatically create the required collections and indexes when you first run it. Make sure your MongoDB connection string is correct.
+**4. Database Initialization**
+The application automatically creates required collections and indexes on first run. Ensure your MongoDB connection is valid.
 
-### 5. Run Development Server
+**5. Launch Development Server**
 ```bash
 npm run dev
 ```
 
-Visit `http://localhost:3000` to see the application.
+🎉 **Success!** Visit `http://localhost:3000` to see Prasikshan in action.
 
-## 🐳 Docker Deployment
+## 🐳 Docker & Production Deployment
 
-### Quick Start with Docker
+### 🚀 Quick Docker Setup
 ```bash
-# Build the image
-docker build -t prasikshan .
+# Build the optimized production image
+docker build -t prasikshan:latest .
 
-# Run the container
+# Run with environment variables
 docker run -d \
   --name prasikshan-app \
   --restart unless-stopped \
   -p 3000:3000 \
   --env-file .env \
-  prasikshan
+  prasikshan:latest
 ```
 
-### Production Deployment with Nginx
+### 🌐 Production Deployment with Nginx
 
-1. **Build and run the Docker container:**
+**1. Deploy the Application**
 ```bash
-docker build -t prasikshan .
-docker run -d --name prasikshan-app -p 3000:3000 --env-file .env prasikshan
+# Build and start the container
+docker build -t prasikshan:production .
+docker run -d \
+  --name prasikshan-prod \
+  --restart always \
+  -p 3000:3000 \
+  --env-file .env.production \
+  prasikshan:production
 ```
 
-2. **Configure Nginx:**
+**2. Configure Nginx Reverse Proxy**
 ```bash
+# Copy the provided Nginx configuration
 sudo cp prasikshan.nginx.conf /etc/nginx/sites-available/prasikshan
 sudo ln -s /etc/nginx/sites-available/prasikshan /etc/nginx/sites-enabled/
+
+# Test and reload Nginx
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-3. **Setup SSL with Certbot:**
+**3. SSL Certificate with Certbot**
 ```bash
+# Install SSL certificate
 sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
+
+# Auto-renewal setup
+sudo crontab -e
+# Add: 0 12 * * * /usr/bin/certbot renew --quiet
 ```
 
-For detailed deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md).
+### 📋 Docker Compose (Recommended)
+```yaml
+version: '3.8'
+services:
+  prasikshan:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
 
-## 📁 Project Structure
+> 📖 **Detailed deployment guide:** See [DEPLOYMENT.md](./DEPLOYMENT.md) for comprehensive production setup instructions.
 
+## 📁 Project Architecture
+
+### 🏗️ Directory Structure
+```mermaid
+graph TD
+    A[prasikshan/] --> B[app/]
+    A --> C[components/]
+    A --> D[lib/]
+    A --> E[models/]
+    A --> F[middleware.ts]
+    A --> G[Dockerfile]
+    
+    B --> B1[api/]
+    B --> B2[alltest/]
+    B --> B3[admin/]
+    B --> B4[signin/]
+    B --> B5[userdetails/]
+    B --> B6[layout.tsx]
+    
+    B1 --> B1A[auth/]
+    B1 --> B1B[questions/]
+    B1 --> B1C[ranking/]
+    B1 --> B1D[admin/]
+    
+    C --> C1[charts/]
+    C --> C2[footer/]
+    C --> C3[header/]
+    
+    D --> D1[auth.ts]
+    D --> D2[db.ts]
+    D --> D3[mailer.ts]
+    
+    E --> E1[User.ts]
+    E --> E2[Question.ts]
+    E --> E3[TestResult.ts]
+```
+
+### 📂 Detailed Structure
 ```
 prasikshan/
 ├── app/                          # Next.js App Router
-│   ├── api/                      # API routes
+│   ├── api/                      # API Routes
 │   │   ├── auth/                 # Authentication endpoints
+│   │   │   ├── signin/              # User login
+│   │   │   ├── signup/              # User registration  
+│   │   │   ├── verify-email/        # Email verification
+│   │   │   ├── forgot-password/     # Password reset request
+│   │   │   └── reset-password/      # Password reset confirmation
 │   │   ├── questions/            # Test question APIs
-│   │   └── ranking/              # Leaderboard API
-│   ├── alltest/                  # Test selection page
-│   ├── admin/                    # Admin panel
+│   │   │   ├── fivequestions/       # 5 random questions
+│   │   │   └── tenquestions/        # 10 random questions
+│   │   ├── ranking/              # Leaderboard API
+│   │   ├── user/                 # User profile management
+│   │   └── admin/                # Admin panel APIs
+│   ├── alltest/                  # Test selection interface
+│   │   ├── oir/, ppdt/, tat/        # Individual test modules
+│   │   ├── wat/, srt/, lecturette/  # More test modules
+│   │   └── pi/                      # Personal interview prep
+│   ├── admin/                    # Admin dashboard
 │   ├── signin/                   # Authentication pages
 │   ├── userdetails/              # User profile & analytics
-│   └── layout.tsx                # Root layout
+│   └── layout.tsx                # Root layout component
 ├── components/                   # Reusable React components
-│   ├── charts/                   # Analytics charts
+│   ├── charts/                   # Analytics visualization
 │   ├── footer/                   # Footer component
 │   └── header/                   # Navigation headers
 ├── lib/                          # Utility libraries
 │   ├── auth.ts                   # Authentication utilities
 │   ├── db.ts                     # Database connection
-│   └── mailer.ts                 # Email service
-├── models/                       # MongoDB schemas
-│   └── User.ts                   # User model
-├── middleware.ts                 # Route protection
-├── Dockerfile                    # Docker configuration
-├── prasikshan.nginx.conf         # Nginx configuration
-└── package.json                  # Dependencies
+│   └── mailer.ts                 # Email service integration
+├── models/                       # MongoDB Schemas
+│   ├── User.ts                   # User data model
+│   ├── Question.ts               # Test questions model
+│   └── TestResult.ts             # Test results model
+├── middleware.ts                 # Route protection middleware
+├── Dockerfile                    # Container configuration
+├── prasikshan.nginx.conf         # Nginx reverse proxy config
+└── package.json                  # Dependencies & scripts
 ```
 
-## 🔧 Configuration
+## 🗄️ Database Schema
 
-### Email Service Setup
-The platform uses SMTP for sending verification emails and password reset OTPs. Configure your preferred email service:
+### 📊 Collections Overview
 
-**Brevo (Recommended):**
-1. Sign up at [Brevo](https://www.brevo.com/)
-2. Get your SMTP credentials from the dashboard
-3. Add them to your `.env` file
+| Collection | Purpose | Key Relationships | Indexes |
+|------------|---------|-------------------|---------|
+| **Users** | User accounts & profiles | 1:N → TestResults, Rankings | email, userId |
+| **Questions** | Test question bank | N:1 ← TestTypes | testType, difficulty |
+| **TestResults** | Individual test attempts | N:1 ← Users, Questions | userId, testType, createdAt |
+| **Rankings** | Leaderboard data | N:1 ← Users | userId, testType, score |
+| **TestSets** | Question collections | 1:N → Questions | setId, testType |
 
-**Alternative Services:**
-- SendGrid
-- Gmail SMTP
-- AWS SES
-- Any SMTP-compatible service
+### 🏗️ Entity Relationship Diagram
 
-### Database Configuration
-**MongoDB Atlas (Recommended):**
-1. Create a cluster at [MongoDB Atlas](https://www.mongodb.com/atlas)
-2. Create a database user
-3. Whitelist your IP address
-4. Get the connection string
-
-**Local MongoDB:**
-```env
-MONGODB_URI=mongodb://localhost:27017/prasikshan
+```mermaid
+erDiagram
+    Users ||--o{ TestResults : attempts
+    Users ||--o{ Rankings : ranks
+    Questions ||--o{ TestResults : contains
+    TestSets ||--o{ Questions : includes
+    
+    Users {
+        ObjectId _id PK
+        string email UK
+        string name
+        string hashedPassword
+        boolean isVerified
+        string role
+        Date createdAt
+        Date lastLogin
+        object profile
+        array testHistory
+    }
+    
+    Questions {
+        ObjectId _id PK
+        string testType
+        string questionText
+        array options
+        string correctAnswer
+        string difficulty
+        string category
+        ObjectId setId FK
+        Date createdAt
+    }
+    
+    TestResults {
+        ObjectId _id PK
+        ObjectId userId FK
+        string testType
+        array answers
+        number score
+        number totalQuestions
+        number timeSpent
+        Date completedAt
+        object analytics
+    }
+    
+    Rankings {
+        ObjectId _id PK
+        ObjectId userId FK
+        string testType
+        number totalScore
+        number testsCompleted
+        number rank
+        string tier
+        Date lastUpdated
+    }
+    
+    TestSets {
+        ObjectId _id PK
+        string setName
+        string testType
+        array questionIds
+        string difficulty
+        boolean isActive
+        Date createdAt
+    }
 ```
 
-## 🎮 Usage
+### 📋 Detailed Schema Definitions
 
-### For Students
-1. **Sign Up:** Create an account with email verification
-2. **Take Tests:** Access all 7 SSB test modules
-3. **Track Progress:** Monitor your performance with detailed analytics
-4. **Compare Rankings:** See how you rank against other users
-5. **Improve:** Use insights to focus on weak areas
+#### 👤 Users Collection
+| Field | Type | Description | Constraints |
+|-------|------|-------------|-------------|
+| `_id` | ObjectId | Primary key | Auto-generated |
+| `email` | String | User email address | Unique, required |
+| `name` | String | Full name | Required, min: 2 chars |
+| `hashedPassword` | String | Bcrypt hashed password | Required |
+| `isVerified` | Boolean | Email verification status | Default: false |
+| `role` | String | User role (user/admin) | Default: 'user' |
+| `profile` | Object | Extended profile data | Optional |
+| `testHistory` | Array | Test completion records | Default: [] |
+| `createdAt` | Date | Account creation timestamp | Auto-generated |
+| `lastLogin` | Date | Last login timestamp | Updated on signin |
 
-### For Administrators
-1. **Access Admin Panel:** Navigate to `/admin`
-2. **Manage Content:** Upload questions for all test types
-3. **Monitor Users:** Track user engagement and performance
-4. **Analytics:** View platform-wide statistics
+#### ❓ Questions Collection  
+| Field | Type | Description | Constraints |
+|-------|------|-------------|-------------|
+| `_id` | ObjectId | Primary key | Auto-generated |
+| `testType` | String | Test category | Required, enum: [oir, ppdt, tat, wat, srt, lecturette, pi] |
+| `questionText` | String | Question content | Required |
+| `options` | Array | Multiple choice options | Required for OIR |
+| `correctAnswer` | String | Correct response | Required for scored tests |
+| `difficulty` | String | Question difficulty | Enum: [easy, medium, hard] |
+| `imageUrl` | String | Associated image URL | Required for PPDT, TAT |
+| `category` | String | Question subcategory | Optional |
+| `setId` | ObjectId | Parent test set reference | Foreign key |
+
+#### 📊 TestResults Collection
+| Field | Type | Description | Constraints |
+|-------|------|-------------|-------------|
+| `_id` | ObjectId | Primary key | Auto-generated |
+| `userId` | ObjectId | User reference | Required, foreign key |
+| `testType` | String | Test category | Required |
+| `answers` | Array | User responses | Required |
+| `score` | Number | Calculated score | Min: 0, Max: 100 |
+| `totalQuestions` | Number | Questions attempted | Required |
+| `timeSpent` | Number | Duration in seconds | Required |
+| `completedAt` | Date | Completion timestamp | Auto-generated |
+| `analytics` | Object | Performance metrics | Optional |
+
+#### 🏆 Rankings Collection
+| Field | Type | Description | Constraints |
+|-------|------|-------------|-------------|
+| `_id` | ObjectId | Primary key | Auto-generated |
+| `userId` | ObjectId | User reference | Required, foreign key |
+| `testType` | String | Test category | Required |
+| `totalScore` | Number | Cumulative score | Min: 0 |
+| `testsCompleted` | Number | Total attempts | Min: 0 |
+| `averageScore` | Number | Mean performance | Calculated field |
+| `rank` | Number | Current ranking position | Updated periodically |
+| `tier` | String | Achievement tier | Enum: [bronze, silver, gold] |
+| `lastUpdated` | Date | Last calculation time | Auto-updated |
+
+## 🔌 Complete API Documentation
+
+### 🔐 Authentication Endpoints
+
+| Method | Endpoint | Description | Request Body | Response |
+|--------|----------|-------------|--------------|----------|
+| `POST` | `/api/auth/signup` | User registration | `{email, name, password}` | `{success, message, userId}` |
+| `POST` | `/api/auth/signin` | User login | `{email, password}` | `{success, token, user}` |
+| `POST` | `/api/auth/verify-email` | Email verification | `{token, userId}` | `{success, message}` |
+| `POST` | `/api/auth/forgot-password` | Password reset request | `{email}` | `{success, message}` |
+| `POST` | `/api/auth/reset-password` | Password reset confirmation | `{token, newPassword}` | `{success, message}` |
+| `GET` | `/api/auth/userdetails` | Get user profile | Headers: `Authorization` | `{user, profile, stats}` |
+
+### 📝 Test Question Endpoints
+
+| Method | Endpoint | Description | Parameters | Response |
+|--------|----------|-------------|------------|----------|
+| `GET` | `/api/questions/fivequestions` | Get 5 random questions | `?testType=oir` | `{questions[], testId}` |
+| `GET` | `/api/questions/tenquestions` | Get 10 random questions | `?testType=wat` | `{questions[], testId}` |
+| `GET` | `/api/oirquestions` | Get OIR question set | `?difficulty=medium` | `{questions[], metadata}` |
+| `GET` | `/api/ppdtquestions` | Get PPDT questions | `?category=leadership` | `{questions[], images[]}` |
+| `GET` | `/api/tatquestions` | Get TAT questions | `?set=1` | `{questions[], images[]}` |
+| `GET` | `/api/watquestions` | Get WAT word list | `?count=60` | `{words[], timeLimit}` |
+| `GET` | `/api/srtquestions` | Get SRT scenarios | `?difficulty=hard` | `{scenarios[], guidelines}` |
+| `GET` | `/api/lecturettequestions` | Get lecturette topics | `?category=current` | `{topics[], timeLimit}` |
+| `GET` | `/api/piquestions` | Get PI questions | `?category=personal` | `{questions[], tips[]}` |
+
+### 📊 Test Result Endpoints
+
+| Method | Endpoint | Description | Request Body | Response |
+|--------|----------|-------------|--------------|----------|
+| `POST` | `/api/oirquestions/result` | Submit OIR results | `{answers[], timeSpent, testId}` | `{score, analysis, rank}` |
+| `POST` | `/api/ppdtquestions/result` | Submit PPDT results | `{story, keywords, testId}` | `{feedback, score}` |
+| `POST` | `/api/tatquestions/result` | Submit TAT results | `{stories[], themes, testId}` | `{analysis, insights}` |
+| `POST` | `/api/watquestions/result` | Submit WAT results | `{responses[], timings, testId}` | `{analysis, patterns}` |
+| `POST` | `/api/srtquestions/result` | Submit SRT results | `{responses[], testId}` | `{evaluation, suggestions}` |
+| `POST` | `/api/lecturettequestions/result` | Submit lecturette results | `{topic, duration, points}` | `{feedback, score}` |
+| `POST` | `/api/piquestions/result` | Submit PI practice | `{responses[], confidence}` | `{feedback, areas}` |
+
+### 🏆 Ranking & Analytics Endpoints
+
+| Method | Endpoint | Description | Parameters | Response |
+|--------|----------|-------------|------------|----------|
+| `GET` | `/api/ranking` | Get leaderboards | `?testType=all&limit=100` | `{rankings[], userRank, stats}` |
+| `GET` | `/api/users/count` | Get user statistics | None | `{totalUsers, activeUsers, newToday}` |
+
+### 🛠️ Admin Endpoints
+
+| Method | Endpoint | Description | Request Body | Response |
+|--------|----------|-------------|--------------|----------|
+| `POST` | `/api/admin/setup` | Initialize admin account | `{adminKey, email, password}` | `{success, message}` |
+| `POST` | `/api/admin/oirsets` | Upload OIR questions | `{questions[], setName}` | `{uploaded, errors[]}` |
+| `POST` | `/api/admin/ppdtquestions` | Upload PPDT images | `FormData with images` | `{uploaded[], urls[]}` |
+| `POST` | `/api/admin/watsets` | Upload WAT word sets | `{words[], category}` | `{success, count}` |
+| `POST` | `/api/admin/srtsets` | Upload SRT scenarios | `{scenarios[], difficulty}` | `{success, count}` |
+| `POST` | `/api/admin/upload-image` | Upload test images | `FormData` | `{url, cloudinaryId}` |
+| `POST` | `/api/admin/migrate-roles` | Update user roles | `{userIds[], newRole}` | `{updated, errors[]}` |
+
+### 📋 Request/Response Examples
+
+#### Authentication Example
+```javascript
+// POST /api/auth/signin
+{
+  "email": "aspirant@example.com",
+  "password": "SecurePass123"
+}
+
+// Response
+{
+  "success": true,
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": "64f8a1b2c3d4e5f6a7b8c9d0",
+    "name": "SSB Aspirant",
+    "email": "aspirant@example.com",
+    "role": "user",
+    "isVerified": true
+  }
+}
+```
+
+#### Test Submission Example
+```javascript
+// POST /api/oirquestions/result
+{
+  "testId": "64f8a1b2c3d4e5f6a7b8c9d1",
+  "answers": [
+    {"questionId": "q1", "selectedOption": "A"},
+    {"questionId": "q2", "selectedOption": "C"}
+  ],
+  "timeSpent": 1200
+}
+
+// Response
+{
+  "score": 85,
+  "totalQuestions": 50,
+  "correctAnswers": 42,
+  "rank": 156,
+  "percentile": 78.5,
+  "analysis": {
+    "strengths": ["Logical Reasoning", "Pattern Recognition"],
+    "improvements": ["Speed", "Accuracy in Complex Problems"]
+  }
+}
+```
+
+##  How to Use
+
+### For SSB Aspirants
+
+#### Getting Started
+1. **Create Account** - Sign up with your email and verify your account
+2. **Explore Dashboard** - Familiarize yourself with the analytics and progress tracking
+3. **Choose Test Module** - Select from 7 comprehensive SSB test categories
+4. **Take Practice Tests** - Complete timed tests in exam-like conditions
+5. **Analyze Performance** - Review detailed analytics and improvement suggestions
+6. **Track Rankings** - Monitor your progress against thousands of other aspirants
+
+#### 📈 Maximizing Your Preparation
+```mermaid
+graph LR
+    A[Daily Practice] --> B[Performance Analysis]
+    B --> C[Identify Weak Areas]
+    C --> D[Focused Improvement]
+    D --> E[Retake Tests]
+    E --> F[Track Progress]
+    F --> A
+```
+
+**🎯 Recommended Study Plan:**
+- **Week 1-2:** Complete diagnostic tests in all modules
+- **Week 3-4:** Focus on weakest 2-3 areas with daily practice
+- **Week 5-6:** Mixed practice with time management focus
+- **Week 7+:** Full mock tests and final preparation
+
+### 👨‍💼 For Administrators
+
+#### Admin Panel Access
+1. **Admin Setup** - Use the setup endpoint with admin key
+2. **Dashboard Overview** - Monitor user engagement and platform statistics
+3. **Content Management** - Upload and manage questions for all test types
+4. **User Management** - Track user progress and manage accounts
+5. **Analytics Review** - Analyze platform performance and user trends
+
+#### Content Management Workflow
+- **Question Upload:** Bulk upload questions with categorization
+- **Image Management:** Cloudinary integration for PPDT/TAT images
+- **Quality Control:** Review and approve user-generated content
+- **Performance Monitoring:** Track question difficulty and user success rates
 
 ## 🔒 Security Features
 
-- **JWT Authentication:** Secure token-based authentication
-- **Password Hashing:** Bcrypt with salt rounds
-- **Route Protection:** Server-side middleware protection
-- **Input Validation:** Comprehensive data validation
-- **Rate Limiting:** API endpoint protection
-- **CORS Configuration:** Cross-origin request security
-- **Environment Variables:** Sensitive data protection
+### Authentication & Authorization
+- **JWT Tokens** - Secure, stateless authentication with configurable expiration
+- **Password Hashing** - Bcrypt with salt rounds for maximum security
+- **Email Verification** - Mandatory account verification before access
+- **OTP Recovery** - Time-limited one-time passwords for password reset
+- **Route Protection** - Server-side middleware protecting sensitive endpoints
 
-## 📊 API Documentation
+### Data Protection
+- **CORS Configuration** - Controlled cross-origin request handling
+- **Input Validation** - Comprehensive request validation and sanitization
+- **Rate Limiting** - API endpoint protection against abuse
+- **Environment Security** - Sensitive configuration via environment variables
+- **Database Security** - MongoDB connection with authentication and encryption
 
-### Authentication Endpoints
-- `POST /api/auth/signup` - User registration
-- `POST /api/auth/signin` - User login
-- `POST /api/auth/verify-email` - Email verification
-- `POST /api/auth/forgot-password` - Password reset request
-- `POST /api/auth/reset-password` - Password reset confirmation
+### Infrastructure Security
+- **Container Isolation** - Docker containerization for deployment security
+- **Nginx Proxy** - Reverse proxy with SSL termination
+- **SSL/TLS** - HTTPS enforcement with automatic certificate renewal
+- **Security Headers** - Comprehensive HTTP security headers implementation
 
-### Test Endpoints
-- `GET /api/questions/fivequestions` - Get 5 random questions
-- `GET /api/questions/tenquestions` - Get 10 random questions
-- `POST /api/[testtype]questions/result` - Submit test results
+### Monitoring & Compliance
+- **Audit Logging** - Comprehensive user action tracking
+- **Error Monitoring** - Secure error handling without data exposure
+- **GDPR Compliance** - User data protection and privacy controls
+- **Session Management** - Secure session handling with automatic expiration
 
-### User Endpoints
-- `GET /api/auth/userdetails` - Get user profile
-- `GET /api/ranking` - Get leaderboard data
+## 📊 Analytics & Progress Tracking
+
+### 📈 Performance Metrics
+
+| Metric Type | Description | Visualization | Insights Provided |
+|-------------|-------------|---------------|-------------------|
+| **Score Trends** | Historical performance tracking | Line charts with trend analysis | Improvement patterns, consistency |
+| **Accuracy Rates** | Correct answer percentages | Radar charts by test type | Strengths and weaknesses identification |
+| **Time Management** | Speed vs accuracy analysis | Scatter plots and heatmaps | Optimal pacing strategies |
+| **Ranking Progress** | Position changes over time | Ranking charts with percentiles | Competitive performance tracking |
+| **Activity Patterns** | Study consistency tracking | Calendar heatmaps | Habit formation and streaks |
+
+### 🎯 Detailed Analytics Dashboard
+
+```mermaid
+graph TB
+    A[User Dashboard] --> B[Performance Overview]
+    A --> C[Test-Specific Analytics]
+    A --> D[Comparative Analysis]
+    A --> E[Progress Tracking]
+    
+    B --> B1[Overall Score Trends]
+    B --> B2[Time Management Stats]
+    B --> B3[Accuracy Metrics]
+    
+    C --> C1[OIR Analytics]
+    C --> C2[PPDT Performance]
+    C --> C3[TAT Insights]
+    C --> C4[WAT Patterns]
+    C --> C5[SRT Evaluation]
+    C --> C6[Lecturette Scores]
+    C --> C7[PI Preparation]
+    
+    D --> D1[Peer Comparison]
+    D --> D2[National Rankings]
+    D --> D3[Percentile Analysis]
+    
+    E --> E1[Monthly Progress]
+    E --> E2[Goal Tracking]
+    E --> E3[Streak Counters]
+```
+
+### 📋 Key Performance Indicators (KPIs)
+
+#### 🎯 Individual Metrics
+- **Overall Performance Score** - Weighted average across all test types
+- **Improvement Rate** - Month-over-month progress percentage
+- **Consistency Index** - Standard deviation of recent test scores
+- **Speed Efficiency** - Accuracy per minute ratio
+- **Weak Area Identification** - Lowest performing test categories
+
+#### 🏆 Competitive Metrics
+- **National Rank** - Position among all platform users
+- **Percentile Score** - Performance relative to peer group
+- **Tier Achievement** - Bronze/Silver/Gold classification
+- **Streak Records** - Consecutive days of practice
+- **Challenge Completion** - Monthly and weekly goal achievement
+
+### 📊 Interactive Visualizations
+
+#### 📈 Charts & Graphs
+- **Performance Timeline** - Interactive line charts with drill-down capability
+- **Skill Radar** - Multi-dimensional performance visualization
+- **Heatmaps** - Activity patterns and time-based performance
+- **Progress Bars** - Goal completion and milestone tracking
+- **Comparison Charts** - Peer benchmarking and historical comparison
+
+#### 🎮 Gamification Elements
+- **Achievement Badges** - Milestone recognition system
+- **Progress Levels** - Skill-based advancement tracking
+- **Leaderboards** - Real-time competitive rankings
+- **Streak Counters** - Daily practice motivation
+- **Challenge System** - Weekly and monthly goals
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+We welcome contributions from the SSB preparation community! Whether you're a developer, educator, or SSB expert, there are many ways to help improve Prasikshan.
 
-### Development Guidelines
-- Follow TypeScript best practices
-- Use ESLint and Prettier for code formatting
-- Write meaningful commit messages
-- Add tests for new features
-- Update documentation as needed
+### 🚀 Getting Started
 
-## 📝 License
+1. **🍴 Fork the Repository**
+   ```bash
+   git clone https://github.com/akt9802/Prasikshan.git
+   cd Prasikshan
+   ```
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+2. **🌿 Create a Feature Branch**
+   ```bash
+   git checkout -b feature/amazing-new-feature
+   ```
 
-## 🙏 Acknowledgments
+3. **💻 Make Your Changes**
+   - Follow our coding standards and best practices
+   - Add tests for new functionality
+   - Update documentation as needed
 
-- Indian Armed Forces for inspiration
-- SSB coaching institutes for test format insights
-- Open source community for amazing tools and libraries
+4. **✅ Test Your Changes**
+   ```bash
+   npm run test
+   npm run lint
+   npm run build
+   ```
 
-## 📞 Support
+5. **📝 Commit with Meaningful Messages**
+   ```bash
+   git commit -m "feat: add advanced analytics dashboard"
+   ```
 
-- **Issues:** [GitHub Issues](https://github.com/yourusername/prasikshan/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/yourusername/prasikshan/discussions)
-- **Email:** support@yourdomain.com
+6. **🚀 Push and Create Pull Request**
+   ```bash
+   git push origin feature/amazing-new-feature
+   ```### 🎯 Contribution Areas
 
-## 🗺 Roadmap
+| Area | Description | Skills Needed | Impact |
+|------|-------------|---------------|---------|
+| **Question Bank** | Add new test questions and scenarios | SSB knowledge, content creation | High |
+| **Analytics** | Enhance performance tracking features | React, Chart.js, data analysis | High |
+| **UI/UX** | Improve user interface and experience | Design, Tailwind CSS, accessibility | Medium |
+| **Backend** | API improvements and optimizations | Node.js, MongoDB, performance | High |
+| **Mobile** | React Native app development | React Native, mobile development | High |
+| **Testing** | Add comprehensive test coverage | Jest, testing best practices | Medium |
+| **Documentation** | Improve guides and documentation | Technical writing, markdown | Medium |
 
-- [ ] Mobile app development (React Native)
-- [ ] Advanced AI-powered feedback
-- [ ] Video interview simulation
-- [ ] Group discussion modules
-- [ ] Offline test capability
-- [ ] Multi-language support
-- [ ] Advanced analytics dashboard
-- [ ] Integration with coaching institutes
+### 📋 Development Guidelines
+
+#### 🎨 Code Style
+- **TypeScript** - Use strict type checking
+- **ESLint + Prettier** - Automated code formatting
+- **Conventional Commits** - Structured commit messages
+- **Component Structure** - Modular, reusable components
+
+#### 🧪 Testing Requirements
+- **Unit Tests** - All utility functions and components
+- **Integration Tests** - API endpoints and user flows
+- **E2E Tests** - Critical user journeys
+- **Performance Tests** - Load testing for scalability
+
+#### 📖 Documentation Standards
+- **Code Comments** - Clear, concise inline documentation
+- **API Documentation** - OpenAPI/Swagger specifications
+- **README Updates** - Keep documentation current
+- **Change Logs** - Document all significant changes
+
+### 🐛 Bug Reports
+
+Found a bug? Help us fix it:
+
+1. **Check Existing Issues** - Avoid duplicates
+2. **Use Bug Template** - Provide detailed information
+3. **Include Screenshots** - Visual context helps
+4. **Steps to Reproduce** - Clear reproduction steps
+5. **Environment Details** - OS, browser, version info
+
+### 💡 Feature Requests
+
+Have an idea? We'd love to hear it:
+
+1. **Describe the Problem** - What challenge does it solve?
+2. **Proposed Solution** - How should it work?
+3. **Expected Impact** - Who benefits and how?
+4. **Mockups/Wireframes** - Visual representation if applicable
+
+
+### 🤝 Open Source Commitment
+
+Prasikshan is proudly open source because we believe:
+- **Education Should Be Accessible** - Quality SSB preparation for everyone
+- **Community Drives Innovation** - Collective knowledge improves outcomes
+- **Transparency Builds Trust** - Open development process
+- **Collaboration Accelerates Progress** - Together we achieve more
+
+---
+
+## 🚧 Roadmap & Future Plans
+
+### 🔄 Current Status
+> **Platform Update:** Prasikshan is currently undergoing major improvements and will be redeployed soon with enhanced features and performance optimizations.
+
+### 🎯 Upcoming Features (Q2 2026)
+
+| Priority | Feature | Description | Timeline |
+|----------|---------|-------------|----------|
+| 🔥 **High** | **Mobile App** | React Native iOS/Android app | Q2 2026 |
+| 🔥 **High** | **AI Feedback** | ML-powered personalized insights | Q2 2026 |
+| 🔥 **High** | **Video Interviews** | Mock interview simulation platform | Q3 2026 |
+| 🟡 **Medium** | **Group Discussions** | Virtual GD practice rooms | Q3 2026 |
+| 🟡 **Medium** | **Offline Mode** | Download tests for offline practice | Q4 2026 |
+| 🟢 **Low** | **Multi-language** | Hindi and regional language support | Q4 2026 |
+
+### 🚀 Long-term Vision (2027+)
+
+```mermaid
+graph LR
+    A[Current Platform] --> B[AI-Powered Coaching]
+    B --> C[VR Training Simulations]
+    C --> D[Institute Partnerships]
+    D --> E[Certification Programs]
+    E --> F[Career Guidance Platform]
+```
+
+---
+
+## ❤️ Acknowledgments & Credits
+
+### 🙏 Special Thanks
+
+**🎖️ Indian Armed Forces**
+- For their service and inspiration that drives this platform
+- SSB selection process insights and methodology
+
+**👨‍🏫 SSB Coaching Community**
+- Experienced instructors who provided test format guidance
+- Subject matter experts who validated question quality
+
+**💻 Open Source Heroes**
+- **Next.js Team** - For the incredible React framework
+- **MongoDB** - For reliable, scalable database solutions
+- **Tailwind CSS** - For beautiful, responsive design system
+- **Recharts** - For powerful data visualization capabilities
+
+### 🏆 Contributors Hall of Fame
+
+| Contributor | Role | Contribution | Impact |
+|-------------|------|--------------|---------|
+| **[@akt9802](https://github.com/akt9802)** | 👑 **Creator & Lead** | Full-stack development, architecture | 🌟 Foundational |
+| **Community Contributors** | 🤝 **Collaborators** | Questions, feedback, testing | 🚀 Growing |
+
+*Want to see your name here? [Contribute to Prasikshan!](#-contributing)*
+
+### 🎯 Inspiration & Motivation
+
+> *"The best way to find yourself is to lose yourself in the service of others."* - Mahatma Gandhi
+
+This platform is dedicated to every young Indian who dreams of serving the nation through the Armed Forces. Your dedication, sacrifice, and commitment inspire us to build better tools for your success.
 
 ---
 
 <div align="center">
 
-**Built with ❤️ for SSB Aspirants**
+### 🚀 Ready to Begin Your SSB Journey?
 
-[Live Demo](https://yourdomain.com) • [Documentation](./docs) • [Report Bug](https://github.com/yourusername/prasikshan/issues)
+[![Get Started](https://img.shields.io/badge/Get_Started-Now-brightgreen?style=for-the-badge&logo=rocket)](https://prasikshan.vercel.app)
+[![Join Community](https://img.shields.io/badge/Join-Community-blue?style=for-the-badge&logo=discord)](https://discord.gg/prasikshan)
+[![Contribute](https://img.shields.io/badge/Contribute-Code-orange?style=for-the-badge&logo=github)](https://github.com/akt9802/Prasikshan/contribute)
+
+---
+
+**🎯 Built with ❤️ for SSB Aspirants | 🇮🇳 Proudly Made in India**
+
+[Live Platform](https://prasikshan.vercel.app) • [Documentation](./docs) • [Report Issues](https://github.com/akt9802/Prasikshan/issues) • [Feature Requests](https://github.com/akt9802/Prasikshan/discussions)
+
+*Empowering the next generation of Indian Armed Forces officers through technology and community.*
 
 </div>
