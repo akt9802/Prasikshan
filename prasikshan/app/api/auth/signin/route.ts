@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Generate JWT token
+    // Generate Access Token (short-lived)
     const token = jwt.sign(
       {
         userId: existingUser._id.toString(),
@@ -66,14 +66,32 @@ export async function POST(req: NextRequest) {
         username: existingUser.username,
       },
       process.env.JWT_SECRET || 'default_secret',
-      { expiresIn: '6h' }
+      { expiresIn: '15m' }
+    );
+
+    // Generate Refresh Token (long-lived)
+    const refreshToken = jwt.sign(
+      {
+        userId: existingUser._id.toString(),
+      },
+      process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET || 'default_secret',
+      { expiresIn: '7d' }
+    );
+
+    // Save refresh token to user using findByIdAndUpdate to ensure it writes
+    // even if Mongoose model schema caching causes strict mode issues
+    await User.findByIdAndUpdate(
+      existingUser._id,
+      { $set: { refreshToken: refreshToken } },
+      { strict: false }
     );
 
     // Return user without password
     const userResponse = existingUser.toObject();
     delete (userResponse as any).password;
+    delete (userResponse as any).refreshToken;
 
-    return NextResponse.json(
+    const response = NextResponse.json(
       {
         success: true,
         message: 'Sign-in successful',
@@ -89,6 +107,18 @@ export async function POST(req: NextRequest) {
       },
       { status: 200 }
     );
+
+    // Set HTTP-only cookie for refresh token
+    // Production should use secure: process.env.NODE_ENV === 'production'
+    response.cookies.set('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax', // prevent CSRF while allowing proper navigation
+      maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+      path: '/',
+    });
+
+    return response;
   } catch (error: any) {
     console.error('Error during user sign-in:', error);
 
