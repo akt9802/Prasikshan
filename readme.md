@@ -24,10 +24,10 @@ Transform your SSB preparation journey with comprehensive test modules, real-tim
 
 | **Authentication** | **Analytics** | **Community** | **Admin Panel** |
 |:---:|:---:|:---:|:---:|
-| JWT + Email Verification | Performance Charts | Real-time Rankings | Content Management |
-| OTP Password Recovery | Progress Tracking | Tier System (🥉🥈🥇) | User Analytics |
-| Secure Route Protection | Score Trends | Streak Counters | Question Upload |
-| Server-side Middleware | Percentile Analysis | Leaderboards | Result Monitoring |
+| JWT Dual-Token (Access + Refresh) | Performance Charts | Real-time Rankings | Content Management |
+| HTTP-Only Secure Cookies | Progress Tracking | Tier System (🥉🥈🥇) | User Analytics |
+| Axios Automatic Token Retries | Score Trends | Streak Counters | Question Upload |
+| Server-side API Protection | Percentile Analysis | Leaderboards | Result Monitoring |
 
 </div>
 
@@ -182,85 +182,7 @@ services:
 
 > 📖 **Detailed deployment guide:** See [DEPLOYMENT.md](./DEPLOYMENT.md) for comprehensive production setup instructions.
 
-## 📁 Project Architecture
 
-### 🏗️ Directory Structure
-```mermaid
-graph TD
-    A[prasikshan/] --> B[app/]
-    A --> C[components/]
-    A --> D[lib/]
-    A --> E[models/]
-    A --> F[middleware.ts]
-    A --> G[Dockerfile]
-    
-    B --> B1[api/]
-    B --> B2[alltest/]
-    B --> B3[admin/]
-    B --> B4[signin/]
-    B --> B5[userdetails/]
-    B --> B6[layout.tsx]
-    
-    B1 --> B1A[auth/]
-    B1 --> B1B[questions/]
-    B1 --> B1C[ranking/]
-    B1 --> B1D[admin/]
-    
-    C --> C1[charts/]
-    C --> C2[footer/]
-    C --> C3[header/]
-    
-    D --> D1[auth.ts]
-    D --> D2[db.ts]
-    D --> D3[mailer.ts]
-    
-    E --> E1[User.ts]
-    E --> E2[Question.ts]
-    E --> E3[TestResult.ts]
-```
-
-### 📂 Detailed Structure
-```
-prasikshan/
-├── app/                          # Next.js App Router
-│   ├── api/                      # API Routes
-│   │   ├── auth/                 # Authentication endpoints
-│   │   │   ├── signin/              # User login
-│   │   │   ├── signup/              # User registration  
-│   │   │   ├── verify-email/        # Email verification
-│   │   │   ├── forgot-password/     # Password reset request
-│   │   │   └── reset-password/      # Password reset confirmation
-│   │   ├── questions/            # Test question APIs
-│   │   │   ├── fivequestions/       # 5 random questions
-│   │   │   └── tenquestions/        # 10 random questions
-│   │   ├── ranking/              # Leaderboard API
-│   │   ├── user/                 # User profile management
-│   │   └── admin/                # Admin panel APIs
-│   ├── alltest/                  # Test selection interface
-│   │   ├── oir/, ppdt/, tat/        # Individual test modules
-│   │   ├── wat/, srt/, lecturette/  # More test modules
-│   │   └── pi/                      # Personal interview prep
-│   ├── admin/                    # Admin dashboard
-│   ├── signin/                   # Authentication pages
-│   ├── userdetails/              # User profile & analytics
-│   └── layout.tsx                # Root layout component
-├── components/                   # Reusable React components
-│   ├── charts/                   # Analytics visualization
-│   ├── footer/                   # Footer component
-│   └── header/                   # Navigation headers
-├── lib/                          # Utility libraries
-│   ├── auth.ts                   # Authentication utilities
-│   ├── db.ts                     # Database connection
-│   └── mailer.ts                 # Email service integration
-├── models/                       # MongoDB Schemas
-│   ├── User.ts                   # User data model
-│   ├── Question.ts               # Test questions model
-│   └── TestResult.ts             # Test results model
-├── middleware.ts                 # Route protection middleware
-├── Dockerfile                    # Container configuration
-├── prasikshan.nginx.conf         # Nginx reverse proxy config
-└── package.json                  # Dependencies & scripts
-```
 
 ## 🗄️ Database Schema
 
@@ -397,113 +319,7 @@ erDiagram
 | `tier` | String | Achievement tier | Enum: [bronze, silver, gold] |
 | `lastUpdated` | Date | Last calculation time | Auto-updated |
 
-## 🔌 Complete API Documentation
 
-### 🔐 Authentication Endpoints
-
-| Method | Endpoint | Description | Request Body | Response |
-|--------|----------|-------------|--------------|----------|
-| `POST` | `/api/auth/signup` | User registration | `{email, name, password}` | `{success, message, userId}` |
-| `POST` | `/api/auth/signin` | User login | `{email, password}` | `{success, token, user}` |
-| `POST` | `/api/auth/verify-email` | Email verification | `{token, userId}` | `{success, message}` |
-| `POST` | `/api/auth/forgot-password` | Password reset request | `{email}` | `{success, message}` |
-| `POST` | `/api/auth/reset-password` | Password reset confirmation | `{token, newPassword}` | `{success, message}` |
-| `GET` | `/api/auth/userdetails` | Get user profile | Headers: `Authorization` | `{user, profile, stats}` |
-
-### 📝 Test Question Endpoints
-
-| Method | Endpoint | Description | Parameters | Response |
-|--------|----------|-------------|------------|----------|
-| `GET` | `/api/questions/fivequestions` | Get 5 random questions | `?testType=oir` | `{questions[], testId}` |
-| `GET` | `/api/questions/tenquestions` | Get 10 random questions | `?testType=wat` | `{questions[], testId}` |
-| `GET` | `/api/oirquestions` | Get OIR question set | `?difficulty=medium` | `{questions[], metadata}` |
-| `GET` | `/api/ppdtquestions` | Get PPDT questions | `?category=leadership` | `{questions[], images[]}` |
-| `GET` | `/api/tatquestions` | Get TAT questions | `?set=1` | `{questions[], images[]}` |
-| `GET` | `/api/watquestions` | Get WAT word list | `?count=60` | `{words[], timeLimit}` |
-| `GET` | `/api/srtquestions` | Get SRT scenarios | `?difficulty=hard` | `{scenarios[], guidelines}` |
-| `GET` | `/api/lecturettequestions` | Get lecturette topics | `?category=current` | `{topics[], timeLimit}` |
-| `GET` | `/api/piquestions` | Get PI questions | `?category=personal` | `{questions[], tips[]}` |
-
-### 📊 Test Result Endpoints
-
-| Method | Endpoint | Description | Request Body | Response |
-|--------|----------|-------------|--------------|----------|
-| `POST` | `/api/oirquestions/result` | Submit OIR results | `{answers[], timeSpent, testId}` | `{score, analysis, rank}` |
-| `POST` | `/api/ppdtquestions/result` | Submit PPDT results | `{story, keywords, testId}` | `{feedback, score}` |
-| `POST` | `/api/tatquestions/result` | Submit TAT results | `{stories[], themes, testId}` | `{analysis, insights}` |
-| `POST` | `/api/watquestions/result` | Submit WAT results | `{responses[], timings, testId}` | `{analysis, patterns}` |
-| `POST` | `/api/srtquestions/result` | Submit SRT results | `{responses[], testId}` | `{evaluation, suggestions}` |
-| `POST` | `/api/lecturettequestions/result` | Submit lecturette results | `{topic, duration, points}` | `{feedback, score}` |
-| `POST` | `/api/piquestions/result` | Submit PI practice | `{responses[], confidence}` | `{feedback, areas}` |
-
-### 🏆 Ranking & Analytics Endpoints
-
-| Method | Endpoint | Description | Parameters | Response |
-|--------|----------|-------------|------------|----------|
-| `GET` | `/api/ranking` | Get leaderboards | `?testType=all&limit=100` | `{rankings[], userRank, stats}` |
-| `GET` | `/api/users/count` | Get user statistics | None | `{totalUsers, activeUsers, newToday}` |
-
-### 🛠️ Admin Endpoints
-
-| Method | Endpoint | Description | Request Body | Response |
-|--------|----------|-------------|--------------|----------|
-| `POST` | `/api/admin/setup` | Initialize admin account | `{adminKey, email, password}` | `{success, message}` |
-| `POST` | `/api/admin/oirsets` | Upload OIR questions | `{questions[], setName}` | `{uploaded, errors[]}` |
-| `POST` | `/api/admin/ppdtquestions` | Upload PPDT images | `FormData with images` | `{uploaded[], urls[]}` |
-| `POST` | `/api/admin/watsets` | Upload WAT word sets | `{words[], category}` | `{success, count}` |
-| `POST` | `/api/admin/srtsets` | Upload SRT scenarios | `{scenarios[], difficulty}` | `{success, count}` |
-| `POST` | `/api/admin/upload-image` | Upload test images | `FormData` | `{url, cloudinaryId}` |
-| `POST` | `/api/admin/migrate-roles` | Update user roles | `{userIds[], newRole}` | `{updated, errors[]}` |
-
-### 📋 Request/Response Examples
-
-#### Authentication Example
-```javascript
-// POST /api/auth/signin
-{
-  "email": "aspirant@example.com",
-  "password": "SecurePass123"
-}
-
-// Response
-{
-  "success": true,
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user": {
-    "id": "64f8a1b2c3d4e5f6a7b8c9d0",
-    "name": "SSB Aspirant",
-    "email": "aspirant@example.com",
-    "role": "user",
-    "isVerified": true
-  }
-}
-```
-
-#### Test Submission Example
-```javascript
-// POST /api/oirquestions/result
-{
-  "testId": "64f8a1b2c3d4e5f6a7b8c9d1",
-  "answers": [
-    {"questionId": "q1", "selectedOption": "A"},
-    {"questionId": "q2", "selectedOption": "C"}
-  ],
-  "timeSpent": 1200
-}
-
-// Response
-{
-  "score": 85,
-  "totalQuestions": 50,
-  "correctAnswers": 42,
-  "rank": 156,
-  "percentile": 78.5,
-  "analysis": {
-    "strengths": ["Logical Reasoning", "Pattern Recognition"],
-    "improvements": ["Speed", "Accuracy in Complex Problems"]
-  }
-}
-```
 
 ##  How to Use
 
