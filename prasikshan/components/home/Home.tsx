@@ -24,52 +24,52 @@ const TESTIMONIALS = [
   {
     name: 'Ananya Sharma',
     title: 'NDA Aspirant',
-    text: 'The structured approach and mentorship provided here truly made a difference. I was able to identify my weak areas early and improve steadily. The one-on-one feedback sessions felt just like real SSB interviews!',
+    text: 'The comprehensive OIR question sets are exactly what I needed. Practicing with 40-question sets under a strict timer dramatically improved my speed for the stage-1 screening.',
   },
   {
     name: 'Rohan Thapa',
     title: 'CDS Aspirant',
-    text: 'This platform is exactly what I needed. The mock tests and interview tips gave me real insight into the SSB process, and I felt confident walking into the screening round. Highly recommended.',
+    text: 'The Lecturette module is brilliant! Having the 3-minute preparation timer on screen followed by live translation really helped me iron out my hesitation and improve my verbal delivery.',
   },
   {
     name: 'Vikram Singh',
     title: 'AFCAT Candidate',
-    text: 'I had attempted the SSB before, but this platform helped me understand what I was missing. The mock GTO tasks and psychology practice gave me a new level of confidence and clarity.',
-  },
-  {
-    name: 'Kartik Aryan',
-    title: 'TES Aspirant',
-    text: 'The psychological test analysis is extremely precise. it helped me refine my TAT stories and SRT responses significantly. The feedback system is world-class.',
-  },
-  {
-    name: 'Simran Kaur',
-    title: 'AFCAT Candidate',
-    text: "Prasikshan's interface is so intuitive. Practicing OIR tests daily gave me the speed and accuracy I needed to clear the actual exam with ease.",
-  },
-  {
-    name: 'Rahul Verma',
-    title: 'CDS Aspirant',
-    text: 'The GTO task simulations are a game-changer. Seeing the 3D layouts and preparation tips made the ground tasks feel completely familiar on the actual day.',
+    text: 'Practicing the TAT test here feels just like the real SSB. The seamless interface allows me to focus purely on my psychology stories without any distractions. The timings are perfectly implemented.',
   },
   {
     name: 'Priya Sharma',
     title: 'NCC Entry',
-    text: 'One of the best platforms for SSB prep. The PI mock questions cover every possible angle of the personal interview, helping me prepare for tough cross-questioning.',
+    text: 'One of the best platforms for SSB prep. The curated PI mock questions cover every possible angle of the personal interview, helping me prepare for tough cross-questioning by the Interviewing Officer.',
   },
   {
-    name: 'Amit Kumar',
-    title: 'Navy Executive',
-    text: "I love the focus on 'Officer Like Qualities'. This platform isn't just about passing tests; it's about developing the true mindset of a leader.",
-  },
-  {
-    name: 'Sneha Reddy',
-    title: 'MNS Aspirant',
-    text: 'The community and peer feedback loop is amazing. Learning from others experiences and sharing my own helped me stay motivated throughout my journey.',
+    name: 'Simran Kaur',
+    title: 'AFCAT Candidate',
+    text: "Prasikshan's UI is phenomenal. The Intelligence Blitz with 5 and 10 questions sprint is my go-to for daily quick practice. It keeps my mind sharp for unexpected testing challenges.",
   },
   {
     name: 'Deepak Gupta',
     title: 'Technical Entry',
-    text: 'I was struggling with PPDT story narration, but the timed practices and playback features here helped me master my delivery and confidence.',
+    text: 'The transition to high-quality PPDT images has made story writing so much better. The platform gives you the exact feel of the screening hall with its precise timings for picture observation.',
+  },
+  {
+    name: 'Sneha Reddy',
+    title: 'MNS Aspirant',
+    text: 'I love how organized the Personal Interview section is. Reviewing the extensive list of PI questions made me feel far more confident and structured in my responses before facing the IO.',
+  },
+  {
+    name: 'Amit Kumar',
+    title: 'Navy Executive',
+    text: 'The dedicated Lecturette page with its clean UI and focus on performance is a game-changer. Being able to practice with the live translation pinpointed my exact areas of improvement.',
+  },
+  {
+    name: 'Kartik Aryan',
+    title: 'TES Aspirant',
+    text: 'From TAT test implementations to challenging OIR sets, everything is built keeping an aspirant\'s true needs in mind. It truly embodies the motto of preparing with purpose.',
+  },
+  {
+    name: 'Rahul Verma',
+    title: 'CDS Aspirant',
+    text: 'Prasikshan provides a premium environment to practice all crucial SSB tasks. Having testing modules—from psychology to PI questions—in one beautifully designed platform is a massive advantage.',
   },
 ];
 
