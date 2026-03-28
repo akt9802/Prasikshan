@@ -5,8 +5,10 @@ backend/node_modules/
 
 # Ignore env files
 .env
-frontend/.env
-backend/.env
+
+# Ignore Python virtual environment
+venv/
+prasikshan-ai-service/venv/
 
 
 .github
