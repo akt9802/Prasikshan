@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import redis from '@/lib/redis';
+import { getRedis } from '@/lib/redis';
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
       const secret = process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET || 'default_secret';
       try {
         const decoded = jwt.verify(refreshToken, secret) as { userId: string };
+        const redis = await getRedis();
         await redis.del(`refreshToken:${decoded.userId}`);
       } catch (e) {
         // Token already invalid/expired — nothing to delete, still log out cleanly

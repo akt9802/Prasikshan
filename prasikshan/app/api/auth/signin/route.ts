@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import connectDB from '@/lib/db';
 import User from '@/models/User';
-import redis from '@/lib/redis';
+import { getRedis } from '@/lib/redis';
 
 export async function POST(req: NextRequest) {
   try {
@@ -80,6 +80,7 @@ export async function POST(req: NextRequest) {
     );
 
     // Save refresh token to Redis with 7-day TTL (auto-expires, no DB write needed)
+    const redis = await getRedis();
     await redis.setEx(
       `refreshToken:${existingUser._id.toString()}`,
       7 * 24 * 60 * 60, // 7 days in seconds

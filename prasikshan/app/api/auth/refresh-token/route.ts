@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import connectDB from '@/lib/db';
 import User from '@/models/User';
-import redis from '@/lib/redis';
+import { getRedis } from '@/lib/redis';
 
 export async function POST(req: NextRequest) {
   try {
@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check token against Redis (replaces MongoDB lookup)
+    const redis = await getRedis();
     const stored = await redis.get(`refreshToken:${decoded.userId}`);
 
     if (!stored || stored !== refreshToken) {
