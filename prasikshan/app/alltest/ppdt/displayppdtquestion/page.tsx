@@ -47,6 +47,11 @@ export default function DisplayPPDTQuestion() {
   const [overallTimeLeft, setOverallTimeLeft] = useState(270);
   const [userStory, setUserStory] = useState("");
   const [wordCount, setWordCount] = useState(0);
+  const [aiReview, setAiReview] = useState<string | null>(null);
+  const [aiScore, setAiScore] = useState<number | null>(null);
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  const [quotaExceeded, setQuotaExceeded] = useState(false);
 
   // ── Fetch ──────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -93,9 +98,42 @@ export default function DisplayPPDTQuestion() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeLeft, stage, imageLoaded]);
 
+  const fetchAiReview = async (story: string, sampleStories: Story[]) => {
+    if (!story.trim()) return;
+    setReviewLoading(true);
+    setReviewError(null);
+    setQuotaExceeded(false);
+    try {
+      const res = await fetch("/api/ppdt-review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ story, sampleStories }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setAiReview(data.review);
+        setAiScore(data.score);
+      } else if (data.quota_exceeded) {
+        setQuotaExceeded(true);
+      } else {
+        setReviewError(data.error || "Could not get AI review.");
+      }
+    } catch {
+      setReviewError("Failed to connect to AI review service.");
+    } finally {
+      setReviewLoading(false);
+    }
+  };
+
   const handleSubmitPPDT = async () => {
     if (submitted) return;
     setSubmitted(true);
+
+    // Trigger AI review with story + sample stories as context
+    if (question?.stories) {
+      fetchAiReview(userStory, question.stories);
+    }
+
     const token = getAuthToken();
     if (!token) return;
     try {
@@ -363,6 +401,81 @@ export default function DisplayPPDTQuestion() {
                     <p className="text-xs font-semibold mt-2" style={{ color: B.textLight }}>
                       {userStory.trim().split(/\s+/).length} words · {userStory.length} characters
                     </p>
+                  )}
+                </div>
+
+                {/* ─ AI Review Card ─ */}
+                <div className="rounded-2xl p-6"
+                  style={{ background: 'rgba(255,255,255,0.78)', backdropFilter: 'blur(12px)', border: '1.5px solid rgba(37,99,235,0.18)' }}>
+
+                  <div className="flex items-center gap-3 mb-4 pb-4" style={{ borderBottom: '1px solid rgba(18,77,150,0.08)' }}>
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                      style={{ background: 'rgba(37,99,235,0.12)', border: '1.5px solid rgba(37,99,235,0.25)' }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="11" width="18" height="10" rx="2" />
+                        <path d="M12 11V7" />
+                        <circle cx="12" cy="5" r="2" />
+                        <path d="M8 11V9a4 4 0 018 0v2" />
+                      </svg>
+                    </div>
+                    <h3 className="font-extrabold" style={{ color: B.textDark }}>AI Review</h3>
+
+                    {aiScore !== null && (
+                      <span className="ml-auto px-3 py-1 rounded-full text-sm font-black"
+                        style={{
+                          background: aiScore >= 7 ? 'rgba(5,150,105,0.12)' : aiScore >= 4 ? 'rgba(217,119,6,0.12)' : 'rgba(220,38,38,0.12)',
+                          color: aiScore >= 7 ? '#059669' : aiScore >= 4 ? '#D97706' : '#DC2626',
+                          border: `1.5px solid ${aiScore >= 7 ? 'rgba(5,150,105,0.30)' : aiScore >= 4 ? 'rgba(217,119,6,0.30)' : 'rgba(220,38,38,0.30)'}`
+                        }}>
+                        ⭐ {aiScore} / 10
+                      </span>
+                    )}
+                  </div>
+
+                  {reviewLoading && (
+                    <div className="flex items-center gap-3 py-4">
+                      <div className="w-5 h-5 border-2 rounded-full animate-spin shrink-0"
+                        style={{ borderColor: B.iceMid, borderTopColor: B.navy }} />
+                      <p className="text-sm font-medium" style={{ color: B.textMuted }}>Analysing your story with AI…</p>
+                    </div>
+                  )}
+
+                  {/* Quota exceeded — friendly coming soon card */}
+                  {quotaExceeded && !reviewLoading && (
+                    <div className="rounded-xl px-5 py-4 flex items-start gap-4"
+                      style={{ background: 'linear-gradient(135deg, rgba(37,99,235,0.06), rgba(18,77,150,0.04))', border: '1.5px dashed rgba(37,99,235,0.25)' }}>
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+                        style={{ background: 'rgba(37,99,235,0.10)' }}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-sm font-black mb-1" style={{ color: B.navy }}>AI Review Coming Soon</p>
+                        <p className="text-xs font-medium leading-relaxed" style={{ color: B.textMuted }}>
+                          Our AI is currently at capacity. Your story has been saved — the review will be available shortly. Try again in a few minutes.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Generic error */}
+                  {reviewError && !reviewLoading && !quotaExceeded && (
+                    <div className="rounded-xl p-4 text-sm font-medium"
+                      style={{ background: 'rgba(220,38,38,0.06)', border: '1.5px solid rgba(220,38,38,0.18)', color: '#DC2626' }}>
+                      {reviewError}
+                    </div>
+                  )}
+
+                  {aiReview && !reviewLoading && (
+                    <div className="rounded-xl p-4 text-sm leading-relaxed"
+                      style={{ background: 'rgba(37,99,235,0.04)', border: '1.5px solid rgba(37,99,235,0.14)', color: B.textDark }}>
+                      {aiReview}
+                    </div>
+                  )}
+
+                  {!reviewLoading && !reviewError && !aiReview && !quotaExceeded && (
+                    <p className="text-sm italic" style={{ color: B.textLight }}>No story was written — nothing to review.</p>
                   )}
                 </div>
 
