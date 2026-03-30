@@ -43,6 +43,7 @@ Transform your SSB preparation journey with comprehensive test modules, real-tim
 ### Backend Infrastructure
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=flat-square&logo=mongodb)](https://www.mongodb.com/) **NoSQL Database** - Scalable document storage  
 [![Mongoose](https://img.shields.io/badge/Mongoose-8.0-880000?style=flat-square)](https://mongoosejs.com/) **ODM** - Elegant MongoDB object modeling  
+[![Redis](https://img.shields.io/badge/Redis-7.0-DC382D?style=flat-square&logo=redis)](https://redis.io/) **In-Memory Store** - Session caching & token management  
 [![JWT](https://img.shields.io/badge/JWT-Auth-000000?style=flat-square&logo=json-web-tokens)](https://jwt.io/) **Authentication** - Secure token-based auth  
 [![Nodemailer](https://img.shields.io/badge/Nodemailer-6.9-339933?style=flat-square&logo=node.js)](https://nodemailer.com/) **Email Service** - SMTP integration  
 [![Bcrypt](https://img.shields.io/badge/Bcrypt-5.1-FF6B35?style=flat-square)](https://www.npmjs.com/package/bcrypt) **Security** - Password hashing  
@@ -57,9 +58,10 @@ Transform your SSB preparation journey with comprehensive test modules, real-tim
 ### Prerequisites
 - **Node.js 20+** 
 - **MongoDB Atlas** account or local MongoDB instance 
+- **Redis 7+** — for session & token management (`sudo apt install redis-server -y`)
 - **SMTP service** (Brevo/SendGrid) for email functionality 
 - **Cloudinary** account for image optimization 
-- **Docker & Docker Compose** (for deployment) 
+- **Docker** (for deployment) 
 
 ### ⚡ Installation
 
@@ -83,6 +85,9 @@ MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/prasikshan?retry
 
 # JWT Secret (generate a secure random string)
 JWT_SECRET=your_super_secure_jwt_secret_key_minimum_32_characters
+
+# Redis (session & token store)
+REDIS_URL=redis://localhost:6379
 
 # Email Service Configuration (Brevo SMTP)
 SMTP_HOST=smtp-relay.brevo.com
@@ -115,29 +120,45 @@ npm run dev
 ## 🐳 Docker & Production Deployment
 
 ### 🚀 Quick Docker Setup
+
+> **Requires Redis running on the host first:**
+> ```bash
+> sudo systemctl start redis-server
+> redis-cli ping  # should return PONG
+> ```
+
 ```bash
 # Build the optimized production image
 docker build -t prasikshan:latest .
 
-# Run with environment variables
+# Run with host network (required for Redis access)
 docker run -d \
   --name prasikshan-app \
   --restart unless-stopped \
-  -p 3000:3000 \
+  --network host \
   --env-file .env \
   prasikshan:latest
 ```
 
+> ⚠️ **Use `--network host` instead of `-p 3000:3000`** — this allows the container to reach Redis running on the host. The app still runs on port 3000.
+
 ### 🌐 Production Deployment with Nginx
 
-**1. Deploy the Application**
+**1. Start Redis on the server**
+```bash
+sudo apt install redis-server -y
+sudo systemctl enable redis-server
+sudo systemctl start redis-server
+```
+
+**2. Deploy the Application**
 ```bash
 # Build and start the container
 docker build -t prasikshan:production .
 docker run -d \
   --name prasikshan-prod \
   --restart always \
-  -p 3000:3000 \
+  --network host \
   --env-file .env.production \
   prasikshan:production
 ```
@@ -368,7 +389,10 @@ graph LR
 ## 🔒 Security Features
 
 ### Authentication & Authorization
-- **JWT Tokens** - Secure, stateless authentication with configurable expiration
+- **JWT Tokens** - Dual-token system: 15-min access tokens + rotating 7-day refresh tokens
+- **Redis Token Store** - Refresh tokens stored in Redis with automatic TTL expiry (not MongoDB)
+- **Instant Token Revocation** - Logout deletes token from Redis immediately — no DB roundtrip
+- **Token Rotation** - Every refresh issues a new token; reuse detection kills the session
 - **Password Hashing** - Bcrypt with salt rounds for maximum security
 - **Email Verification** - Mandatory account verification before access
 - **OTP Recovery** - Time-limited one-time passwords for password reset
@@ -572,9 +596,10 @@ Prasikshan is proudly open source because we believe:
 > **Platform Update:** Prasikshan is constantly evolving. In our latest architectural update, we've deployed major performance and security enhancements!
 
 ✨ **Recent Upgrades:**
+- **Redis Session Layer**: Migrated refresh token storage from MongoDB to Redis. Tokens now auto-expire via TTL, logout is instant, and token rotation hits Redis (~1ms) instead of MongoDB (~100ms).
 - **Comprehensive Admin Set Builders**: Fully integrated interactive Set Builders for OIR, WAT, SRT, TAT, PPDT, Lecturette, and PI inside a sleek, unified Admin Dashboard featuring tabbed navigation.
 - **Advanced TAT & PPDT Handling**: Seamless integration between our testing suites and Cloudinary. Process complete 12-picture thematic sets for TAT natively while allowing admins to embed benchmark reference stories right alongside uploaded pictures!
-- **Enterprise-Grade Authentication**: Implemented a robust dual-token JWT architecture (15-min Access Tokens + Rotating 7-day Refresh Tokens) secured via HTTP-Only cookies.
+- **Enterprise-Grade Authentication**: Implemented a robust dual-token JWT architecture (15-min Access Tokens + Rotating 7-day Refresh Tokens) secured via HTTP-Only cookies, with Redis-backed token store.
 - **Seamless Session Management**: Added a background Axios interceptor to silently catch `401/403` token expirations and automatically refresh them without disrupting the user flow.
 - **Cloudinary Global CDN Migration**: Offloaded high-resolution core assets and test images directly to Cloudinary's Global CDN. This massively unblocks Next.js server threads, reduces bandwidth costs, and turbo-charges initial page load speeds!
 

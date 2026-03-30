@@ -1,170 +1,217 @@
 # Deployment Guide for akt9802.in
 
-This guide will help you deploy the Prasikshan Next.js application using Docker and Nginx.
+This guide covers deploying the Prasikshan Next.js application using Docker and Nginx.
 
 ## Prerequisites
 
-- Docker and Docker Compose installed on your server
+- Docker installed on your server
 - Nginx installed on your server
-- SSL certificate for akt9802.in (recommended: Let's Encrypt)
+- Redis installed on your server (`sudo apt install redis-server -y`)
+- SSL certificate for akt9802.in (Let's Encrypt)
 - Domain DNS configured to point to your server IP
+
+---
 
 ## Step 1: Prepare Environment Variables
 
-1. Copy the example environment file:
 ```bash
 cp .env.example .env
-```
-
-2. Edit `.env` with your actual values:
-```bash
 nano .env
 ```
 
-Fill in:
-- `MONGODB_URI`: Your MongoDB connection string
-- `JWT_SECRET`: A secure random string for JWT tokens
-- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`: Your email service credentials
-- `SMTP_FROM_EMAIL`, `SMTP_FROM_NAME`: Email sender details
+Fill in all values including:
 
-## Step 2: Build and Run Docker Container
+```env
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+REDIS_URL=redis://localhost:6379
+SMTP_HOST=...
+CLOUDINARY_CLOUD_NAME=...
+```
 
-1. Build the Docker image:
+> `REDIS_URL` must be `redis://localhost:6379` — the container uses `--network host` so localhost works directly.
+
+---
+
+## Step 2: Start Redis
+
+```bash
+sudo systemctl start redis-server
+sudo systemctl enable redis-server   # auto-start on reboot
+
+# Verify Redis is running
+redis-cli ping   # Should return: PONG
+```
+
+---
+
+## Step 3: Build Docker Image
+
 ```bash
 docker build -t prasikshan .
 ```
 
-2. Run the container:
+> If you made code changes and the build is using old cache, force a fresh build:
+> ```bash
+> docker build --no-cache -t prasikshan .
+> ```
+
+---
+
+## Step 4: Run Docker Container
+
 ```bash
 docker run -d \
   --name prasikshan-app \
   --restart unless-stopped \
-  -p 3000:3000 \
+  --network host \
   --env-file .env \
   prasikshan
 ```
 
-3. Verify the container is running:
+> **Important:** Use `--network host` so the container can reach Redis on localhost.
+> Do NOT use `-p 3000:3000` with `--network host` — the port is shared automatically.
+> App will be accessible on port 3000.
+
+---
+
+## Step 5: Verify Deployment
+
 ```bash
+# Check container is running
 docker ps
-docker logs -f prasikshan-app
+
+# Check logs — you should see both connected
+docker logs prasikshan-app | grep -E "Redis|MongoDB"
+# Expected:
+# ✅ Redis connected
+# MongoDB connected successfully
+
+# Test Redis is storing tokens (login first, then run)
+redis-cli keys "refreshToken:*"
 ```
 
-The application should now be running on `localhost:3000`.
+Visit https://akt9802.in in your browser.
 
-## Step 3: Configure Nginx
+---
 
-1. Copy the nginx configuration with your app name:
+## Step 6: Configure Nginx
+
 ```bash
 sudo cp prasikshan.nginx.conf /etc/nginx/sites-available/prasikshan
-```
-
-2. Create a symbolic link to enable the site:
-```bash
 sudo ln -s /etc/nginx/sites-available/prasikshan /etc/nginx/sites-enabled/
-```
-
-3. Test nginx configuration:
-```bash
 sudo nginx -t
-```
-
-4. Reload nginx:
-```bash
 sudo systemctl reload nginx
 ```
 
-5. Obtain SSL certificate using Certbot (this will automatically configure SSL in nginx):
+SSL certificate:
 ```bash
-sudo apt update
 sudo apt install certbot python3-certbot-nginx
 sudo certbot --nginx -d akt9802.in -d www.akt9802.in
 ```
 
-Certbot will automatically:
-- Add SSL certificate configuration
-- Set up HTTPS redirect from HTTP
-- Configure SSL protocols and ciphers
-- Set up auto-renewal
+---
 
-## Step 4: Verify Deployment
+## Update Application (Standard Deploy Flow)
 
-Visit https://akt9802.in in your browser. The application should be accessible.
-
-## Useful Commands
-
-### Docker Commands
-
-- View logs: `docker logs -f prasikshan-app`
-- Restart container: `docker restart prasikshan-app`
-- Stop container: `docker stop prasikshan-app`
-- Remove container: `docker rm prasikshan-app`
-- Remove image: `docker rmi prasikshan`
-
-### Nginx Commands
-
-- Test configuration: `sudo nginx -t`
-- Reload: `sudo systemctl reload nginx`
-- Restart: `sudo systemctl restart nginx`
-- View logs: `sudo tail -f /var/log/nginx/error.log`
-
-### Update Application
-
-1. Pull latest code:
 ```bash
+# 1. Pull latest code
 git pull origin main
-```
 
-2. Stop and remove old container:
-```bash
+# 2. Stop and remove old container
 docker stop prasikshan-app
 docker rm prasikshan-app
-```
 
-3. Rebuild image:
-```bash
+# 3. Rebuild image (use --no-cache if code changes aren't picked up)
 docker build -t prasikshan .
-```
 
-4. Run new container:
-```bash
+# 4. Run new container
 docker run -d \
   --name prasikshan-app \
   --restart unless-stopped \
-  -p 3000:3000 \
+  --network host \
   --env-file .env \
   prasikshan
+
+# 5. Verify
+docker logs prasikshan-app
 ```
+
+---
+
+## Useful Commands
+
+### Docker
+```bash
+docker logs -f prasikshan-app      # live logs
+docker logs prasikshan-app         # all logs
+docker restart prasikshan-app      # restart
+docker stop prasikshan-app         # stop
+docker rm prasikshan-app           # remove container
+docker rmi prasikshan              # remove image
+```
+
+### Redis
+```bash
+redis-cli ping                          # check running → PONG
+redis-cli keys "refreshToken:*"         # view active sessions
+redis-cli flushall                      # clear all Redis data (use carefully)
+sudo systemctl status redis-server      # service status
+sudo systemctl restart redis-server     # restart Redis
+```
+
+### Nginx
+```bash
+sudo nginx -t                           # test config
+sudo systemctl reload nginx             # reload
+sudo tail -f /var/log/nginx/error.log   # error logs
+```
+
+---
 
 ## Troubleshooting
 
+### Redis ECONNREFUSED in Docker logs
+- Make sure container is started with `--network host`
+- Make sure `REDIS_URL=redis://localhost:6379` in `.env`
+- Verify Redis is running: `redis-cli ping`
+
+### Sign-in not working
+```bash
+docker logs prasikshan-app | grep -E "Redis|Error"
+```
+- If Redis errors → fix Redis connection (see above)
+- If no Redis errors → check MongoDB connection
+
+### Build using old cached code
+```bash
+docker build --no-cache -t prasikshan .
+```
+
 ### Container won't start
-- Check logs: `docker logs prasikshan-app`
-- Verify environment variables in `.env`
-- Ensure port 3000 is not already in use: `sudo lsof -i :3000`
+```bash
+docker logs prasikshan-app
+sudo lsof -i :3000   # check if port 3000 is already in use
+```
 
 ### Nginx 502 Bad Gateway
-- Verify Docker container is running: `docker ps`
-- Check if app is listening on port 3000: `curl localhost:3000`
-- Review nginx error logs: `sudo tail -f /var/log/nginx/error.log`
+```bash
+docker ps                              # is container running?
+curl localhost:3000                    # is app responding?
+sudo tail -f /var/log/nginx/error.log  # nginx errors
+```
 
-### SSL Certificate Issues
-- Renew certificate: `sudo certbot renew`
-- Check certificate expiry: `sudo certbot certificates`
+### SSL Certificate
+```bash
+sudo certbot renew           # renew certificate
+sudo certbot certificates    # check expiry
+```
 
-## Security Recommendations
+---
 
-1. Keep your `.env` file secure and never commit it to version control
-2. Regularly update Docker images and dependencies
-3. Enable firewall and only allow necessary ports (80, 443, 22)
-4. Set up automatic SSL certificate renewal
-5. Regularly backup your MongoDB database
-6. Monitor application logs for suspicious activity
+## Security Notes
 
-## Monitoring
-
-Consider setting up:
-- Log aggregation (e.g., ELK stack)
-- Application monitoring (e.g., PM2, New Relic)
-- Uptime monitoring (e.g., UptimeRobot)
-- Database backups (automated MongoDB backups)
+- Never commit `.env` to version control
+- Redis is currently bound to `127.0.0.1` only (safe — only accessible on the host)
+- Firewall: only allow ports 80, 443, 22
+- Regularly update Docker images and dependencies
