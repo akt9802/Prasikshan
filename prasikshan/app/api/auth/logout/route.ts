@@ -1,40 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import connectDB from '@/lib/db';
-import User from '@/models/User';
+import redis from '@/lib/redis';
 
 export async function POST(req: NextRequest) {
   try {
     const refreshToken = req.cookies.get('refreshToken')?.value;
-    
-    // Clear the HTTP-only cookie
+
+    // Clear the HTTP-only cookie immediately
     const response = NextResponse.json(
       { success: true, message: 'Logged out successfully' },
       { status: 200 }
     );
-    
-    // Expire cookie to remove it
+
     response.cookies.set('refreshToken', '', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      expires: new Date(0), // Set to past date to expire immediately
+      expires: new Date(0),
       path: '/',
     });
 
+    // Delete refresh token from Redis (instant revocation, no DB needed)
     if (refreshToken) {
       const secret = process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET || 'default_secret';
       try {
         const decoded = jwt.verify(refreshToken, secret) as { userId: string };
-        await connectDB();
-        
-        // Remove token from database to prevent reuse
-        await User.findByIdAndUpdate(decoded.userId, {
-          $unset: { refreshToken: 1 }
-        });
+        await redis.del(`refreshToken:${decoded.userId}`);
       } catch (e) {
-        // If token verification fails, still log out on the client side
-        console.warn('Logout token verification failed, continuing logout.', e);
+        // Token already invalid/expired — nothing to delete, still log out cleanly
+        console.warn('Logout: token verification failed, skipping Redis cleanup.');
       }
     }
 

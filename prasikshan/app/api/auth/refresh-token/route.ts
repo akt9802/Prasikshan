@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import connectDB from '@/lib/db';
 import User from '@/models/User';
+import redis from '@/lib/redis';
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,7 +17,7 @@ export async function POST(req: NextRequest) {
 
     const secret = process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET || 'default_secret';
 
-    // Verify the refresh token
+    // Verify the refresh token signature
     let decoded: { userId: string };
     try {
       decoded = jwt.verify(refreshToken, secret) as { userId: string };
@@ -27,27 +28,26 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Check token against Redis (replaces MongoDB lookup)
+    const stored = await redis.get(`refreshToken:${decoded.userId}`);
+
+    if (!stored || stored !== refreshToken) {
+      // Token mismatch — possible theft. Nuke from Redis instantly.
+      await redis.del(`refreshToken:${decoded.userId}`);
+      return NextResponse.json(
+        { success: false, message: 'Refresh token reuse detected. Please log in again.' },
+        { status: 403 }
+      );
+    }
+
+    // Fetch user from MongoDB only for access token payload (email, username)
     await connectDB();
-    const user = await User.findById(decoded.userId).select('+refreshToken');
+    const user = await User.findById(decoded.userId).select('email username');
 
     if (!user) {
       return NextResponse.json(
         { success: false, message: 'User not found' },
         { status: 404 }
-      );
-    }
-
-    // Check token family / rotation: ensure the token matches the DB
-    if (user.refreshToken !== refreshToken) {
-      // Possible token theft, invalidate all tokens by clearing from DB
-      await User.findByIdAndUpdate(
-        user._id,
-        { $unset: { refreshToken: "" } },
-        { strict: false }
-      );
-      return NextResponse.json(
-        { success: false, message: 'Refresh token reuse detected. Please log in again.' },
-        { status: 403 }
       );
     }
 
@@ -59,30 +59,25 @@ export async function POST(req: NextRequest) {
         username: user.username,
       },
       process.env.JWT_SECRET || 'default_secret',
-      { expiresIn: '15m' } // Short-lived access token
+      { expiresIn: '15m' }
     );
 
-    // Generate new refresh token to implement rotating refresh tokens
+    // Generate new refresh token (rotation)
     const newRefreshToken = jwt.sign(
-      {
-        userId: user._id.toString(),
-      },
+      { userId: user._id.toString() },
       secret,
-      { expiresIn: '7d' } // Long-lived refresh token
+      { expiresIn: '7d' }
     );
 
-    // Save new refresh token in DB
-    await User.findByIdAndUpdate(
-      user._id,
-      { $set: { refreshToken: newRefreshToken } },
-      { strict: false }
+    // Save new refresh token to Redis — TTL resets to 7 days
+    await redis.setEx(
+      `refreshToken:${decoded.userId}`,
+      7 * 24 * 60 * 60, // 7 days
+      newRefreshToken
     );
 
     const response = NextResponse.json(
-      {
-        success: true,
-        token: newAccessToken,
-      },
+      { success: true, token: newAccessToken },
       { status: 200 }
     );
 

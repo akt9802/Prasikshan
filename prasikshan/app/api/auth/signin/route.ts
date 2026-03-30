@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import connectDB from '@/lib/db';
 import User from '@/models/User';
+import redis from '@/lib/redis';
 
 export async function POST(req: NextRequest) {
   try {
@@ -78,12 +79,11 @@ export async function POST(req: NextRequest) {
       { expiresIn: '7d' }
     );
 
-    // Save refresh token to user using findByIdAndUpdate to ensure it writes
-    // even if Mongoose model schema caching causes strict mode issues
-    await User.findByIdAndUpdate(
-      existingUser._id,
-      { $set: { refreshToken: refreshToken } },
-      { strict: false }
+    // Save refresh token to Redis with 7-day TTL (auto-expires, no DB write needed)
+    await redis.setEx(
+      `refreshToken:${existingUser._id.toString()}`,
+      7 * 24 * 60 * 60, // 7 days in seconds
+      refreshToken
     );
 
     // Return user without password
