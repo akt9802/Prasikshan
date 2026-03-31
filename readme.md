@@ -28,6 +28,7 @@ Transform your SSB preparation journey with comprehensive test modules, real-tim
 | HTTP-Only Secure Cookies | Progress Tracking | Tier System (🥉🥈🥇) | User Analytics |
 | Axios Automatic Token Retries | Score Trends | Streak Counters | Question Upload |
 | Server-side API Protection | Percentile Analysis | Leaderboards | Result Monitoring |
+| Redis Dual-Layer Rate Limiting | Time Management | Activity Patterns | Activity Audit |
 
 </div>
 
@@ -377,7 +378,7 @@ graph LR
 ### Data Protection
 - **CORS Configuration** - Controlled cross-origin request handling
 - **Input Validation** - Comprehensive request validation and sanitization
-- **Rate Limiting** - API endpoint protection against abuse
+- **Dual-Layer Rate Limiting** - Redis-backed IP sliding window & email account lockout defending against distributed brute-force botnets
 - **Environment Security** - Sensitive configuration via environment variables
 - **Database Security** - MongoDB connection with authentication and encryption
 
@@ -577,6 +578,7 @@ Prasikshan is proudly open source because we believe:
 - **Enterprise-Grade Authentication**: Implemented a robust dual-token JWT architecture (15-min Access Tokens + Rotating 7-day Refresh Tokens) secured via HTTP-Only cookies.
 - **Seamless Session Management**: Added a background Axios interceptor to silently catch `401/403` token expirations and automatically refresh them without disrupting the user flow.
 - **Cloudinary Global CDN Migration**: Offloaded high-resolution core assets and test images directly to Cloudinary's Global CDN. This massively unblocks Next.js server threads, reduces bandwidth costs, and turbo-charges initial page load speeds!
+- **Advanced Threat Protection**: Implemented a robust dual-layer Redis rate limiting architecture (Sliding Window IP tracking & Account Lockout mechanisms) to neutralize distributed brute-force attacks and protect backend compute resources.
 
 ### 🎯 Upcoming Features (Q2 2026)
 
