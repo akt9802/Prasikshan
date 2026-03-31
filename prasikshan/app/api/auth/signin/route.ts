@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import connectDB from '@/lib/db';
 import User from '@/models/User';
 import { getRedis } from '@/lib/redis';
+import { checkRateLimit, recordFailedLogin, clearFailedLogin } from '@/lib/rateLimit';
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,10 +23,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Check rate limit (IP & Account Lockout)
+    const rateLimit = await checkRateLimit(req, email);
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: rateLimit.message,
+        },
+        { status: 429 }
+      );
+    }
+
     // Find user by email
     const existingUser = await User.findOne({ email }).select('+password');
 
     if (!existingUser) {
+      await recordFailedLogin(email);
       return NextResponse.json(
         {
           success: false,
@@ -50,6 +64,7 @@ export async function POST(req: NextRequest) {
     const isPasswordValid = await bcrypt.compare(password, existingUser.password);
 
     if (!isPasswordValid) {
+      await recordFailedLogin(email);
       return NextResponse.json(
         {
           success: false,
@@ -58,6 +73,9 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     }
+
+    // Clear failed login attempts on success
+    await clearFailedLogin(email);
 
     // Generate Access Token (short-lived)
     const token = jwt.sign(
