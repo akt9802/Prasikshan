@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import connectDB from '@/lib/db';
 import User from '@/models/User';
 import { sendVerificationOTP } from '@/lib/mailer';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 // Helper to generate 6 digit OTP
 const generateOTP = () => {
@@ -23,6 +24,18 @@ export async function POST(req: NextRequest) {
           message: 'Please provide username, email, and password',
         },
         { status: 400 }
+      );
+    }
+
+    // Check rate limit
+    const rateLimit = await checkRateLimit(req, email);
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: rateLimit.message,
+        },
+        { status: 429 }
       );
     }
 

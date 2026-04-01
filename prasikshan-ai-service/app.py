@@ -1,36 +1,61 @@
 import os
 import json
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+from typing import List, Optional
 from dotenv import load_dotenv
+from openai import OpenAI
 
 load_dotenv()
 
-from google import genai
+app = FastAPI(title="Prasikshan AI Service", version="1.0.0")
 
-app = Flask(__name__)
-CORS(app)
+# Setup CORS equivalent to Flask-CORS defaults
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
+endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT", "https://basic-agent-flow-zak-resource.services.ai.azure.com/models")
+api_key = os.environ.get("AZURE_OPENAI_API_KEY")
 
+client = OpenAI(
+    base_url=endpoint,
+    api_key=api_key
+)
 
-@app.route("/api/ppdt-review", methods=["POST"])
-def ppdt_review():
+class SampleStory(BaseModel):
+    title: Optional[str] = None
+    narration: Optional[str] = None
+
+class PPDTReviewRequest(BaseModel):
+    story: str
+    sampleStories: List[SampleStory] = Field(default_factory=list)
+
+@app.post("/api/ppdt-review")
+async def ppdt_review(payload: PPDTReviewRequest):
     try:
-        data = request.get_json()
-        story = data.get("story", "")
-        sample_stories = data.get("sampleStories", [])  # list of { title, narration }
+        story = payload.story
+        sample_stories = payload.sampleStories
 
         if not story or not story.strip():
-            return jsonify({"success": False, "error": "Story is empty"}), 400
+            return JSONResponse(
+                status_code=400,
+                content={"success": False, "error": "Story is empty"}
+            )
 
         # Format sample stories into readable text for context
         sample_stories_text = ""
         if sample_stories:
             sample_stories_text = "\n\nHere are the IDEAL sample stories for this image (use these to understand the scene and evaluate the candidate's story):\n"
             for i, s in enumerate(sample_stories, start=1):
-                title = s.get("title", f"Sample {i}")
-                narration = s.get("narration", "")
+                title = s.title or f"Sample {i}"
+                narration = s.narration or ""
                 sample_stories_text += f"\n[Sample {i}] {title}\n{narration}\n"
 
         prompt = f"""You are an expert SSB (Services Selection Board) PPDT evaluator.
@@ -43,17 +68,19 @@ The CANDIDATE'S story is:
 {story}
 ---
 
+CRITICAL RULE: Perception Accuracy is paramount. If the candidate's story describes a completely different scenario or setting from the sample stories (e.g., they describe a hospital but the scene is a classroom), this is a FATAL FLAW in PPDT. Regardless of how well-written or positive their story is, give a score of 3 or less and point out the flawed perception.
+
 Compare the candidate's story with the sample stories and evaluate it based on these SSB PPDT criteria:
-1. Perception accuracy (does the story match the theme and scene of the image?)
-2. Characters & roles (are characters clearly identified with roles?)
-3. Theme (is the central theme strong and officer-like?)
-4. Narrative structure (past → present → future resolution)
-5. Positive outcome (does the story end positively with initiative?)
-6. Language & clarity (is the writing clear and concise?)
+1. Perception accuracy (Is the scenario aligned with the visual cues implied by the sample stories? VERY IMPORTANT)
+2. Characters & roles (Are characters clearly identified with proper roles?)
+3. Theme (Is the central theme strong and officer-like?)
+4. Narrative structure (Past context → Present action → Future resolution)
+5. Positive outcome (Does the story end positively with practical problem-solving?)
+6. Language & clarity (Is the writing clear and concise?)
 
 Provide:
-- A brief, constructive review (3-5 sentences, specific to their story, comparing with the ideal)
-- A score from 1 to 10
+- A brief, constructive review (3-5 sentences, specific to their story, pointing out if they missed the scenario altogether)
+- A score from 1 to 10 (Strictly follow the Critical Rule for mismatched scenarios)
 
 Respond ONLY with valid JSON in this exact format, no extra text:
 {{
@@ -61,49 +88,64 @@ Respond ONLY with valid JSON in this exact format, no extra text:
   "score": 7
 }}"""
 
-        response = client.models.generate_content(
-            model="gemini-2.0-flash-lite",
-            contents=[prompt],
+        completion = client.chat.completions.create(
+            model="grok-3",
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
         )
 
-        text = response.text.strip()
+        content = completion.choices[0].message.content
+        text = content.strip() if content is not None else ""
 
         # Strip markdown code fences if present
         if text.startswith("```"):
             parts = text.split("```")
             text = parts[1] if len(parts) >= 2 else text
-            if text.startswith("json"):
-                text = text[4:]
+            text = text.removeprefix("json")
+            text = text.removeprefix("json\n")
         text = text.strip()
 
         result = json.loads(text)
         score = int(result.get("score", 5))
         score = max(1, min(10, score))  # clamp between 1–10
 
-        return jsonify({
+        return {
             "success": True,
-            "review": result["review"],
+            "review": result.get("review", ""),
             "score": score
-        })
+        }
 
     except json.JSONDecodeError:
-        return jsonify({"success": False, "error": "AI returned an unexpected response format."}), 500
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": "AI returned an unexpected response format."}
+        )
     except Exception as e:
         err_str = str(e)
         # Detect quota / rate-limit errors and return a clean flag
         if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "quota" in err_str.lower():
-            return jsonify({
-                "success": False,
-                "quota_exceeded": True,
-                "error": "AI review quota exceeded. Please try again later."
-            }), 429
-        return jsonify({"success": False, "error": err_str}), 500
+            return JSONResponse(
+                status_code=429,
+                content={
+                    "success": False,
+                    "quota_exceeded": True,
+                    "error": "AI review quota exceeded. Please try again later."
+                }
+            )
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": err_str}
+        )
 
+@app.get("/health")
+async def health():
+    return {"status": "ok", "service": "prasikshan-ai-service"}
 
-@app.route("/health", methods=["GET"])
-def health():
-    return jsonify({"status": "ok", "service": "prasikshan-ai-service"})
-
-
+# Uvicorn is the server that actually runs your app and makes it accessible in a browser.
 if __name__ == "__main__":
-    app.run(port=5001, debug=True)
+    import uvicorn
+    uvicorn.run("app:app", host="127.0.0.1", port=5001, reload=True)

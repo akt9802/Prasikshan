@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import User from '@/models/User';
 import { sendPasswordResetOTP } from '@/lib/mailer';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -12,6 +13,15 @@ export async function POST(req: NextRequest) {
 
         if (!email) {
             return NextResponse.json({ success: false, message: 'Email is required' }, { status: 400 });
+        }
+
+        // Check rate limit
+        const rateLimit = await checkRateLimit(req, email);
+        if (!rateLimit.success) {
+            return NextResponse.json(
+                { success: false, message: rateLimit.message },
+                { status: 429 }
+            );
         }
 
         const user = await User.findOne({ email });

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { getAuthToken } from "@/lib/auth";
 import { useRouter } from "next/navigation";
+import apiClient from "@/lib/axios";
 
 // ── Brand palette ─────────────────────────────────────────────────────────────
 const B = {
@@ -57,13 +58,12 @@ export default function DisplayPPDTQuestion() {
   useEffect(() => {
     const fetchQuestion = async () => {
       try {
-        const response = await fetch("/api/ppdtquestions");
-        if (!response.ok) throw new Error("Failed to fetch PPDT question");
-        const result = await response.json();
+        const response = await apiClient.get("/ppdtquestions");
+        const result = response.data;
         if (result.success) setQuestion(result.data);
         else throw new Error(result.error || "Failed to fetch PPDT question");
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch question");
+      } catch (err: any) {
+        setError(err.response?.data?.error || err.message || "Failed to fetch question");
       }
     };
     fetchQuestion();
@@ -113,6 +113,7 @@ export default function DisplayPPDTQuestion() {
       if (data.success) {
         setAiReview(data.review);
         setAiScore(data.score);
+        return data.score;
       } else if (data.quota_exceeded) {
         setQuotaExceeded(true);
       } else {
@@ -123,29 +124,33 @@ export default function DisplayPPDTQuestion() {
     } finally {
       setReviewLoading(false);
     }
+    return 0; // fallback score
   };
 
   const handleSubmitPPDT = async () => {
     if (submitted) return;
     setSubmitted(true);
 
+    let finalScore = 0;
+
     // Trigger AI review with story + sample stories as context
     if (question?.stories) {
-      fetchAiReview(userStory, question.stories);
+      finalScore = await fetchAiReview(userStory, question.stories) || 0;
     }
 
     const token = getAuthToken();
     if (!token) return;
     try {
-      await fetch("/api/ppdtquestions/result", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          testName: "PPDT Test", score: 1, timeTaken: 270,
-          dateTaken: new Date().toISOString(), responses: [{ story: userStory }],
-        }),
+      await apiClient.post("/ppdtquestions/result", {
+        testName: "PPDT Test", 
+        score: finalScore, 
+        timeTaken: 270 - overallTimeLeft,
+        dateTaken: new Date().toISOString(), 
+        responses: [{ story: userStory }],
       });
-    } catch { /* silent */ }
+    } catch (err) {
+      console.error("Failed to save result:", err);
+    }
   };
 
   const handleStoryChange = (v: string) => {
