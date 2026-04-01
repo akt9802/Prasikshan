@@ -21,7 +21,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT", "https://basic-agent-flow-zak-resource.services.ai.azure.com/models")
+endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
 api_key = os.environ.get("AZURE_OPENAI_API_KEY")
 
 client = OpenAI(

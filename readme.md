@@ -42,6 +42,8 @@ Transform your SSB preparation journey with comprehensive test modules, real-tim
 [![React Icons](https://img.shields.io/badge/React_Icons-5.0-61DAFB?style=flat-square&logo=react)](https://react-icons.github.io/react-icons/) **Icon Library** - Comprehensive icon set  
 
 ### Backend Infrastructure
+[![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/) **Microservice** - High performance async API for AI processing
+[![Azure OpenAI](https://img.shields.io/badge/Azure_OpenAI-008AD7?style=flat-square&logo=microsoft-azure)](https://azure.microsoft.com/) **Grok-3 GenAI** - Contextual evaluation of candidate stories
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=flat-square&logo=mongodb)](https://www.mongodb.com/) **NoSQL Database** - Scalable document storage  
 [![Mongoose](https://img.shields.io/badge/Mongoose-8.0-880000?style=flat-square)](https://mongoosejs.com/) **ODM** - Elegant MongoDB object modeling  
 [![JWT](https://img.shields.io/badge/JWT-Auth-000000?style=flat-square&logo=json-web-tokens)](https://jwt.io/) **Authentication** - Secure token-based auth  
@@ -575,6 +577,7 @@ Prasikshan is proudly open source because we believe:
 ✨ **Recent Upgrades:**
 - **Comprehensive Admin Set Builders**: Fully integrated interactive Set Builders for OIR, WAT, SRT, TAT, PPDT, Lecturette, and PI inside a sleek, unified Admin Dashboard featuring tabbed navigation.
 - **Advanced TAT & PPDT Handling**: Seamless integration between our testing suites and Cloudinary. Process complete 12-picture thematic sets for TAT natively while allowing admins to embed benchmark reference stories right alongside uploaded pictures!
+- **FastAPI AI Microservice Migration**: Transitioned the core AI story review engine from Flask to an asynchronous **FastAPI** architecture powered by Uvicorn. Completely restructured to ingest **Azure OpenAI (Grok-3)** contextual evaluations, fixing critical header size issues (431 Errors) while guaranteeing strict perception-accuracy scoring via rigid prompt system constraints.
 - **Enterprise-Grade Authentication**: Implemented a robust dual-token JWT architecture (15-min Access Tokens + Rotating 7-day Refresh Tokens) secured via HTTP-Only cookies.
 - **Seamless Session Management**: Added a background Axios interceptor to silently catch `401/403` token expirations and automatically refresh them without disrupting the user flow.
 - **Cloudinary Global CDN Migration**: Offloaded high-resolution core assets and test images directly to Cloudinary's Global CDN. This massively unblocks Next.js server threads, reduces bandwidth costs, and turbo-charges initial page load speeds!
