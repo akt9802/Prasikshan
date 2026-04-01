@@ -423,7 +423,9 @@ export default function DisplayPPDTQuestion() {
                         <path d="M8 11V9a4 4 0 018 0v2" />
                       </svg>
                     </div>
-                    <h3 className="font-extrabold" style={{ color: B.textDark }}>AI Review</h3>
+                    <h3 className="font-extrabold" style={{ color: B.textDark }}>
+                      {reviewLoading ? "AI is Reviewing..." : "AI Review"}
+                    </h3>
 
                     {aiScore !== null && (
                       <span className="ml-auto px-3 py-1 rounded-full text-sm font-black"
@@ -438,10 +440,16 @@ export default function DisplayPPDTQuestion() {
                   </div>
 
                   {reviewLoading && (
-                    <div className="flex items-center gap-3 py-4">
-                      <div className="w-5 h-5 border-2 rounded-full animate-spin shrink-0"
-                        style={{ borderColor: B.iceMid, borderTopColor: B.navy }} />
-                      <p className="text-sm font-medium" style={{ color: B.textMuted }}>Analysing your story with AI…</p>
+                    <div className="rounded-xl px-5 py-4 flex flex-col gap-2 mb-2"
+                      style={{ background: 'linear-gradient(135deg, rgba(217,119,6,0.06), rgba(217,119,6,0.02))', border: '1.5px dashed rgba(217,119,6,0.40)' }}>
+                      <div className="flex items-center gap-3">
+                        <div className="w-5 h-5 border-2 rounded-full animate-spin shrink-0"
+                          style={{ borderColor: 'rgba(217,119,6,0.20)', borderTopColor: '#D97706' }} />
+                        <p className="text-sm font-black text-[#D97706]">Analysing your story with AI…</p>
+                      </div>
+                      <p className="text-xs font-bold text-[#D97706]/80 pl-8 leading-relaxed">
+                        ⚠️ Please wait and do not close or navigate away from this page, otherwise your test result will not be saved!
+                      </p>
                     </div>
                   )}
 
