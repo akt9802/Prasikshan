@@ -120,3 +120,36 @@ pm2 restart prasikshan
 ```
 
 🎉 **Success!** Your system is now securely utilizing the asynchronous FastAPI microservice to process PPDT reviews locally via Azure OpenAI.
+
+---
+
+## 🔄 Updating Code & Redeploying
+Whenever you modify the Python code inside the `prasikshan-ai-service` repository locally and push it to GitHub, you will need to seamlessly redeploy those changes to this Virtual Machine.
+
+Follow these simple steps to update your live backend:
+
+**1. Pull the Latest Changes:**
+Navigate to your directory and pull the newest commits:
+```bash
+cd /path/to/Prasikshan/prasikshan-ai-service
+git pull origin main
+```
+
+**2. Install Any New Dependencies** *(Only required if you added new libraries to requirements.txt)*:
+```bash
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+**3. Restart the Background Processing Engine:**
+If you deployed using PM2 (Method A):
+```bash
+pm2 restart prasikshan-ai
+```
+
+If you deployed using Native Systemd (Method B):
+```bash
+sudo systemctl restart prasikshan-ai
+```
+
+Your new AI logic will immediately be live and accessible to the frontend!

@@ -101,6 +101,9 @@ CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 CLOUDINARY_URL=cloudinary://your_api_key:your_api_secret@your_cloud_name
 
+# AI Service Endpoint
+AI_SERVICE_URL=http://localhost:5001
+
 # Environment
 NODE_ENV=development
 ```
@@ -112,6 +115,10 @@ The application automatically creates required collections and indexes on first 
 ```bash
 npm run dev
 ```
+
+**6. Launch AI Microservice (Optional)**
+If you are explicitly testing the PPDT or TAT AI review features locally, you will need to boot up the Python FastAPI backend located in the `prasikshan-ai-service` folder.
+*See [prasikshan-ai-service/DEPLOYMENT.md](./prasikshan-ai-service/DEPLOYMENT.md) for step-by-step local and production deployment instructions.*
 
 🎉 **Success!** Visit `http://localhost:3000` to see Prasikshan in action.
 
