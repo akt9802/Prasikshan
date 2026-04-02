@@ -137,7 +137,7 @@ git pull origin main
 
 **2. Install Any New Dependencies** *(Only required if you added new libraries to requirements.txt)*:
 ```bash
-source venv/bin/activate
+source venv/bin/activate.fish
 pip install -r requirements.txt
 ```
 
