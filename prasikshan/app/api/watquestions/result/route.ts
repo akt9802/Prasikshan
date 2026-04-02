@@ -5,71 +5,107 @@ import jwt from "jsonwebtoken";
 
 export async function POST(request: NextRequest) {
   try {
+    console.log("=== WAT Result API Called ===");
+    
     // Verify JWT token
     const authHeader = request.headers.get("authorization");
-    const token = authHeader?.split(" ")[1];
-
-    if (!token) {
+    console.log("Auth Header:", authHeader);
+    
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      console.error("No valid authorization header");
       return NextResponse.json(
-        { success: false, error: "No token provided" },
+        { success: false, error: "No authorization token provided" },
         { status: 401 }
       );
     }
 
+    const token = authHeader.slice(7);
+    console.log("Token extracted");
+
     let userId: string;
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret") as {
+      const secret = process.env.JWT_SECRET || 'default_secret';
+      
+      const decoded = jwt.verify(token, secret) as {
         userId: string;
       };
       userId = decoded.userId;
-    } catch {
+      console.log("User ID from token:", userId);
+      
+      if (!userId) {
+        console.error("No userId in token payload");
+        return NextResponse.json(
+          { success: false, error: "Invalid token payload: no user id" },
+          { status: 403 }
+        );
+      }
+    } catch (error: any) {
+      console.error("Token verification error:", error.name, error.message);
       return NextResponse.json(
         { success: false, error: "Invalid token" },
         { status: 403 }
       );
     }
 
+    console.log("Connecting to database...");
     await connectDB();
+    console.log("Database connected");
 
     // Get request body
-    const { testName, score, timeTaken, dateTaken, responses } =
-      await request.json();
+    const body = await request.json();
+    const { testName, score, timeTaken, dateTaken } = body;
+    console.log("Request body:", { testName, score, timeTaken, dateTaken });
 
     // Find user
+    console.log("Finding user with ID:", userId);
     const user = await User.findById(userId);
+    console.log("User found:", user ? "Yes" : "No");
+    
     if (!user) {
+      console.error("User not found in database");
       return NextResponse.json(
         { success: false, error: "User not found" },
         { status: 404 }
       );
     }
 
-    // Create test result object
+    // Create test result object (WE ONLY SAVE THE SCORE, DELIBERATELY OMITTING THE MASSIVE 60-WORD RESPONSES ARRAY)
     const testResult = {
       testName,
       score,
       timeTaken,
       dateTaken,
-      responses, // Array of {word, response} pairs
       createdAt: new Date(),
     };
 
+    console.log("Test result object created:", { testName, score });
+
     // Initialize testsTaken array if it doesn't exist
     if (!user.testsTaken) {
-      (user as any).testsTaken = [];
+      console.log("Initializing testsTaken array");
+      user.testsTaken = [];
     }
 
+    console.log("Current testsTaken count:", user.testsTaken.length);
+
     // Add result to user's test history
-    (user as any).testsTaken.push(testResult);
-    await user.save();
+    user.testsTaken.push(testResult);
+    console.log("Result added to testsTaken, new count:", user.testsTaken.length);
+
+    // Save user
+    console.log("Saving user...");
+    const savedUser = await user.save();
+    console.log("User saved successfully");
+    console.log("Saved testsTaken count:", savedUser.testsTaken?.length);
 
     return NextResponse.json({
       success: true,
-      message: "WAT test result saved successfully",
+      message: "WAT test score saved successfully",
       data: testResult,
     });
   } catch (error) {
     console.error("Error saving WAT test result:", error);
+    console.error("Error stack:", error instanceof Error ? error.stack : "");
     return NextResponse.json(
       {
         success: false,

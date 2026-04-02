@@ -42,7 +42,9 @@ Transform your SSB preparation journey with comprehensive test modules, real-tim
 [![React Icons](https://img.shields.io/badge/React_Icons-5.0-61DAFB?style=flat-square&logo=react)](https://react-icons.github.io/react-icons/) **Icon Library** - Comprehensive icon set  
 
 ### Backend Infrastructure
-[![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/) **Microservice** - High performance async API for AI processing
+[![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/) **Language Engine** - Core logic for the AI Microservice
+[![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/) **Microservice** - High performance async API via Uvicorn
+[![Pydantic](https://img.shields.io/badge/Pydantic-E92063?style=flat-square&logo=pydantic)](https://docs.pydantic.dev/) **Validation** - Strict data model enforcement
 [![Azure OpenAI](https://img.shields.io/badge/Azure_OpenAI-008AD7?style=flat-square&logo=microsoft-azure)](https://azure.microsoft.com/) **Grok-3 GenAI** - Contextual evaluation of candidate stories
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=flat-square&logo=mongodb)](https://www.mongodb.com/) **NoSQL Database** - Scalable document storage  
 [![Mongoose](https://img.shields.io/badge/Mongoose-8.0-880000?style=flat-square)](https://mongoosejs.com/) **ODM** - Elegant MongoDB object modeling  
@@ -582,6 +584,8 @@ Prasikshan is proudly open source because we believe:
 > **Platform Update:** Prasikshan is constantly evolving. In our latest architectural update, we've deployed major performance and security enhancements!
 
 ✨ **Recent Upgrades:**
+- **Word Association Test (WAT) AI Psychological Assessment**: Embedded a comprehensive, real-time SSB AI evaluation matrix natively into the WAT module. The AI issues strict multi-factor sentence-by-sentence psych critiques (penalizing low completion rates, lack of OLQ, and excessive usage of idioms/"I" pronouns) delivering instant feedback after a fast-paced 15-minute 60-word simulation.
+- **Modular AI Service Architecture**: Refactored the FastAPI microservice into a cleanly distributed, scalable router-based backend (`APIRouter`). This allows for decoupled, rapid scaling of future test-specific AI endpoints (like TAT or Interview analysis) without bloating the core application file.
 - **Comprehensive Admin Set Builders**: Fully integrated interactive Set Builders for OIR, WAT, SRT, TAT, PPDT, Lecturette, and PI inside a sleek, unified Admin Dashboard featuring tabbed navigation.
 - **Advanced TAT & PPDT Handling**: Seamless integration between our testing suites and Cloudinary. Process complete 12-picture thematic sets for TAT natively while allowing admins to embed benchmark reference stories right alongside uploaded pictures!
 - **FastAPI AI Microservice Migration**: Transitioned the core AI story review engine from Flask to an asynchronous **FastAPI** architecture powered by Uvicorn. Completely restructured to ingest **Azure OpenAI (Grok-3)** contextual evaluations, fixing critical header size issues (431 Errors) while guaranteeing strict perception-accuracy scoring via rigid prompt system constraints.

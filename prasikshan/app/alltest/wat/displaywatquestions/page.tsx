@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import apiClient from "@/lib/axios";
 
 // ── Brand palette ─────────────────────────────────────────────────────────────
 const B = {
@@ -37,6 +38,13 @@ export default function DisplayWATQuestion() {
   const [testStarted, setTestStarted] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [setName, setSetName] = useState<string>("");
+
+  const [aiReview, setAiReview] = useState<string | null>(null);
+  const [aiScore, setAiScore] = useState<number | null>(null);
+  const [wordReviews, setWordReviews] = useState<{word: string, review: string}[]>([]);
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  const [quotaExceeded, setQuotaExceeded] = useState(false);
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -122,26 +130,65 @@ export default function DisplayWATQuestion() {
     setTimeLeft(15);
   };
 
+  const fetchAiReview = async (responsesPayload: {word: string, response: string}[]) => {
+    const attempted = responsesPayload.filter(r => r.response.trim().length > 0);
+    if (attempted.length === 0) return 0;
+    
+    setReviewLoading(true);
+    setReviewError(null);
+    setQuotaExceeded(false);
+    try {
+      const res = await fetch("/api/wat-review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ responses: attempted, totalWords: questions.length }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setAiReview(data.review);
+        setAiScore(data.score);
+        setWordReviews(data.word_reviews || []);
+        return data.score;
+      } else if (data.quota_exceeded) {
+        setQuotaExceeded(true);
+      } else {
+        setReviewError(data.error || "Could not get AI review.");
+      }
+    } catch {
+      setReviewError("Failed to connect to AI review service.");
+    } finally {
+      setReviewLoading(false);
+    }
+    return 0;
+  };
+
   const submitTest = async () => {
+    if (submitting) return;
     try {
       setSubmitting(true);
+      setShowResults(true); // Trigger UI instantly
       const newResponses = saveCurrentResponse();
+      const payloadResponses = questions.map((q, idx) => ({ word: q.word, response: newResponses[idx] || "" }));
+      
       const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-      if (token && questions.length > 0) {
+      // We don't necessarily need local token if apiClient fetches it securely via cookies/storage
+      
+      let aiCalculatedScore = 0;
+      
+      if (questions.length > 0) {
+        aiCalculatedScore = await fetchAiReview(payloadResponses) || 0;
+      }
+      
+      if (questions.length > 0) {
         const testData = {
           testName: "WAT",
-          score: newResponses.filter((r) => r.trim().length > 0).length,
+          score: aiCalculatedScore,
           timeTaken: 15 * 60 - overallTimeLeft,
           dateTaken: new Date().toISOString(),
-          responses: questions.map((q, idx) => ({ word: q.word, response: newResponses[idx] || "" })),
+          responses: payloadResponses, // Keep for API validation if needed, DB drops it
         };
-        await fetch("/api/watquestions/result", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify(testData),
-        });
+        await apiClient.post("/watquestions/result", testData);
       }
-      setShowResults(true);
     } catch (err) { } finally { setSubmitting(false); }
   };
 
@@ -180,7 +227,7 @@ export default function DisplayWATQuestion() {
 
     return (
       <div className="min-h-screen px-4 py-10" style={{ background: `linear-gradient(160deg,${B.iceBlue},${B.iceMid},#c8e8f8)` }}>
-        <div className="max-w-3xl mx-auto space-y-5">
+        <div className="max-w-7xl mx-auto space-y-5">
           {/* Score hero */}
           <div className="rounded-2xl p-8 relative overflow-hidden text-center" style={{ background: `linear-gradient(135deg,${B.navyDeep},${B.navy})`, boxShadow: '0 12px 40px rgba(18,77,150,0.28)' }}>
             <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full pointer-events-none" style={{ background: 'rgba(37,99,235,0.18)', filter: 'blur(30px)' }} />
@@ -199,13 +246,76 @@ export default function DisplayWATQuestion() {
             </div>
           </div>
 
+          {/* AI Review Card */}
+          <div className="rounded-2xl p-6" style={{ background: 'rgba(255,255,255,0.78)', backdropFilter: 'blur(12px)', border: '1.5px solid rgba(37,99,235,0.18)' }}>
+            <div className="flex items-center gap-3 mb-4 pb-4" style={{ borderBottom: '1px solid rgba(18,77,150,0.08)' }}>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: 'rgba(37,99,235,0.12)', border: '1.5px solid rgba(37,99,235,0.25)' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="10" rx="2" /><path d="M12 11V7" /><circle cx="12" cy="5" r="2" /><path d="M8 11V9a4 4 0 018 0v2" /></svg>
+              </div>
+              <h3 className="font-extrabold" style={{ color: B.textDark }}>
+                {reviewLoading ? "AI is Reviewing..." : "Psychological Assessment"}
+              </h3>
+
+              {aiScore !== null && (
+                <span className="ml-auto px-3 py-1 rounded-full text-sm font-black"
+                  style={{
+                    background: aiScore >= 7 ? 'rgba(5,150,105,0.12)' : aiScore >= 4 ? 'rgba(217,119,6,0.12)' : 'rgba(220,38,38,0.12)',
+                    color: aiScore >= 7 ? '#059669' : aiScore >= 4 ? '#D97706' : '#DC2626',
+                    border: `1.5px solid ${aiScore >= 7 ? 'rgba(5,150,105,0.30)' : aiScore >= 4 ? 'rgba(217,119,6,0.30)' : 'rgba(220,38,38,0.30)'}`
+                  }}>
+                  ⭐ {aiScore} / 10
+                </span>
+              )}
+            </div>
+
+            {reviewLoading && (
+              <div className="rounded-xl px-5 py-4 flex flex-col gap-2 mb-2" style={{ background: 'linear-gradient(135deg, rgba(217,119,6,0.06), rgba(217,119,6,0.02))', border: '1.5px dashed rgba(217,119,6,0.40)' }}>
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 border-2 rounded-full animate-spin shrink-0" style={{ borderColor: 'rgba(217,119,6,0.20)', borderTopColor: '#D97706' }} />
+                  <p className="text-sm font-black text-[#D97706]">Analysing your responses with AI…</p>
+                </div>
+                <p className="text-xs font-bold text-[#D97706]/80 pl-8 leading-relaxed">
+                  ⚠️ Please wait and do not close or navigate away from this page, otherwise your test result will not be saved!
+                </p>
+              </div>
+            )}
+
+            {quotaExceeded && !reviewLoading && (
+              <div className="rounded-xl px-5 py-4 flex items-start gap-4" style={{ background: 'linear-gradient(135deg, rgba(37,99,235,0.06), rgba(18,77,150,0.04))', border: '1.5px dashed rgba(37,99,235,0.25)' }}>
+                <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: 'rgba(37,99,235,0.10)' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                </div>
+                <div>
+                  <p className="text-sm font-black mb-1" style={{ color: B.navy }}>AI Review Coming Soon</p>
+                  <p className="text-xs font-medium leading-relaxed" style={{ color: B.textMuted }}>Our AI is currently at capacity. Your responses have been saved — the review will be available shortly.</p>
+                </div>
+              </div>
+            )}
+
+            {reviewError && !reviewLoading && !quotaExceeded && (
+              <div className="rounded-xl p-4 text-sm font-medium" style={{ background: 'rgba(220,38,38,0.06)', border: '1.5px solid rgba(220,38,38,0.18)', color: '#DC2626' }}>{reviewError}</div>
+            )}
+
+            {aiReview && !reviewLoading && (
+              <div className="rounded-xl p-4 text-sm leading-relaxed" style={{ background: 'rgba(37,99,235,0.04)', border: '1.5px solid rgba(37,99,235,0.14)', color: B.textDark, whiteSpace: 'pre-wrap' }}>
+                {aiReview}
+              </div>
+            )}
+
+            {!reviewLoading && !reviewError && !aiReview && !quotaExceeded && (
+              <p className="text-sm italic" style={{ color: B.textLight }}>Answered responses will be reviewed here.</p>
+            )}
+          </div>
+
           {/* Answer review */}
           <div className="rounded-2xl p-6" style={{ background: 'rgba(255,255,255,0.78)', backdropFilter: 'blur(12px)', border: '1.5px solid rgba(18,77,150,0.13)' }}>
-            <h2 className="text-base font-extrabold mb-5 pb-4" style={{ color: B.textDark, borderBottom: '1px solid rgba(18,77,150,0.08)' }}>Response Review</h2>
+            <h2 className="text-base font-extrabold mb-5 pb-4" style={{ color: B.textDark, borderBottom: '1px solid rgba(18,77,150,0.08)' }}>Word-by-Word Breakdown</h2>
             <div className="flex flex-col gap-3 max-h-[480px] overflow-y-auto pr-1">
               {questions.map((q, i) => {
                 const ans = responses[i] || '';
                 const answered = ans.trim().length > 0;
+                const specificReview = wordReviews.find(wr => wr.word.toLowerCase() === q.word.toLowerCase())?.review;
+                
                 return (
                   <div key={i} className="rounded-xl p-4" style={{ background: answered ? 'rgba(21,128,61,0.05)' : 'rgba(220,38,38,0.05)', border: `1.5px solid ${answered ? 'rgba(21,128,61,0.20)' : 'rgba(220,38,38,0.18)'}` }}>
                     <div className="flex items-start justify-between gap-3">
@@ -214,6 +324,12 @@ export default function DisplayWATQuestion() {
                         <p className="text-sm font-medium p-3 rounded-lg" style={{ background: 'rgba(255,255,255,0.6)', border: '1.5px solid rgba(18,77,150,0.10)', color: answered ? B.textDark : '#B91C1C', wordBreak: 'break-word' }}>
                           {answered ? ans : <span className="italic text-sm">No response provided</span>}
                         </p>
+                        
+                        {specificReview && (
+                          <div className="mt-2 text-sm font-medium p-3 rounded-lg" style={{ background: 'rgba(217,119,6,0.1)', border: '1px solid rgba(217,119,6,0.25)', color: '#92400E' }}>
+                            <span className="font-bold mr-1">💡 AI Note:</span> {specificReview}
+                          </div>
+                        )}
                         
                         {q.sentences && q.sentences.length > 0 && q.sentences[0].trim() && (
                            <div className="mt-3 p-3 rounded-lg" style={{ background: 'rgba(18,77,150,0.05)', border: '1.5px dashed rgba(18,77,150,0.15)' }}>
