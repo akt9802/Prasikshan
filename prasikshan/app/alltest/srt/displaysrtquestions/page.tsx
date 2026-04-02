@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import apiClient from "@/lib/axios";
 
 // ── Brand palette ─────────────────────────────────────────────────────────────
 const B = {
@@ -37,6 +38,13 @@ export default function DisplaySrtQuestion() {
   const [testStarted, setTestStarted] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [setName, setSetName] = useState<string>("");
+
+  const [aiReview, setAiReview] = useState<string | null>(null);
+  const [aiScore, setAiScore] = useState<number | null>(null);
+  const [situationReviews, setSituationReviews] = useState<{ situation: string; review: string }[]>([]);
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  const [quotaExceeded, setQuotaExceeded] = useState(false);
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -122,26 +130,61 @@ export default function DisplaySrtQuestion() {
     setTimeLeft(30);
   };
 
+  const fetchAiReview = async (responsesPayload: { situation: string; response: string }[]) => {
+    const attempted = responsesPayload.filter(r => r.response.trim().length > 0);
+    if (attempted.length === 0) return 0;
+
+    setReviewLoading(true);
+    setReviewError(null);
+    setQuotaExceeded(false);
+    try {
+      const res = await fetch("/api/srt-review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ responses: attempted, totalSituations: questions.length }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setAiReview(data.review);
+        setAiScore(data.score);
+        setSituationReviews(data.situation_reviews || []);
+        return data.score;
+      } else if (data.quota_exceeded) {
+        setQuotaExceeded(true);
+      } else {
+        setReviewError(data.error || "Could not get AI review.");
+      }
+    } catch {
+      setReviewError("Failed to connect to AI review service.");
+    } finally {
+      setReviewLoading(false);
+    }
+    return 0;
+  };
+
   const submitTest = async () => {
+    if (submitting) return;
     try {
       setSubmitting(true);
+      setShowResults(true);
       const newResponses = saveCurrentResponse();
-      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-      if (token && questions.length > 0) {
+      const payloadResponses = questions.map((q, idx) => ({ situation: q.situation, response: newResponses[idx] || "" }));
+
+      let aiCalculatedScore = 0;
+
+      if (questions.length > 0) {
+        aiCalculatedScore = await fetchAiReview(payloadResponses) || 0;
+      }
+
+      if (questions.length > 0) {
         const testData = {
           testName: "SRT",
-          score: newResponses.filter((r) => r.trim().length > 0).length,
+          score: aiCalculatedScore,
           timeTaken: 30 * 60 - overallTimeLeft,
           dateTaken: new Date().toISOString(),
-          responses: questions.map((q, idx) => ({ situation: q.situation, response: newResponses[idx] || "" })),
         };
-        await fetch("/api/srtquestions/result", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify(testData),
-        });
+        await apiClient.post("/srtquestions/result", testData);
       }
-      setShowResults(true);
     } catch (err) { } finally { setSubmitting(false); }
   };
 
@@ -180,7 +223,7 @@ export default function DisplaySrtQuestion() {
 
     return (
       <div className="min-h-screen px-4 py-10" style={{ background: `linear-gradient(160deg,${B.iceBlue},${B.iceMid},#c8e8f8)` }}>
-        <div className="max-w-3xl mx-auto space-y-5">
+        <div className="max-w-7xl mx-auto space-y-5">
           {/* Score hero */}
           <div className="rounded-2xl p-8 relative overflow-hidden text-center" style={{ background: `linear-gradient(135deg,${B.navyDeep},${B.navy})`, boxShadow: '0 12px 40px rgba(18,77,150,0.28)' }}>
             <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full pointer-events-none" style={{ background: 'rgba(37,99,235,0.18)', filter: 'blur(30px)' }} />
@@ -199,28 +242,99 @@ export default function DisplaySrtQuestion() {
             </div>
           </div>
 
+          {/* AI Review Card */}
+          <div className="rounded-2xl p-6" style={{ background: 'rgba(255,255,255,0.78)', backdropFilter: 'blur(12px)', border: '1.5px solid rgba(245,158,11,0.22)' }}>
+            <div className="flex items-center gap-3 mb-4 pb-4" style={{ borderBottom: '1px solid rgba(18,77,150,0.08)' }}>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: 'rgba(245,158,11,0.12)', border: '1.5px solid rgba(245,158,11,0.30)' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 8v4l3 3"/><path d="M18 2l4 4-4 4"/><path d="M22 2l-4 4"/></svg>
+              </div>
+              <h3 className="font-extrabold" style={{ color: B.textDark }}>
+                {reviewLoading ? "AI is Reviewing..." : "Psychological Assessment"}
+              </h3>
+
+              {aiScore !== null && (
+                <span className="ml-auto px-3 py-1 rounded-full text-sm font-black"
+                  style={{
+                    background: aiScore >= 7 ? 'rgba(5,150,105,0.12)' : aiScore >= 4 ? 'rgba(217,119,6,0.12)' : 'rgba(220,38,38,0.12)',
+                    color: aiScore >= 7 ? '#059669' : aiScore >= 4 ? '#D97706' : '#DC2626',
+                    border: `1.5px solid ${aiScore >= 7 ? 'rgba(5,150,105,0.30)' : aiScore >= 4 ? 'rgba(217,119,6,0.30)' : 'rgba(220,38,38,0.30)'}`
+                  }}>
+                  ⭐ {aiScore} / 10
+                </span>
+              )}
+            </div>
+
+            {reviewLoading && (
+              <div className="rounded-xl px-5 py-4 flex flex-col gap-2 mb-2" style={{ background: 'linear-gradient(135deg, rgba(217,119,6,0.06), rgba(217,119,6,0.02))', border: '1.5px dashed rgba(217,119,6,0.40)' }}>
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 border-2 rounded-full animate-spin shrink-0" style={{ borderColor: 'rgba(217,119,6,0.20)', borderTopColor: '#D97706' }} />
+                  <p className="text-sm font-black text-[#D97706]">Analysing your reactions with AI…</p>
+                </div>
+                <p className="text-xs font-bold text-[#D97706]/80 pl-8 leading-relaxed">
+                  ⚠️ Please wait and do not close or navigate away from this page, otherwise your test result will not be saved!
+                </p>
+              </div>
+            )}
+
+            {quotaExceeded && !reviewLoading && (
+              <div className="rounded-xl px-5 py-4 flex items-start gap-4" style={{ background: 'linear-gradient(135deg, rgba(37,99,235,0.06), rgba(18,77,150,0.04))', border: '1.5px dashed rgba(37,99,235,0.25)' }}>
+                <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: 'rgba(37,99,235,0.10)' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                </div>
+                <div>
+                  <p className="text-sm font-black mb-1" style={{ color: B.navy }}>AI Review Coming Soon</p>
+                  <p className="text-xs font-medium leading-relaxed" style={{ color: B.textMuted }}>Our AI is currently at capacity. Your responses have been saved — the review will be available shortly.</p>
+                </div>
+              </div>
+            )}
+
+            {reviewError && !reviewLoading && !quotaExceeded && (
+              <div className="rounded-xl p-4 text-sm font-medium" style={{ background: 'rgba(220,38,38,0.06)', border: '1.5px solid rgba(220,38,38,0.18)', color: '#DC2626' }}>{reviewError}</div>
+            )}
+
+            {aiReview && !reviewLoading && (
+              <div className="rounded-xl p-4 text-sm leading-relaxed" style={{ background: 'rgba(245,158,11,0.04)', border: '1.5px solid rgba(245,158,11,0.18)', color: B.textDark, whiteSpace: 'pre-wrap' }}>
+                {aiReview}
+              </div>
+            )}
+
+            {!reviewLoading && !reviewError && !aiReview && !quotaExceeded && (
+              <p className="text-sm italic" style={{ color: B.textLight }}>Answered reactions will be reviewed here.</p>
+            )}
+          </div>
+
           {/* Answer review */}
           <div className="rounded-2xl p-6" style={{ background: 'rgba(255,255,255,0.78)', backdropFilter: 'blur(12px)', border: '1.5px solid rgba(18,77,150,0.13)' }}>
-            <h2 className="text-base font-extrabold mb-5 pb-4" style={{ color: B.textDark, borderBottom: '1px solid rgba(18,77,150,0.08)' }}>Reaction Review</h2>
+            <h2 className="text-base font-extrabold mb-5 pb-4" style={{ color: B.textDark, borderBottom: '1px solid rgba(18,77,150,0.08)' }}>Situation-by-Situation Breakdown</h2>
             <div className="flex flex-col gap-3 max-h-[480px] overflow-y-auto pr-1">
               {questions.map((q, i) => {
                 const ans = responses[i] || '';
                 const answered = ans.trim().length > 0;
+                const specificReview = situationReviews.find(
+                  sr => sr.situation.trim().toLowerCase() === q.situation.trim().toLowerCase()
+                )?.review;
+
                 return (
                   <div key={i} className="rounded-xl p-4" style={{ background: answered ? 'rgba(21,128,61,0.05)' : 'rgba(220,38,38,0.05)', border: `1.5px solid ${answered ? 'rgba(21,128,61,0.20)' : 'rgba(220,38,38,0.18)'}` }}>
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 w-full">
-                        <p className="text-sm font-bold mb-3" style={{ color: B.navy }}>Situation {i + 1}.</p>
-                        <p className="text-lg font-black leading-snug mb-4" style={{ color: B.textDark }}>{q.situation}</p>
+                        <p className="text-sm font-bold mb-2" style={{ color: B.navy }}>Situation {i + 1}.</p>
+                        <p className="text-base font-black leading-snug mb-3" style={{ color: B.textDark }}>"{q.situation}"</p>
                         <p className="text-sm font-medium p-3 rounded-lg" style={{ background: 'rgba(255,255,255,0.6)', border: '1.5px solid rgba(18,77,150,0.10)', color: answered ? B.textDark : '#B91C1C', wordBreak: 'break-word' }}>
                           {answered ? ans : <span className="italic text-sm">No reaction recorded</span>}
                         </p>
-                        
+
+                        {specificReview && (
+                          <div className="mt-2 text-sm font-medium p-3 rounded-lg" style={{ background: 'rgba(217,119,6,0.1)', border: '1px solid rgba(217,119,6,0.25)', color: '#92400E' }}>
+                            <span className="font-bold mr-1">💡 AI Note:</span> {specificReview}
+                          </div>
+                        )}
+
                         {q.sample_reaction && q.sample_reaction.trim() && (
-                           <div className="mt-3 p-3 rounded-lg" style={{ background: 'rgba(18,77,150,0.05)', border: '1.5px dashed rgba(18,77,150,0.15)' }}>
-                             <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: B.navy }}>Reference Reaction</p>
-                             <p className="text-sm" style={{ color: B.textMid }}>{q.sample_reaction}</p>
-                           </div>
+                          <div className="mt-3 p-3 rounded-lg" style={{ background: 'rgba(18,77,150,0.05)', border: '1.5px dashed rgba(18,77,150,0.15)' }}>
+                            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: B.navy }}>Reference Reaction</p>
+                            <p className="text-sm" style={{ color: B.textMid }}>{q.sample_reaction}</p>
+                          </div>
                         )}
                       </div>
                       <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: answered ? 'rgba(21,128,61,0.12)' : 'rgba(220,38,38,0.10)' }}>
@@ -304,7 +418,7 @@ export default function DisplaySrtQuestion() {
 
             <div className="flex-1 flex flex-col justify-center mb-8">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black leading-snug" style={{ color: B.navyDeep }}>
-                "{q.situation}"
+                &ldquo;{q.situation}&rdquo;
               </h2>
             </div>
 
@@ -347,7 +461,7 @@ export default function DisplaySrtQuestion() {
             <div className="grid grid-cols-2 gap-2">
               <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(21,128,61,0.08)', border: '1.5px solid rgba(21,128,61,0.22)', backdropFilter: 'blur(8px)' }}>
                 <p className="text-xl font-black text-green-700">{answeredCount}</p>
-                <p className="text-xs font-semibold mt-0.5" style={{ color: B.textLight }}>Answered</p>
+                <p className="text-xs font-semibold mt-0.5" style={{ color: B.textLight }}>Reacted</p>
               </div>
               <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(18,77,150,0.05)', border: '1.5px solid rgba(18,77,150,0.14)', backdropFilter: 'blur(8px)' }}>
                 <p className="text-xl font-black" style={{ color: B.textMuted }}>{questions.length - answeredCount}</p>

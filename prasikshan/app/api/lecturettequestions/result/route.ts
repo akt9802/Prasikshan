@@ -40,11 +40,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { topic, transcript, score, duration } = await request.json();
+    const { topic, score, duration } = await request.json();
 
-    if (!topic || !transcript) {
+    if (!topic) {
       return NextResponse.json(
-        { success: false, error: "Missing required fields (topic and transcript)" },
+        { success: false, error: "Missing required field: topic" },
         { status: 400 }
       );
     }
@@ -65,7 +65,6 @@ export async function POST(request: NextRequest) {
     const testResult = {
       testName: "LECTURETTE",
       topic,
-      transcript,
       score: score || 0,
       duration: duration || 0,
       dateTaken: new Date(),

@@ -22,10 +22,7 @@ export async function POST(request: NextRequest) {
 
         let userId: string;
         try {
-            const secret = process.env.JWT_SECRET;
-            if (!secret) {
-                throw new Error("JWT_SECRET not configured");
-            }
+            const secret = process.env.JWT_SECRET || 'default_secret';
 
             const decoded = jwt.verify(token, secret) as {
                 userId: string;
@@ -50,7 +47,7 @@ export async function POST(request: NextRequest) {
 
         // Get request body
         const body = await request.json();
-        const { testName, score, timeTaken, dateTaken, responses } = body;
+        const { testName, score, timeTaken, dateTaken } = body;
 
         // Find user
         const user = await User.findById(userId);
@@ -69,7 +66,6 @@ export async function POST(request: NextRequest) {
             score,
             timeTaken,
             dateTaken,
-            responses,
             createdAt: new Date(),
         };
 

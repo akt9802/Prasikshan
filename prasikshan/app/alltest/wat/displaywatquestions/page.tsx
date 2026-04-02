@@ -185,7 +185,6 @@ export default function DisplayWATQuestion() {
           score: aiCalculatedScore,
           timeTaken: 15 * 60 - overallTimeLeft,
           dateTaken: new Date().toISOString(),
-          responses: payloadResponses, // Keep for API validation if needed, DB drops it
         };
         await apiClient.post("/watquestions/result", testData);
       }

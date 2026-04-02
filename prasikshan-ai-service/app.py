@@ -3,11 +3,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
+load_dotenv()
+
 # Import our modular routers
 from routers.ppdt import router as ppdt_router
 from routers.wat import router as wat_router
-
-load_dotenv()
+from routers.srt import router as srt_router
+from routers.lecturette import router as lecturette_router
+from routers.tat import router as tat_router
 
 app = FastAPI(title="Prasikshan AI Service", version="1.0.0")
 
@@ -23,6 +26,9 @@ app.add_middleware(
 # Register routers here
 app.include_router(ppdt_router)
 app.include_router(wat_router)
+app.include_router(srt_router)
+app.include_router(lecturette_router)
+app.include_router(tat_router)
 
 @app.get("/health")
 async def health():
