@@ -16,7 +16,7 @@ Transform your SSB preparation journey with comprehensive test modules, real-tim
 | **WAT** | Word Association Test | Subconscious thinking patterns | Quick word responses |
 | **SRT** | Situation Reaction Test | Decision-making, problem-solving | Scenario-based responses |
 | **Lecturette** | Public Speaking | Communication, confidence, knowledge | Timed presentations |
-| **PI** | Personal Interview | Personality assessment, leadership | Comprehensive Q&A preparation |
+| **PI** | Personal Interview | Personality assessment, leadership | AI-powered evaluation & Q&A |
 
 ### 🎯 Core Platform Features
 
@@ -311,12 +311,12 @@ erDiagram
 | `_id` | ObjectId | Primary key | Auto-generated |
 | `userId` | ObjectId | User reference | Required, foreign key |
 | `testType` | String | Test category | Required |
-| `answers` | Array | User responses | Required |
-| `score` | Number | Calculated score | Min: 0, Max: 100 |
+| `answers` | Array | User responses | Stored for TAT/WAT/SRT; Omitted for PI/OIR |
+| `score` | Number | Calculated score | PI/OIR: Out of 10 |
 | `totalQuestions` | Number | Questions attempted | Required |
 | `timeSpent` | Number | Duration in seconds | Required |
 | `completedAt` | Date | Completion timestamp | Auto-generated |
-| `analytics` | Object | Performance metrics | Optional |
+| `analytics` | Object | AI-generated feedback | Optional (PI/TAT/SRT/WAT) |
 
 #### 🏆 Rankings Collection
 | Field | Type | Description | Constraints |
@@ -584,12 +584,15 @@ Prasikshan is proudly open source because we believe:
 > **Platform Update:** Prasikshan is constantly evolving. In our latest architectural update, we've deployed major performance and security enhancements!
 
 ✨ **Recent Upgrades:**
-- **Comprehensive AI Evaluation Suite (TAT, SRT, WAT & Lecturette)**: Embedded a real-time, SSB-calibrated AI assessment matrix across all major test modules, delivering instant, actionable feedback to candidates.
+- **Comprehensive AI Evaluation Suite (TAT, SRT, WAT, Lecturette & PI)**: Embedded a real-time, SSB-calibrated AI assessment matrix across all major test modules, delivering instant, actionable feedback to candidates.
+  - **PI (Personal Interview)**: New AI-driven critique system analyzing 30+ questions for honesty, consistency with PIQ/psychological tests, self-clarity, and natural Officer-Like Qualities (OLQs).
   - **TAT (Thematic Apperception Test)**: Context-aware AI reviews for full 12-picture story sets, strictly evaluating Hero identification, Past-Present-Future structuring, situational Realism, and underlying OLQs.
   - **SRT (Situation Reaction Test)**: Mass-evaluates up to 60 rapid reaction responses for brevity, practical action-orientation, and presence of mind.
   - **Lecturette**: Analyzes the candidate's speech text for logical structure, introduction-body-conclusion flow, and mature perspectives on current topics.
   - **WAT (Word Association Test)**: Issues sentence-by-sentence psychological critiques penalizing non-attempts, idiom usage, negative themes, and overuse of the "I" pronoun.
-- **Modular AI Service Architecture**: Refactored the Python FastAPI microservice into a cleanly distributed, scalable system with dedicated endpoints (`routers/tat.py`, `routers/srt.py`, `routers/lecturette.py`, etc.). This cleanly decouples complex Azure OpenAI contextual prompt logic from the core Next.js application.
+- **Micro-Storage Architecture**: Optimized database footprint for OIR and PI tests—now strictly storing final scores and time-taken to preserve user privacy and reduce DB bloat.
+- **OIR 10-Point Rating System**: Implemented a standardized 10-point scoring algorithm for OIR (0.4 marks per question) to match elite training benchmarks.
+- **Modular AI Service Architecture**: Refactored the Python FastAPI microservice into a cleanly distributed, scalable system with dedicated endpoints (`routers/pi.py`, `routers/tat.py`, `routers/srt.py`, etc.). This cleanly decouples complex Azure OpenAI contextual prompt logic from the core Next.js application.
 - **Comprehensive Admin Set Builders**: Fully integrated interactive Set Builders for OIR, WAT, SRT, TAT, PPDT, Lecturette, and PI inside a sleek, unified Admin Dashboard featuring tabbed navigation.
 - **Advanced TAT & PPDT Handling**: Seamless integration between our testing suites and Cloudinary. Process complete 12-picture thematic sets for TAT natively while allowing admins to embed benchmark reference stories right alongside uploaded pictures!
 - **FastAPI AI Microservice Migration**: Transitioned the core AI story review engine from Flask to an asynchronous **FastAPI** architecture powered by Uvicorn. Completely restructured to ingest **Azure OpenAI (Grok-3)** contextual evaluations, fixing critical header size issues (431 Errors) while guaranteeing strict perception-accuracy scoring via rigid prompt system constraints.
@@ -603,7 +606,7 @@ Prasikshan is proudly open source because we believe:
 | Priority | Feature | Description | Timeline |
 |----------|---------|-------------|----------|
 | 🔥 **High** | **Mobile App** | React Native iOS/Android app | Q2 2026 |
-| 🔥 **High** | **AI Feedback** | ML-powered personalized insights | Q2 2026 |
+| 🔥 **High** | **Personalized AI** | Personalized training based on history | Q3 2026 |
 | 🔥 **High** | **Video Interviews** | Mock interview simulation platform | Q3 2026 |
 | 🟡 **Medium** | **Group Discussions** | Virtual GD practice rooms | Q3 2026 |
 | 🟡 **Medium** | **Offline Mode** | Download tests for offline practice | Q4 2026 |

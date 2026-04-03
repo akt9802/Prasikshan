@@ -11,6 +11,7 @@ from routers.wat import router as wat_router
 from routers.srt import router as srt_router
 from routers.lecturette import router as lecturette_router
 from routers.tat import router as tat_router
+from routers.pi import router as pi_router
 
 app = FastAPI(title="Prasikshan AI Service", version="1.0.0")
 
@@ -29,6 +30,7 @@ app.include_router(wat_router)
 app.include_router(srt_router)
 app.include_router(lecturette_router)
 app.include_router(tat_router)
+app.include_router(pi_router)
 
 @app.get("/health")
 async def health():
