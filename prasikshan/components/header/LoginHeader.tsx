@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { FiMenu, FiX, FiUser } from "react-icons/fi";
 import Link from "next/link";
+import apiClient from "@/lib/axios";
+import { isAdmin } from "@/lib/auth";
 
 export default function LoginHeader() {
   const router = useRouter();
@@ -21,22 +23,22 @@ export default function LoginHeader() {
   }, []);
 
   useEffect(() => {
+    // Initial check from localStorage for fast UI
+    setIsAdminUser(isAdmin());
+
     const fetchUserRole = async () => {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-
-        const res = await fetch('/api/auth/userdetails', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
+        const res = await apiClient.get('/auth/userdetails');
+        const data = res.data;
 
         if (data.success && data.user?.role === 'admin') {
           setIsAdminUser(true);
         } else {
           setIsAdminUser(false);
         }
-      } catch {
+      } catch (err) {
+        console.error("Error fetching user role in header:", err);
+        // Note: apiClient already handles clearing auth on total failure
         setIsAdminUser(false);
       }
     };
