@@ -1,5 +1,5 @@
 import connectDB from "@/lib/db";
-import User from "@/models/User";
+import UserResult from "@/models/UserResult";
 import { NextResponse, NextRequest } from "next/server";
 import jwt from "jsonwebtoken";
 
@@ -49,42 +49,40 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const { testName, score, timeTaken, dateTaken } = body;
 
-        // Find user
-        const user = await User.findById(userId);
-
-        if (!user) {
-            console.error("User not found in database");
-            return NextResponse.json(
-                { success: false, error: "User not found" },
-                { status: 404 }
-            );
+        // Find or create UserResult
+        let userResult = await UserResult.findOne({ userId });
+        
+        if (!userResult) {
+            userResult = new UserResult({
+                userId,
+                oir: [],
+                ppdt: [],
+                tat: [],
+                wat: [],
+                srt: [],
+                lecturette: [],
+                pi: [],
+            });
         }
 
         // Create test result object
-        const testResult = {
-            testName,
+        const testData = {
+            testName: testName || "TAT",
             score,
             timeTaken,
             dateTaken,
             createdAt: new Date(),
         };
 
-        // Initialize testsTaken array if it doesn't exist
-        if (!user.testsTaken) {
-            user.testsTaken = [];
-        }
-
-        // Add result to user's test history
-        user.testsTaken.push(testResult);
-
-        // Save user
-        await user.save();
-        console.log("User saved successfully with TAT test data");
+        // Add to tat array
+        userResult.tat.push(testData);
+        await userResult.save();
+        console.log("TAT result saved successfully in UserResult collection");
 
         return NextResponse.json({
             success: true,
             message: "TAT test result saved successfully",
-            data: testResult,
+            data: testData,
         });
     } catch (error) {
         console.error("Error saving TAT test result:", error);

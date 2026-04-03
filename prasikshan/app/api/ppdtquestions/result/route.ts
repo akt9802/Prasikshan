@@ -1,5 +1,5 @@
 import connectDB from "@/lib/db";
-import User from "@/models/User";
+import UserResult from "@/models/UserResult";
 import { NextResponse, NextRequest } from "next/server";
 import jwt from "jsonwebtoken";
 
@@ -9,7 +9,6 @@ export async function POST(request: NextRequest) {
     
     // Verify JWT token
     const authHeader = request.headers.get("authorization");
-    console.log("Auth Header:", authHeader);
     
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       console.error("No valid authorization header");
@@ -20,7 +19,6 @@ export async function POST(request: NextRequest) {
     }
 
     const token = authHeader.slice(7);
-    console.log("Token extracted");
 
     let userId: string;
     try {
@@ -30,12 +28,10 @@ export async function POST(request: NextRequest) {
         userId: string;
       };
       userId = decoded.userId;
-      console.log("User ID from token:", userId);
       
       if (!userId) {
-        console.error("No userId in token payload");
         return NextResponse.json(
-          { success: false, error: "Invalid token payload: no user id" },
+          { success: false, error: "Invalid token payload" },
           { status: 403 }
         );
       }
@@ -47,31 +43,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log("Connecting to database...");
     await connectDB();
-    console.log("Database connected");
 
     // Get request body
     const body = await request.json();
     const { testName, score, timeTaken, dateTaken, responses } = body;
-    console.log("Request body:", { testName, score, timeTaken, dateTaken, responsesCount: responses?.length });
 
-    // Find user
-    console.log("Finding user with ID:", userId);
-    const user = await User.findById(userId);
-    console.log("User found:", user ? "Yes" : "No");
+    // Find or create UserResult
+    let userResult = await UserResult.findOne({ userId });
     
-    if (!user) {
-      console.error("User not found in database");
-      return NextResponse.json(
-        { success: false, error: "User not found" },
-        { status: 404 }
-      );
+    if (!userResult) {
+      userResult = new UserResult({
+        userId,
+        oir: [],
+        ppdt: [],
+        tat: [],
+        wat: [],
+        srt: [],
+        lecturette: [],
+        pi: [],
+      });
     }
 
     // Create test result object
-    const testResult = {
-      testName,
+    const testData = {
+      testName: testName || "PPDT",
       score,
       timeTaken,
       dateTaken,
@@ -79,34 +75,19 @@ export async function POST(request: NextRequest) {
       createdAt: new Date(),
     };
 
-    console.log("Test result object created:", { testName, score });
+    // Add to ppdt array
+    userResult.ppdt.push(testData);
+    await userResult.save();
 
-    // Initialize testsTaken array if it doesn't exist
-    if (!user.testsTaken) {
-      console.log("Initializing testsTaken array");
-      user.testsTaken = [];
-    }
-
-    console.log("Current testsTaken count:", user.testsTaken.length);
-
-    // Add result to user's test history
-    user.testsTaken.push(testResult);
-    console.log("Result added to testsTaken, new count:", user.testsTaken.length);
-
-    // Save user
-    console.log("Saving user...");
-    const savedUser = await user.save();
-    console.log("User saved successfully");
-    console.log("Saved testsTaken count:", savedUser.testsTaken?.length);
+    console.log("PPDT result saved successfully in UserResult for user", userId);
 
     return NextResponse.json({
       success: true,
       message: "PPDT test result saved successfully",
-      data: testResult,
+      data: testData,
     });
   } catch (error) {
     console.error("Error saving PPDT test result:", error);
-    console.error("Error stack:", error instanceof Error ? error.stack : "");
     return NextResponse.json(
       {
         success: false,

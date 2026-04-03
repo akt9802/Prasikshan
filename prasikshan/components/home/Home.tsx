@@ -39,7 +39,7 @@ const TESTIMONIALS = [
   {
     name: 'Priya Sharma',
     title: 'NCC Entry',
-    text: 'One of the best platforms for SSB prep. The curated PI mock questions cover every possible angle of the personal interview, helping me prepare for tough cross-questioning by the Interviewing Officer.',
+    text: 'One of the best platforms for SSB prep. The curated PI mock questions cover every possible angle of the PI, helping me prepare for tough cross-questioning by the Interviewing Officer.',
   },
   {
     name: 'Simran Kaur',
@@ -54,7 +54,7 @@ const TESTIMONIALS = [
   {
     name: 'Sneha Reddy',
     title: 'MNS Aspirant',
-    text: 'I love how organized the Personal Interview section is. Reviewing the extensive list of PI questions made me feel far more confident and structured in my responses before facing the IO.',
+    text: 'I love how organized the PI section is. Reviewing the extensive list of PI questions made me feel far more confident and structured in my responses before facing the IO.',
   },
   {
     name: 'Amit Kumar',

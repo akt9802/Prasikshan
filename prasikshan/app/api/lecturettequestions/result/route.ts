@@ -1,5 +1,5 @@
 import connectDB from "@/lib/db";
-import User from "@/models/User";
+import UserResult from "@/models/UserResult";
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 
@@ -52,32 +52,42 @@ export async function POST(request: NextRequest) {
     // Connect to database
     await connectDB();
 
-    // Find user
-    const user = await User.findById(userId);
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: "User not found" },
-        { status: 404 }
-      );
+    // Find or create UserResult
+    let userResult = await UserResult.findOne({ userId });
+    
+    if (!userResult) {
+      userResult = new UserResult({
+        userId,
+        oir: [],
+        ppdt: [],
+        tat: [],
+        wat: [],
+        srt: [],
+        lecturette: [],
+        pi: [],
+      });
     }
 
     // Create test result
-    const testResult = {
+    const testData = {
       testName: "LECTURETTE",
       topic,
       score: score || 0,
       duration: duration || 0,
       dateTaken: new Date(),
+      createdAt: new Date(),
     };
 
-    // Save to user's test history
-    user.testsTaken.push(testResult);
-    await user.save();
+    // Add to lecturette array
+    userResult.lecturette.push(testData);
+    await userResult.save();
+
+    console.log(`✅ Lecturette Result saved in UserResult for user ${userId}`);
 
     return NextResponse.json({
       success: true,
       message: "Lecturette test result saved successfully",
-      data: testResult,
+      data: testData,
     });
   } catch (error) {
     console.error("Error saving lecturette result:", error);

@@ -32,14 +32,15 @@ function SrtScore({ userDetails }) {
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
       const srtTests = testArray
-        .filter(
-          (test) =>
-            test &&
-            test.testName &&
-            test.testName.toLowerCase().includes("srt") &&
+        .filter((test) => {
+          if (!test || !test.testName) return false;
+          const n = test.testName.toUpperCase();
+          return (
+            n.includes("SRT") &&
             test.dateTaken &&
             new Date(test.dateTaken) >= thirtyDaysAgo // Only last 30 days
-        )
+          );
+        })
         .sort((a, b) => new Date(a.dateTaken) - new Date(b.dateTaken));
 
       //   console.log("Filtered SRT tests (last 30 days):", srtTests); // Debug log

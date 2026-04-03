@@ -16,7 +16,6 @@ export interface IUser extends Document {
   password: string;
   fullName?: string;
   profileImage?: string;
-  testsTaken?: ITestResult[];
   isVerified: boolean;
   verifyOtp?: string;
   verifyOtpExpiry?: Date;
@@ -75,22 +74,6 @@ const UserSchema = new Schema<IUser>(
     },
     resetPasswordOtpExpiry: {
       type: Date,
-    },
-    testsTaken: {
-      type: [
-        {
-          testName: String,
-          score: Number,
-          timeTaken: Number,
-          dateTaken: String,
-          responses: Schema.Types.Mixed,
-          createdAt: {
-            type: Date,
-            default: Date.now,
-          },
-        },
-      ],
-      default: [],
     },
     role: {
       type: String,

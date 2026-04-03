@@ -49,13 +49,13 @@ function TotalTest({ userDetails }) {
             .toUpperCase(); // Make it uppercase for consistency
 
           // Standardize test names
-          if (cleanTestName === "OIR") cleanTestName = "OIR";
-          else if (cleanTestName === "PPDT") cleanTestName = "PPDT";
-          else if (cleanTestName === "TAT") cleanTestName = "TAT";
-          else if (cleanTestName === "WAT") cleanTestName = "WAT";
-          else if (cleanTestName === "SRT") cleanTestName = "SRT";
-          else if (cleanTestName.includes("LECTURETTE"))
-            cleanTestName = "LECTURETTE";
+          if (cleanTestName.includes("OIR")) cleanTestName = "OIR";
+          else if (cleanTestName.includes("PPDT")) cleanTestName = "PPDT";
+          else if (cleanTestName.includes("TAT")) cleanTestName = "TAT";
+          else if (cleanTestName.includes("WAT")) cleanTestName = "WAT";
+          else if (cleanTestName.includes("SRT")) cleanTestName = "SRT";
+          else if (cleanTestName.includes("LECTURETTE")) cleanTestName = "LECTURETTE";
+          else if (cleanTestName.includes("PERSONAL INTERVIEW") || cleanTestName === "PI") cleanTestName = "PI";
 
           testCounts[cleanTestName] = (testCounts[cleanTestName] || 0) + 1;
         }

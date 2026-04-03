@@ -23,7 +23,7 @@ export default function PiInstruction() {
     {
       id: 1,
       title: "Personality Profile",
-      desc: "The Personal Interview is a comprehensive evaluation of your upbringing, values, and officer potential.",
+      desc: "The PI is a comprehensive evaluation of your upbringing, values, and officer potential.",
       icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
     },
     {
@@ -75,7 +75,7 @@ export default function PiInstruction() {
               <span className="text-[10px] font-black uppercase tracking-widest text-blue-100">Intervention · Phase 2</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-black text-white mb-4 leading-tight">
-              Personal <span className="text-cyan-300">Interview (PI)</span>
+              PI
             </h1>
             <p className="text-lg font-medium max-w-2xl mx-auto" style={{ color: 'rgba(190,227,248,0.7)' }}>
               A decisive evaluation of your suitability for the armed forces. Engage in a deep-dive conversation designed to highlight your character and values.
@@ -139,7 +139,7 @@ export default function PiInstruction() {
                   style={{ background: `linear-gradient(90deg, ${B.navyDark}, ${B.navy})` }}
                 >
                   <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-                  Start Personal Interview
+                  Start PI
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
                 </Link>
               </div>

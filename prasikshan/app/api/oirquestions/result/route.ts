@@ -1,5 +1,5 @@
 import connectDB from "@/lib/db";
-import User from "@/models/User";
+import UserResult from "@/models/UserResult";
 import { NextResponse, NextRequest } from "next/server";
 import jwt from "jsonwebtoken";
 
@@ -45,18 +45,24 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { testName, score, timeTaken, dateTaken } = body;
 
-    // Find user
-    const user = await User.findById(userId);
+    // Find or create UserResult
+    let userResult = await UserResult.findOne({ userId });
     
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: "User not found" },
-        { status: 404 }
-      );
+    if (!userResult) {
+      userResult = new UserResult({
+        userId,
+        oir: [],
+        ppdt: [],
+        tat: [],
+        wat: [],
+        srt: [],
+        lecturette: [],
+        pi: [],
+      });
     }
 
-    // Create test result object - only storing score as requested
-    const testResult = {
+    // Create test result object
+    const testData = {
       testName: testName || "OIR",
       score,
       timeTaken,
@@ -64,21 +70,14 @@ export async function POST(request: NextRequest) {
       createdAt: new Date(),
     };
 
-    // Initialize testsTaken array if it doesn't exist
-    if (!user.testsTaken) {
-      user.testsTaken = [];
-    }
-
-    // Add result to user's test history
-    user.testsTaken.push(testResult);
-
-    // Save user
-    await user.save();
+    // Add to oir array
+    userResult.oir.push(testData);
+    await userResult.save();
 
     return NextResponse.json({
       success: true,
       message: "OIR test result saved successfully",
-      data: testResult,
+      data: testData,
     });
   } catch (error) {
     console.error("Error saving OIR test result:", error);

@@ -1,5 +1,5 @@
 import connectDB from "@/lib/db";
-import User from "@/models/User";
+import UserResult from "@/models/UserResult";
 import { NextResponse, NextRequest } from "next/server";
 import jwt from "jsonwebtoken";
 
@@ -43,17 +43,24 @@ export async function POST(request: NextRequest) {
     // Get request body
     const { testName, score, timeTaken, dateTaken } = await request.json();
 
-    // Find user
-    const user = await User.findById(userId);
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: "User not found" },
-        { status: 404 }
-      );
+    // Find or create UserResult
+    let userResult = await UserResult.findOne({ userId });
+    
+    if (!userResult) {
+      userResult = new UserResult({
+        userId,
+        oir: [],
+        ppdt: [],
+        tat: [],
+        wat: [],
+        srt: [],
+        lecturette: [],
+        pi: [],
+      });
     }
 
     // Create test result object matching TAT/SRT
-    const testResult = {
+    const testData = {
       testName: testName || "PI",
       score,
       timeTaken,
@@ -61,19 +68,14 @@ export async function POST(request: NextRequest) {
       createdAt: new Date(),
     };
 
-    // Initialize testsTaken array if it doesn't exist
-    if (!user.testsTaken) {
-      (user as any).testsTaken = [];
-    }
-
-    // Add result to user's test history
-    (user as any).testsTaken.push(testResult);
-    await user.save();
+    // Add to pi array
+    userResult.pi.push(testData);
+    await userResult.save();
 
     return NextResponse.json({
       success: true,
       message: "PI test result saved successfully",
-      data: testResult,
+      data: testData,
     });
   } catch (error) {
     console.error("Error saving PI test result:", error);

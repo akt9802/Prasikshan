@@ -32,14 +32,15 @@ function WatScore({ userDetails }) {
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
       const watTests = testArray
-        .filter(
-          (test) =>
-            test &&
-            test.testName &&
-            test.testName.toLowerCase().includes("wat") &&
+        .filter((test) => {
+          if (!test || !test.testName) return false;
+          const n = test.testName.toUpperCase();
+          return (
+            n.includes("WAT") &&
             test.dateTaken &&
             new Date(test.dateTaken) >= thirtyDaysAgo // Only last 30 days
-        )
+          );
+        })
         .sort((a, b) => new Date(a.dateTaken) - new Date(b.dateTaken));
 
     //   console.log("Filtered WAT tests (last 30 days):", watTests); // Debug log

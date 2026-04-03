@@ -29,12 +29,11 @@ function LecturetteScore({ userDetails }) {
       // console.log("All tests:", testArray); // Debug log
 
       const lecturetteTests = testArray
-        .filter(
-          (test) =>
-            test &&
-            test.testName &&
-            test.testName.toLowerCase().includes("lecturette")
-        )
+        .filter((test) => {
+          if (!test || !test.testName) return false;
+          const n = test.testName.toUpperCase();
+          return n.includes("LECTURETTE");
+        })
         .sort((a, b) => new Date(a.dateTaken) - new Date(b.dateTaken))
         .slice(-50); // Get only the last 50 Lecturette tests
 

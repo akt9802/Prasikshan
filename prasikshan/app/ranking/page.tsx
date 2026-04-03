@@ -6,12 +6,11 @@ import { useRouter } from 'next/navigation';
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface RankedUser {
   name: string;
+  totalScore: number;
   tests: number;
   rank: number;
-  trend: 'up' | 'down' | 'stable';
   percentile: number;
   league: 'bronze' | 'silver' | 'gold';
-  streak: number;
 }
 
 // ── Brand palette (matches #124D96 codebase) ─────────────────────────────────
@@ -28,9 +27,6 @@ const BRAND = {
   gold: '#D4AF37',   // 1st place
   silver: '#94A3B8',   // 2nd place (blue-tinted silver)
   bronze: '#8B7355',   // 3rd place
-  up: '#22C55E',   // trend up
-  down: '#EF4444',   // trend down
-  stable: '#64748B',   // stable
   white: '#FFFFFF',
   textPrimary: '#0F172A',
   textMuted: '#475569',
@@ -71,9 +67,9 @@ function generatePixelAvatar(name: string): string {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
-function getLeague(tests: number): 'bronze' | 'silver' | 'gold' {
-  if (tests >= 10) return 'gold';
-  if (tests >= 5) return 'silver';
+function getLeague(score: number): 'bronze' | 'silver' | 'gold' {
+  if (score >= 50) return 'gold';
+  if (score >= 20) return 'silver';
   return 'bronze';
 }
 
@@ -107,63 +103,6 @@ function SkeletonCard() {
   );
 }
 
-// ── Score Breakdown Tooltip ───────────────────────────────────────────────────
-function ScoreTooltip({ user, visible }: { user: RankedUser; visible: boolean }) {
-  const difficultyPts = Math.round(user.tests * 3.5);
-  const completionPts = Math.round(user.tests * 2.1);
-  const recencyPts = Math.round(user.tests * 1.4);
-  const total = difficultyPts + completionPts + recencyPts;
-  if (!visible) return null;
-  return (
-    <div
-      role="tooltip"
-      className="absolute right-0 bottom-full mb-3 z-50 w-64 rounded-2xl p-4 text-sm shadow-2xl border"
-      style={{
-        background: 'linear-gradient(160deg,#0D3A72,#0A2255)',
-        borderColor: 'rgba(255,255,255,0.14)',
-        color: '#e2e8f0',
-      }}
-    >
-      <p className="font-bold mb-3 text-white text-base">Score Breakdown</p>
-      {[
-        { label: 'Test Difficulty', pts: difficultyPts, pct: Math.round(difficultyPts / total * 100) },
-        { label: 'Completion Rate', pts: completionPts, pct: Math.round(completionPts / total * 100) },
-        { label: 'Recency Bonus', pts: recencyPts, pct: Math.round(recencyPts / total * 100) },
-      ].map(({ label, pts, pct }) => (
-        <div key={label} className="mb-2">
-          <div className="flex justify-between text-xs mb-1" style={{ color: '#94A3B8' }}>
-            <span>{label}</span>
-            <span className="text-white font-semibold">{pts} pts</span>
-          </div>
-          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
-            <div className="h-full rounded-full" style={{ width: `${pct}%`, background: 'linear-gradient(90deg,#2563EB,#60A5FA)' }} />
-          </div>
-        </div>
-      ))}
-      <div className="mt-3 pt-3 flex justify-between text-xs font-bold" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-        <span style={{ color: '#94A3B8' }}>Total Score</span>
-        <span className="text-white">{total} pts</span>
-      </div>
-    </div>
-  );
-}
-
-// ── Trend Icon ────────────────────────────────────────────────────────────────
-function TrendIcon({ trend }: { trend: RankedUser['trend'] }) {
-  const map = {
-    up: { symbol: '▲', color: BRAND.up, bg: 'rgba(34,197,94,0.12)', label: 'Rank trending up' },
-    down: { symbol: '▼', color: BRAND.down, bg: 'rgba(239,68,68,0.10)', label: 'Rank trending down' },
-    stable: { symbol: '●', color: BRAND.stable, bg: 'rgba(100,116,139,0.10)', label: 'Rank stable' },
-  };
-  const { symbol, color, bg, label } = map[trend];
-  return (
-    <span aria-label={label} title={label}
-      className="inline-flex items-center text-xs font-bold px-1.5 py-0.5 rounded-full"
-      style={{ color, background: bg }}>
-      {symbol}
-    </span>
-  );
-}
 
 // ── Trophy SVG ────────────────────────────────────────────────────────────────
 function TrophyIcon({ color, size = 20 }: { color: string; size?: number }) {
@@ -203,7 +142,6 @@ function PodiumCard({ user, podiumIdx, isCurrent, onClick }: {
         style={{ background: m.border, color: podiumIdx === 0 ? '#0A2255' : '#fff' }}>
         <TrophyIcon color={podiumIdx === 0 ? '#0A2255' : '#fff'} size={12} />
         <span>#{user.rank}</span>
-        <TrendIcon trend={user.trend} />
       </div>
 
       {/* Pixel avatar */}
@@ -225,7 +163,8 @@ function PodiumCard({ user, podiumIdx, isCurrent, onClick }: {
 
       {/* Stats */}
       <div className="flex flex-col items-center gap-1.5 text-center">
-        <span className="text-sm font-bold" style={{ color: m.trophyColor }}>{user.tests} tests</span>
+        <span className="text-sm font-bold" style={{ color: m.trophyColor }}>{user.totalScore} Points</span>
+        <span className="text-xs font-semibold" style={{ color: BRAND.textLight }}>{user.tests} tests taken</span>
         <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
           style={{ color: lg.color, background: lg.bg, border: `1px solid ${lg.border}30` }}>
           <span className="sr-only">Tier: </span>{lg.label}
@@ -247,20 +186,25 @@ export default function RankingPage() {
   }, [router]);
 
   const staticSorted = useMemo(() => [
-    { name: 'Sonia Verma', tests: 15 },
-    { name: 'Ajay Kumar', tests: 12 },
-    { name: 'Rahul Singh', tests: 9 },
-    { name: 'Neha Sharma', tests: 7 },
-    { name: 'Vikram Patel', tests: 5 },
-    { name: 'Arjun Mehta', tests: 4 },
-    { name: 'Priya Nair', tests: 3 },
-  ].sort((a, b) => b.tests - a.tests), []);
+    { name: 'Sonia Verma', totalScore: 150, tests: 15 },
+    { name: 'Ajay Kumar', totalScore: 120, tests: 12 },
+    { name: 'Rahul Singh', totalScore: 90, tests: 9 },
+    { name: 'Neha Sharma', totalScore: 70, tests: 7 },
+    { name: 'Vikram Patel', totalScore: 50, tests: 5 },
+    { name: 'Arjun Mehta', totalScore: 40, tests: 4 },
+    { name: 'Priya Nair', totalScore: 30, tests: 3 },
+  ].sort((a, b) => b.totalScore - a.totalScore), []);
 
   const [rawData, setRawData] = useState(staticSorted);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [tooltipIdx, setTooltipIdx] = useState<number | null>(null);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
+  
+  // Pagination State
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [totalItems, setTotalItems] = useState(0);
 
   useEffect(() => {
     try { setCurrentUser(localStorage.getItem('userName')); } catch { /* noop */ }
@@ -271,18 +215,21 @@ export default function RankingPage() {
     async function load() {
       try {
         setLoading(true); setError(null);
-        const res = await fetch('/api/ranking');
+        // Load initial page 1
+        const res = await fetch(`/api/ranking?page=1&limit=20`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const body = await res.json();
         if (!body?.success || !Array.isArray(body.data)) throw new Error('Unexpected response');
-        const mapped = body.data.map((u: { name?: string; testsTakenCount?: number; testsTaken?: unknown[] }) => ({
+        const mapped = body.data.map((u: any) => ({
           name: u.name,
-          tests: typeof u.testsTakenCount === 'number'
-            ? u.testsTakenCount
-            : Array.isArray(u.testsTaken) ? u.testsTaken.length : 0,
+          totalScore: u.totalScore || 0,
+          tests: u.testsTakenCount || 0,
         }));
         if (!cancelled) {
           setRawData(mapped);
+          setHasMore(body.meta?.hasMore || false);
+          setTotalItems(body.meta?.totalItems || mapped.length);
+          setPage(1);
           if (liveRef.current) liveRef.current.textContent = 'Rankings updated.';
         }
       } catch (err: unknown) {
@@ -295,21 +242,46 @@ export default function RankingPage() {
     return () => { cancelled = true; };
   }, []);
 
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore) return;
+    try {
+      setLoadingMore(true);
+      const nextPage = page + 1;
+      const res = await fetch(`/api/ranking?page=${nextPage}&limit=20`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const body = await res.json();
+      if (!body?.success || !Array.isArray(body.data)) throw new Error('Unexpected response');
+      
+      const mapped = body.data.map((u: any) => ({
+        name: u.name,
+        totalScore: u.totalScore || 0,
+        tests: u.testsTakenCount || 0,
+      }));
+      
+      setRawData(prev => [...prev, ...mapped]);
+      setHasMore(body.meta?.hasMore || false);
+      setTotalItems(body.meta?.totalItems || 0);
+      setPage(nextPage);
+    } catch (err: unknown) {
+      console.error('Failed to load more:', err);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [page, hasMore, loadingMore]);
+
   const enriched: RankedUser[] = useMemo(() => {
-    const total = rawData.length;
+    const total = Math.max(totalItems, rawData.length);
     return rawData.map((u, idx) => {
       const seed = hashStr(u.name || 'x');
       const roll = seededRand(seed, 99);
-      const trend: RankedUser['trend'] = roll > 0.65 ? 'up' : roll > 0.35 ? 'stable' : 'down';
       const percentile = total <= 1 ? 1 : Math.max(1, Math.round(((total - idx - 1) / (total - 1)) * 99) + 1);
       return {
         name: typeof u.name === 'string' && u.name.trim() ? u.name : 'Unknown User',
+        totalScore: u.totalScore,
         tests: u.tests,
         rank: idx + 1,
-        trend,
         percentile,
-        league: getLeague(u.tests),
-        streak: 1 + (hashStr((u.name || '') + 'streak') % 14),
+        league: getLeague(u.totalScore),
       };
     });
   }, [rawData]);
@@ -345,7 +317,7 @@ export default function RankingPage() {
               </span>
             </h1>
             <p className="mt-2 text-base font-medium" style={{ color: BRAND.textMuted }}>
-              Based on tests taken — difficulty, completion rate &amp; recency.
+              Based on total cumulative scores across all test formats.
             </p>
           </div>
           {/* Live badge */}
@@ -414,9 +386,8 @@ export default function RankingPage() {
                       <tr style={{ borderBottom: `1px solid rgba(18,77,150,0.10)` }}>
                         <th scope="col" className="sr-only">Rank</th>
                         <th scope="col" className="sr-only">User</th>
-                        <th scope="col" className="sr-only">Tests Completed</th>
+                        <th scope="col" className="sr-only">Score & Tests</th>
                         <th scope="col" className="sr-only">Percentile</th>
-                        <th scope="col" className="sr-only">Score Details</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -424,7 +395,6 @@ export default function RankingPage() {
                         const league = LEAGUE_META[u.league];
                         const avatarSrc = generatePixelAvatar(u.name);
                         const isCurrent = currentUser === u.name;
-                        const isTooltipOpen = tooltipIdx === u.rank;
                         const isLast = i === rest.length - 1;
 
                         return (
@@ -438,12 +408,11 @@ export default function RankingPage() {
                               borderBottom: isLast ? 'none' : `1px solid rgba(18,77,150,0.07)`,
                               background: isCurrent ? 'rgba(18,77,150,0.07)' : undefined,
                             }}
-                            aria-label={`Rank ${u.rank}: ${u.name}, ${u.tests} tests, Top ${u.percentile}%`}
+                            aria-label={`Rank ${u.rank}: ${u.name}, ${u.totalScore} Points, Top ${u.percentile}%`}
                           >
-                            {/* Rank + trend */}
+                            {/* Rank */}
                             <td className="flex items-center gap-1.5 w-16 shrink-0">
                               <span className="font-bold text-base" style={{ color: BRAND.textMuted }}>#{u.rank}</span>
-                              <TrendIcon trend={u.trend} />
                             </td>
 
                             {/* Pixel avatar */}
@@ -474,8 +443,8 @@ export default function RankingPage() {
                                 </span>
                               </div>
                               <div className="flex items-center gap-3 mt-0.5 text-xs" style={{ color: BRAND.textLight }}>
+                                <span className="font-bold text-blue-700">{u.totalScore} Total Score</span>
                                 <span>{u.tests} tests completed</span>
-                                <span aria-label={`${u.streak} day streak`}>🔥 {u.streak}d streak</span>
                               </div>
                             </td>
 
@@ -485,34 +454,26 @@ export default function RankingPage() {
                                 Top <span style={{ color: BRAND.navy }} className="font-bold">{u.percentile}%</span>
                               </span>
                             </td>
-
-                            {/* Score breakdown */}
-                            <td className="relative shrink-0">
-                              <button
-                                aria-label={`Score breakdown for ${u.name}`}
-                                aria-expanded={isTooltipOpen}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setTooltipIdx(isTooltipOpen ? null : u.rank);
-                                }}
-                                className="w-9 h-9 rounded-full flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400/50"
-                                style={{
-                                  color: isTooltipOpen ? '#fff' : BRAND.textLight,
-                                  background: isTooltipOpen ? BRAND.navy : 'rgba(18,77,150,0.08)',
-                                }}
-                              >
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
-                                  <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
-                                </svg>
-                              </button>
-                              <ScoreTooltip user={u} visible={isTooltipOpen} />
-                            </td>
                           </tr>
                         );
                       })}
                     </tbody>
                   </table>
                 </div>
+
+                {/* Load More Button */}
+                {hasMore && (
+                  <div className="mt-8 text-center">
+                    <button
+                      onClick={loadMore}
+                      disabled={loadingMore}
+                      className="px-6 py-2.5 rounded-full text-sm font-bold shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50"
+                      style={{ background: BRAND.navy, color: '#fff' }}
+                    >
+                      {loadingMore ? 'Loading...' : 'Load More Rankings'}
+                    </button>
+                  </div>
+                )}
               </section>
             )}
           </>
@@ -530,8 +491,8 @@ export default function RankingPage() {
             </p>
           )}
           <p className="text-xs max-w-md mx-auto" style={{ color: BRAND.textLight }}>
-            Score = Test Difficulty × Completion Rate × Recency Bonus.
-            Click <svg className="w-3 h-3 inline-block" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg> on any row to see a full breakdown.
+            Rankings reflect the cumulative total score acquired across OIR, PPDT, TAT, SRT, WAT, Lecturette, and PI. 
+            Taking more tests directly improves your rank!
           </p>
         </div>
 

@@ -36,39 +36,16 @@ const TEST_COLORS: Record<string, string> = {
   WAT: '#059669', // emerald       — Words / Language
   SRT: '#DC2626', // red           — Urgency / Reaction
   LECTURETTE: '#D97706', // amber         — Speaking / Delivery
+  PI: '#124D96', // navy          — Interview
 };
 const PIE_COLORS = Object.values(TEST_COLORS);
 
 interface UserDetails {
   name: string;
   email: string;
-  testsTaken?: { testName: string; score: number; timeTaken: number; dateTaken: string }[];
+  testsTaken?: { testName: string; score: number; dateTaken: string }[];
 }
 
-const mockUserDetails: UserDetails = {
-  name: "Aman Kumar",
-  email: "aman@example.com",
-  testsTaken: [
-    { testName: "OIR", score: 28, timeTaken: 2400, dateTaken: new Date(Date.now() - 25 * 86400000).toISOString() },
-    { testName: "OIR", score: 32, timeTaken: 2200, dateTaken: new Date(Date.now() - 20 * 86400000).toISOString() },
-    { testName: "OIR", score: 35, timeTaken: 2100, dateTaken: new Date(Date.now() - 15 * 86400000).toISOString() },
-    { testName: "OIR", score: 38, timeTaken: 2050, dateTaken: new Date(Date.now() - 10 * 86400000).toISOString() },
-    { testName: "OIR", score: 35, timeTaken: 2150, dateTaken: new Date(Date.now() - 5 * 86400000).toISOString() },
-    { testName: "PPDT", score: 30, timeTaken: 1800, dateTaken: new Date(Date.now() - 23 * 86400000).toISOString() },
-    { testName: "PPDT", score: 32, timeTaken: 1750, dateTaken: new Date(Date.now() - 18 * 86400000).toISOString() },
-    { testName: "PPDT", score: 35, timeTaken: 1700, dateTaken: new Date(Date.now() - 12 * 86400000).toISOString() },
-    { testName: "TAT", score: 25, timeTaken: 2200, dateTaken: new Date(Date.now() - 22 * 86400000).toISOString() },
-    { testName: "TAT", score: 28, timeTaken: 2100, dateTaken: new Date(Date.now() - 17 * 86400000).toISOString() },
-    { testName: "WAT", score: 26, timeTaken: 1500, dateTaken: new Date(Date.now() - 21 * 86400000).toISOString() },
-    { testName: "WAT", score: 28, timeTaken: 1450, dateTaken: new Date(Date.now() - 14 * 86400000).toISOString() },
-    { testName: "SRT", score: 22, timeTaken: 1800, dateTaken: new Date(Date.now() - 19 * 86400000).toISOString() },
-    { testName: "SRT", score: 25, timeTaken: 1750, dateTaken: new Date(Date.now() - 13 * 86400000).toISOString() },
-    { testName: "LECTURETTE", score: 24, timeTaken: 1900, dateTaken: new Date(Date.now() - 16 * 86400000).toISOString() },
-  ],
-};
-
-// ── Helpers ────────────────────────────────────────────────────────────────────
-const fmtTime = (s: number) => `${Math.floor(s / 60)}m ${s % 60}s`;
 
 function StatTile({ value, label, accent = B.navy }: { value: string | number; label: string; accent?: string }) {
   return (
@@ -93,7 +70,17 @@ function ChartCard({ title, children }: { title: string; children: React.ReactNo
 function TotalTestChart({ userDetails }: { userDetails: UserDetails }) {
   const data = (() => {
     const counts: Record<string, number> = {};
-    userDetails.testsTaken?.forEach(t => { const n = t.testName.toUpperCase(); counts[n] = (counts[n] || 0) + 1; });
+    userDetails.testsTaken?.forEach(t => { 
+      let n = t.testName.toUpperCase(); 
+      if (n.includes("PERSONAL INTERVIEW") || n === "PI") n = "PI";
+      if (n.includes("OIR")) n = "OIR";
+      if (n.includes("PPDT")) n = "PPDT";
+      if (n.includes("TAT")) n = "TAT";
+      if (n.includes("WAT")) n = "WAT";
+      if (n.includes("SRT")) n = "SRT";
+      if (n.includes("LECTURETTE")) n = "LECTURETTE";
+      counts[n] = (counts[n] || 0) + 1; 
+    });
     return Object.entries(counts).map(([testName, count]) => ({ testName, count }));
   })();
 
@@ -173,9 +160,19 @@ function MonthlyTestChart({ userDetails }: { userDetails: UserDetails }) {
 // ── Score Trend Area ───────────────────────────────────────────────────────────
 function TestScoreChart({ userDetails, testName }: { userDetails: UserDetails; testName: string }) {
   const data = (userDetails.testsTaken || [])
-    .filter(t => t.testName.toUpperCase() === testName)
+    .filter(t => {
+      let n = t.testName.toUpperCase();
+      if (n.includes("PERSONAL INTERVIEW") || n === "PI") n = "PI";
+      if (n.includes("OIR")) n = "OIR";
+      if (n.includes("PPDT")) n = "PPDT";
+      if (n.includes("TAT")) n = "TAT";
+      if (n.includes("WAT")) n = "WAT";
+      if (n.includes("SRT")) n = "SRT";
+      if (n.includes("LECTURETTE")) n = "LECTURETTE";
+      return n === testName;
+    })
     .sort((a, b) => new Date(a.dateTaken).getTime() - new Date(b.dateTaken).getTime())
-    .map((t, i) => ({ attempt: `Attempt ${i + 1}`, score: t.score, timeInSeconds: t.timeTaken }));
+    .map((t, i) => ({ attempt: `Attempt ${i + 1}`, score: t.score }));
 
   const latest = data.at(-1)?.score ?? 0;
   const best = data.length ? Math.max(...data.map(d => d.score)) : 0;
@@ -183,12 +180,11 @@ function TestScoreChart({ userDetails, testName }: { userDetails: UserDetails; t
 
   return (
     <div>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
         {[
           { label: 'Latest Score', value: latest, bg: `linear-gradient(135deg,${testColor},${testColor}cc)` },
           { label: 'Best Score', value: best, bg: 'linear-gradient(135deg,#059669,#047857)' },
-          { label: 'Attempts', value: data.length, bg: 'linear-gradient(135deg,#0891B2,#0E7490)' },
-          { label: 'Last Time', value: data.at(-1) ? fmtTime(data.at(-1)!.timeInSeconds) : '—', bg: 'linear-gradient(135deg,#D97706,#B45309)' },
+          { label: 'Total Attempts', value: data.length, bg: 'linear-gradient(135deg,#0891B2,#0E7490)' },
         ].map(({ label, value, bg }) => (
           <div key={label} className="rounded-xl p-4 text-center" style={{ background: bg, color: '#fff' }}>
             <p className="text-2xl font-black">{value}</p>
@@ -225,7 +221,7 @@ function TestScoreChart({ userDetails, testName }: { userDetails: UserDetails; t
 }
 
 // ── Test selector buttons ──────────────────────────────────────────────────────
-const TEST_TABS = ['OIR', 'PPDT', 'TAT', 'WAT', 'SRT', 'LECTURETTE'];
+const TEST_TABS = ['OIR', 'PPDT', 'TAT', 'WAT', 'SRT', 'LECTURETTE', 'PI'];
 
 // ── Page ───────────────────────────────────────────────────────────────────────
 export default function UserDetails() {
@@ -283,11 +279,16 @@ export default function UserDetails() {
     fetchUserDetails();
   }, [router]);
 
-  const handleLogout = () => {
-    clearAuth();
-    window.dispatchEvent(new Event('auth-change'));
-    // Use router.push for reliable navigation after clearing auth
-    router.push('/');
+  const handleLogout = async () => {
+    try {
+      await apiClient.post('/auth/logout');
+    } catch (e) {
+      console.error('Logout API failed:', e);
+    } finally {
+      clearAuth();
+      window.dispatchEvent(new Event('auth-change'));
+      router.push('/');
+    }
   };
 
   /* derived stats */

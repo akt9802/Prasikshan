@@ -29,10 +29,11 @@ function TatScore({ userDetails }) {
     //   console.log("All tests:", testArray); // Debug log
 
       const tatTests = testArray
-        .filter(
-          (test) =>
-            test && test.testName && test.testName.toLowerCase().includes("tat") // Changed from "ppdt" to "tat"
-        )
+        .filter((test) => {
+          if (!test || !test.testName) return false;
+          const n = test.testName.toUpperCase();
+          return n.includes("TAT");
+        })
         .sort((a, b) => new Date(a.dateTaken) - new Date(b.dateTaken))
         .slice(-50); // Get only the last 50 TAT tests
 

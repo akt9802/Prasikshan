@@ -1,6 +1,7 @@
 import connectDB from "@/lib/db";
-import User from "@/models/User";
+import UserResult from "@/models/UserResult";
 import { NextRequest, NextResponse } from "next/server";
+import jwt from "jsonwebtoken";
 
 interface SRTTestRequest {
   testName: string;
@@ -34,7 +35,6 @@ export async function POST(request: NextRequest) {
         throw new Error("JWT_SECRET not configured");
       }
 
-      const jwt = require("jsonwebtoken");
       const decoded = jwt.verify(token, secret) as { userId: string };
       userId = decoded.userId;
 
@@ -57,34 +57,42 @@ export async function POST(request: NextRequest) {
     // Connect to database
     await connectDB();
 
-    // Find user
-    const user = await User.findById(userId);
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: "User not found" },
-        { status: 404 }
-      );
+    // Find or create UserResult
+    let userResult = await UserResult.findOne({ userId });
+    
+    if (!userResult) {
+      userResult = new UserResult({
+        userId,
+        oir: [],
+        ppdt: [],
+        tat: [],
+        wat: [],
+        srt: [],
+        lecturette: [],
+        pi: [],
+      });
     }
 
     // Create test result
-    const testResult = {
+    const testData = {
       testName: testName || "SRT",
       score,
       timeTaken,
       dateTaken: new Date(dateTaken),
       responses,
+      createdAt: new Date(),
     };
 
-    // Save to user's test history
-    user.testsTaken.push(testResult);
-    await user.save();
+    // Add to srt array
+    userResult.srt.push(testData);
+    await userResult.save();
 
-    console.log(`✅ SRT Result saved for user ${userId}`);
+    console.log(`✅ SRT Result saved in UserResult for user ${userId}`);
 
     return NextResponse.json({
       success: true,
       message: "SRT test result saved successfully",
-      user,
+      data: testData,
     });
   } catch (error) {
     console.error("❌ SRT Result Error:", error);

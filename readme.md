@@ -202,9 +202,9 @@ services:
 
 | Collection | Purpose | Key Relationships | Indexes |
 |------------|---------|-------------------|---------|
-| **Users** | User accounts & profiles | 1:N → TestResults, Rankings | email, userId |
+| **Users** | Core profiles & authentication | 1:1 → UserResults | email, userId |
+| **UserResults** | Typed test history arrays | N:1 ← Users | userId, resultsType |
 | **Questions** | Test question bank | N:1 ← TestTypes | testType, difficulty |
-| **TestResults** | Individual test attempts | N:1 ← Users, Questions | userId, testType, createdAt |
 | **Rankings** | Leaderboard data | N:1 ← Users | userId, testType, score |
 | **TestSets** | Question collections | 1:N → Questions | setId, testType |
 
@@ -212,7 +212,7 @@ services:
 
 ```mermaid
 erDiagram
-    Users ||--o{ TestResults : attempts
+    Users ||--|| UserResults : "has history"
     Users ||--o{ Rankings : ranks
     Questions ||--o{ TestResults : contains
     TestSets ||--o{ Questions : includes
@@ -220,14 +220,25 @@ erDiagram
     Users {
         ObjectId _id PK
         string email UK
-        string name
+        string username
+        string fullName
         string hashedPassword
         boolean isVerified
         string role
         Date createdAt
-        Date lastLogin
-        object profile
-        array testHistory
+        string refreshToken
+    }
+    
+    UserResults {
+        ObjectId _id PK
+        ObjectId userId FK
+        array oir
+        array ppdt
+        array tat
+        array wat
+        array srt
+        array lecturette
+        array pi
     }
     
     Questions {
@@ -241,18 +252,8 @@ erDiagram
         ObjectId setId FK
         Date createdAt
     }
-    
-    TestResults {
-        ObjectId _id PK
-        ObjectId userId FK
-        string testType
-        array answers
-        number score
-        number totalQuestions
-        number timeSpent
-        Date completedAt
-        object analytics
-    }
+
+
     
     Rankings {
         ObjectId _id PK
@@ -600,6 +601,8 @@ Prasikshan is proudly open source because we believe:
 - **Seamless Session Management**: Added a background Axios interceptor to silently catch `401/403` token expirations and automatically refresh them without disrupting the user flow.
 - **Cloudinary Global CDN Migration**: Offloaded high-resolution core assets and test images directly to Cloudinary's Global CDN. This massively unblocks Next.js server threads, reduces bandwidth costs, and turbo-charges initial page load speeds!
 - **Advanced Threat Protection**: Implemented a robust dual-layer Redis rate limiting architecture (Sliding Window IP tracking & Account Lockout mechanisms) to neutralize distributed brute-force attacks and protect backend compute resources.
+- **High-Performance UserResult Sharding**: Decoupled 100% of test history from the core `User` model into a dedicated `UserResult` collection. Implemented type-specific result arrays (`oir`, `ppdt`, `tat`, etc.) for sub-millisecond query performance and cleaner data isolation. Added a robust TypeScript migration engine to bridge legacy test records seamlessly.
+
 
 ### 🎯 Upcoming Features (Q2 2026)
 

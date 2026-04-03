@@ -37,7 +37,7 @@ export default function Footer() {
       { name: "PPDT Phase", href: "/alltest/ppdt" },
       { name: "TAT (Psychology)", href: "/alltest/tat" },
       { name: "WAT / SRT", href: "/alltest" },
-      { name: "Personal Interview", href: "/alltest/pi" },
+      { name: "PI", href: "/alltest/pi" },
     ],
     platform: [
       { name: "Home", href: "/" },

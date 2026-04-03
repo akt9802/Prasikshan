@@ -1,30 +1,89 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import connectDB from '@/lib/db';
 import User from '@/models/User';
+import UserResult from '@/models/UserResult';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
     try {
         await connectDB();
+        
+        const { searchParams } = new URL(req.url);
+        const page = parseInt(searchParams.get('page') || '1', 10);
+        const limit = parseInt(searchParams.get('limit') || '20', 10);
 
-        // fetch only the fields we need
-        const users = await User.find({}, 'username fullName email testsTaken').lean();
+        // fetch only the fields we need from Users
+        const users = await User.find({}, 'username fullName email').lean();
 
-        // map and compute testsTakenCount
-        const mapped = users.map(u => ({
-            username: u.username,
-            fullName: u.fullName,
-            email: u.email,
-            testsTaken: Array.isArray(u.testsTaken) ? u.testsTaken : [],
-            testsTakenCount: Array.isArray(u.testsTaken) ? u.testsTaken.length : 0,
-        }));
+        // fetch user results directly from the new collection
+        const userResults = await UserResult.find({}).lean();
+        
+        // Map results by userId for fast lookup
+        const resultDict: any = {};
+        for (const res of userResults) {
+            resultDict[(res as any).userId.toString()] = res;
+        }
 
-        // sort by testsTakenCount desc
-        mapped.sort((a, b) => b.testsTakenCount - a.testsTakenCount);
+        // map and compute testsTakenCount and totalScore
+        const mapped = users.map(u => {
+            const result = resultDict[(u as any)._id.toString()];
+            let totalScore = 0;
+            let testsTakenCount = 0;
+            
+            if (result) {
+                const arrays = ['oir', 'ppdt', 'tat', 'wat', 'srt', 'lecturette', 'pi'];
+                for (const arr of arrays) {
+                    if (Array.isArray(result[arr])) {
+                        testsTakenCount += result[arr].length;
+                        for (const test of result[arr]) {
+                           totalScore += (test.score || 0);
+                        }
+                    }
+                }
+            }
+            
+            // Round to 2 decimal places to prevent floating point issues
+            totalScore = Math.round(totalScore * 100) / 100;
+
+            return {
+                username: u.username,
+                fullName: u.fullName,
+                email: u.email,
+                testsTakenCount,
+                totalScore,
+            };
+        });
+
+        // sort by totalScore desc
+        mapped.sort((a, b) => {
+            if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
+            if (b.testsTakenCount !== a.testsTakenCount) return b.testsTakenCount - a.testsTakenCount;
+            const nameA = a.username || a.fullName || a.email || '';
+            const nameB = b.username || b.fullName || b.email || '';
+            return nameA.localeCompare(nameB);
+        });
 
         // add rank (1-based)
-        const ranked = mapped.map((u, idx) => ({ ...u, name: u.username || u.fullName, rank: idx + 1 }));
+        const ranked = mapped.map((u, idx) => ({ 
+            ...u, 
+            name: u.username || u.fullName || u.email.split('@')[0], 
+            rank: idx + 1 
+        }));
 
-        return NextResponse.json({ success: true, data: ranked });
+        const totalItems = ranked.length;
+        const totalPages = Math.ceil(totalItems / limit);
+        const skip = (page - 1) * limit;
+        const paginatedData = ranked.slice(skip, skip + limit);
+
+        return NextResponse.json({ 
+            success: true, 
+            data: paginatedData,
+            meta: {
+                totalItems,
+                totalPages,
+                currentPage: page,
+                hasMore: page < totalPages
+            }
+        });
     } catch (err: any) {
         console.error('Error in /api/ranking:', err);
         return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });

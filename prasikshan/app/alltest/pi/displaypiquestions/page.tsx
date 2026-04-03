@@ -160,7 +160,7 @@ export default function DisplayPiQuestion() {
       }
 
       await apiClient.post("/piquestions/result", {
-        testName: "Personal Interview",
+        testName: "PI",
         score: aiCalculatedScore,
         timeTaken: overallTimeElapsed,
         dateTaken: new Date().toISOString(),
@@ -220,7 +220,7 @@ export default function DisplayPiQuestion() {
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div>
             <p className="text-xs font-black tracking-widest uppercase" style={{ color: 'rgba(190,227,248,0.65)' }}>Evaluation Module</p>
-            <h1 className="text-lg font-black text-white leading-tight">Personal Interview (PI)</h1>
+            <h1 className="text-lg font-black text-white leading-tight">PI</h1>
           </div>
 
           <div className="hidden sm:flex flex-col items-center gap-1 flex-1 max-w-xs">
@@ -251,7 +251,7 @@ export default function DisplayPiQuestion() {
               style={{ background: `linear-gradient(135deg,${B.navyDeep},${B.navy})`, boxShadow: '0 12px 40px rgba(18,77,150,0.28)' }}>
               <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full pointer-events-none"
                 style={{ background: 'rgba(37,99,235,0.18)', filter: 'blur(30px)' }} />
-              <p className="text-xs font-black tracking-widest uppercase mb-2" style={{ color: 'rgba(190,227,248,0.65)' }}>Personal Interview</p>
+              <p className="text-xs font-black tracking-widest uppercase mb-2" style={{ color: 'rgba(190,227,248,0.65)' }}>PI</p>
               
               {stage === "results" ? (
                 <>

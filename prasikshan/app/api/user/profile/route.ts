@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import connectDB from '@/lib/db';
 import User from '@/models/User';
+import UserResult from '@/models/UserResult';
 
 export async function GET(req: NextRequest) {
   try {
@@ -50,7 +51,23 @@ export async function GET(req: NextRequest) {
           fullName: user.fullName,
           role: user.role || 'user',
           isVerified: user.isVerified,
-          testsTaken: user.testsTaken || [],
+          testsTaken: await (async () => {
+            const userResult = await UserResult.findOne({ userId: user._id }).lean();
+            if (!userResult) return [];
+            
+            // Standardize and combine all test arrays
+            return [
+              ...(userResult.oir || []).map((t: any) => ({ ...t, testName: t.testName || "OIR" })),
+              ...(userResult.ppdt || []).map((t: any) => ({ ...t, testName: t.testName || "PPDT" })),
+              ...(userResult.tat || []).map((t: any) => ({ ...t, testName: t.testName || "TAT" })),
+              ...(userResult.wat || []).map((t: any) => ({ ...t, testName: t.testName || "WAT" })),
+              ...(userResult.srt || []).map((t: any) => ({ ...t, testName: t.testName || "SRT" })),
+              ...(userResult.lecturette || []).map((t: any) => ({ ...t, testName: t.testName || "LECTURETTE" })),
+              ...(userResult.pi || []).map((t: any) => ({ ...t, testName: t.testName || "PI" })),
+            ].sort((a, b) => new Date(b.dateTaken).getTime() - new Date(a.dateTaken).getTime());
+          })(),
+          // Also provide specific results object
+          results: await UserResult.findOne({ userId: user._id }).lean() || {},
         },
       },
       { status: 200 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import User from '@/models/User';
+import UserResult from '@/models/UserResult';
 
 export async function POST(req: NextRequest) {
     try {
@@ -34,6 +35,21 @@ export async function POST(req: NextRequest) {
         user.verifyOtp = undefined;
         user.verifyOtpExpiry = undefined;
         await user.save();
+
+        // Initialize UserResult document if it doesn't exist
+        const existingResult = await UserResult.findOne({ userId: user._id });
+        if (!existingResult) {
+            await UserResult.create({
+                userId: user._id,
+                oir: [],
+                ppdt: [],
+                tat: [],
+                wat: [],
+                srt: [],
+                lecturette: [],
+                pi: [],
+            });
+        }
 
         return NextResponse.json({ success: true, message: 'Email verified successfully' }, { status: 200 });
     } catch (error: any) {

@@ -212,7 +212,7 @@ const TESTS: TestItem[] = [
   {
     id: "pi",
     label: "PI",
-    title: "Personal Interview",
+    title: "PI",
     description: "Engage in a comprehensive interview to evaluate your personality traits, adaptability, and Officer-Like Qualities.",
     route: "/alltest/pi",
     duration: "30 min",

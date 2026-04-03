@@ -11,61 +11,61 @@ import {
   Legend,
 } from "recharts";
 
-function PPDTScore({ userDetails }) {
-  // console.log("PPDT userDetails:", userDetails); // Debug log
-
-  const processPPDTData = () => {
+function PiScore({ userDetails }) {
+  const processPiData = () => {
     try {
       if (
         !userDetails ||
         !userDetails.testsTaken ||
         !Array.isArray(userDetails.testsTaken)
       ) {
-        console.log("No testsTaken array found");
         return [];
       }
 
       const testArray = userDetails.testsTaken;
-      // console.log("All tests:", testArray); // Debug log
 
-      const ppdtTests = testArray
+      const piTests = testArray
         .filter((test) => {
           if (!test || !test.testName) return false;
           const n = test.testName.toUpperCase();
-          return n.includes("PPDT");
+          return n.includes("PI") || n.includes("PERSONAL INTERVIEW");
         })
-        .sort((a, b) => new Date(a.dateTaken) - new Date(b.dateTaken))
-        .slice(-50); // Get only the last 50 PPDT tests
+        .sort((a, b) => new Date(a.dateTaken).getTime() - new Date(b.dateTaken).getTime())
+        .slice(-50); 
 
-      // console.log("Filtered PPDT tests (last 50):", ppdtTests); // Debug log
-
-      const ppdtData = ppdtTests.map((test, index) => ({
+      const piData = piTests.map((test, index) => ({
         attempt: `Test ${index + 1}`,
-        score: 0, // Set score to 0 as requested (not attempt number)
+        score: Number(test.score) || 0,
+        timeInSeconds: Number(test.timeTaken) || 0,
         date: test.dateTaken
           ? new Date(test.dateTaken).toISOString().split("T")[0]
           : "",
       }));
 
-      // console.log("Processed PPDT data (last 50):", ppdtData); // Debug log
-      return ppdtData;
+      return piData;
     } catch (error) {
-      console.error("Error processing PPDT data:", error);
+      console.error("Error processing PI data:", error);
       return [];
     }
   };
 
-  const ppdtData = processPPDTData();
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}m ${remainingSeconds}s`;
+  };
 
+  const piData = processPiData();
   const defaultData = [
     {
       attempt: "No attempts yet",
       score: 0,
+      timeInSeconds: 0,
       date: "",
     },
   ];
 
-  const dataToUse = ppdtData.length > 0 ? ppdtData : defaultData;
+  const dataToUse = piData.length > 0 ? piData : defaultData;
 
   return (
     <div
@@ -86,7 +86,8 @@ function PPDTScore({ userDetails }) {
           color: "#124D96",
         }}
       >
-        PPDT Test Progress {ppdtData.length > 0 && `(${ppdtData.length} Tests)`}
+        PI Test Score Progress{" "}
+        {piData.length > 0 && `(Last ${piData.length} Tests)`}
       </h2>
 
       {/* Score Summary */}
@@ -104,9 +105,7 @@ function PPDTScore({ userDetails }) {
           <div
             style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#124D96" }}
           >
-            {ppdtData.length > 0
-              ? ppdtData[ppdtData.length - 1]?.score || 0
-              : 0}
+            {piData.length > 0 ? piData[piData.length - 1]?.score || 0 : 0}
           </div>
           <div style={{ fontSize: "0.9rem", color: "#666" }}>Latest Score</div>
         </div>
@@ -114,9 +113,7 @@ function PPDTScore({ userDetails }) {
           <div
             style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#28a745" }}
           >
-            {ppdtData.length > 0
-              ? Math.max(...ppdtData.map((d) => d.score))
-              : 0}
+            {piData.length > 0 ? Math.max(...piData.map((d) => d.score)) : 0}
           </div>
           <div style={{ fontSize: "0.9rem", color: "#666" }}>Best Score</div>
         </div>
@@ -124,11 +121,21 @@ function PPDTScore({ userDetails }) {
           <div
             style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#17a2b8" }}
           >
-            {ppdtData.length}
+            {piData.length}
           </div>
           <div style={{ fontSize: "0.9rem", color: "#666" }}>
-            Total Attempts
+            Recent Attempts
           </div>
+        </div>
+        <div style={{ textAlign: "center" }}>
+          <div
+            style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#FF8042" }}
+          >
+            {piData.length > 0 && piData[piData.length - 1]?.timeInSeconds
+              ? formatTime(piData[piData.length - 1].timeInSeconds)
+              : "0m 0s"}
+          </div>
+          <div style={{ fontSize: "0.9rem", color: "#666" }}>Latest Time</div>
         </div>
       </div>
 
@@ -142,17 +149,7 @@ function PPDTScore({ userDetails }) {
             textAnchor="end"
             height={60}
           />
-          <YAxis
-            allowDecimals={false}
-            domain={[0, 10]} // Fixed domain for score range
-            fontSize={12}
-            label={{
-              value: "Score",
-              angle: -90,
-              position: "insideLeft",
-              style: { textAnchor: "middle" },
-            }}
-          />
+          <YAxis allowDecimals={false} domain={[0, 10]} fontSize={12} />
           <Tooltip
             content={({ active, payload, label }) => {
               if (active && payload && payload.length) {
@@ -168,7 +165,10 @@ function PPDTScore({ userDetails }) {
                   >
                     <p style={{ margin: 0, fontWeight: "bold" }}>{label}</p>
                     <p style={{ margin: "5px 0", color: "#124D96" }}>
-                      Score: {data.score} (Coming Soon)
+                      Score: {data.score}
+                    </p>
+                    <p style={{ margin: "5px 0", color: "#FF8042" }}>
+                      Time: {formatTime(data.timeInSeconds)}
                     </p>
                     <p
                       style={{
@@ -189,7 +189,7 @@ function PPDTScore({ userDetails }) {
           <Area
             type="monotone"
             dataKey="score"
-            name="PPDT Score"
+            name="Interview Score"
             stroke="#124D96"
             fill="#124D96"
             fillOpacity={0.3}
@@ -207,13 +207,13 @@ function PPDTScore({ userDetails }) {
             fontWeight: "500",
           }}
         >
-          {ppdtData.length === 0
-            ? "🎯 Take your first PPDT test to see progress!"
-            : `📊 ${ppdtData.length} PPDT tests completed! Scoring system coming soon.`}
+          {piData.length === 0
+            ? "🎯 Take your first PI test to see progress!"
+            : `📊 ${piData.length} PI tests completed!`}
         </span>
       </div>
     </div>
   );
 }
 
-export default PPDTScore;
+export default PiScore;
