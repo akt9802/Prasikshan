@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import apiClient from "@/lib/axios";
 
 // ── Brand palette ─────────────────────────────────────────────────────────────
 const B = {
@@ -9,7 +10,6 @@ const B = {
   navyDark: '#0D3A72',
   navyDeep: '#0A2A55',
   blueMid: '#2563EB',
-  blueLight: '#60A5FA',
   iceBlue: '#EDF9FF',
   iceMid: '#D7F1FF',
   textDark: '#0F172A',
@@ -28,89 +28,144 @@ interface PiQuestion {
   expectation: string;
 }
 
+type Stage = "loading" | "questions" | "review" | "results";
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function fmtTime(s: number) {
+  return `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
+}
+
 export default function DisplayPiQuestion() {
   const router = useRouter();
-  const [stage, setStage] = useState<"loading" | "questions" | "review">("loading");
+
   const [questions, setQuestions] = useState<PiQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [stage, setStage] = useState<Stage>("loading");
+
   const [answers, setAnswers] = useState<{ [key: number]: string }>({});
-  const [startTime, setStartTime] = useState<number>(0);
-  const [error, setError] = useState("");
+  const [overallTimeElapsed, setOverallTimeElapsed] = useState(0);
+  
+  const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const [aiReview, setAiReview] = useState<string | null>(null);
+  const [aiScore, setAiScore] = useState<number | null>(null);
+  const [questionReviews, setQuestionReviews] = useState<{ question_id: number; review: string }[]>([]);
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  const [quotaExceeded, setQuotaExceeded] = useState(false);
 
-  // Fetch questions on mount
+  // ── Fetch ──────────────────────────────────────────────────────────────────
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await fetch("/api/piquestions");
-        if (!response.ok) throw new Error("Failed to fetch questions");
-        const data = await response.json();
-        setQuestions(data.data);
-        setStartTime(Date.now());
-        setStage("questions");
-      } catch (error) {
-        setError("Failed to load questions. Please try again.");
-        console.error(error);
+        const response = await fetch('/api/piquestions');
+        if (!response.ok) throw new Error('Failed to fetch PI questions');
+        const result = await response.json();
+
+        if (result.data && result.data.length > 0) {
+          setQuestions(result.data);
+          setStage("questions");
+        } else {
+          throw new Error('No questions received');
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch questions');
       }
     };
-
     fetchQuestions();
   }, []);
 
-  const handleAnswerChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  // ── Overall time tracker ──────────────────────────────────────────────────
+  useEffect(() => {
+    if (stage === "loading" || stage === "results" || stage === "review") return;
+    const t = setInterval(() => setOverallTimeElapsed(v => v + 1), 1000);
+    return () => clearInterval(t);
+  }, [stage]);
+
+  const handleAnswerChange = (v: string) => {
     const questionId = questions[currentIndex].question_id;
     setAnswers({
       ...answers,
-      [questionId]: e.target.value,
+      [questionId]: v,
     });
   };
 
-  const handleNext = () => {
-    if (currentIndex < questions.length - 1) {
+  const goToNext = () => {
+    if (currentIndex + 1 < questions.length) {
       setCurrentIndex(currentIndex + 1);
+    } else {
+      setStage("review");
     }
   };
 
-  const handlePrevious = () => {
+  const goToPrevious = () => {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
     }
   };
 
-  const handleFinish = () => {
+  const stopTest = () => {
     setStage("review");
   };
 
-  const submitResult = async () => {
-    if (!token) {
-      setError("Authentication required");
-      return;
-    }
+  const fetchAiReview = async (formattedAnswers: any[]) => {
+    const attempted = formattedAnswers.filter(r => r.answer.trim().length > 0);
+    if (attempted.length === 0) return 0;
 
+    setReviewLoading(true);
+    setReviewError(null);
+    setQuotaExceeded(false);
+    try {
+      const res = await fetch("/api/pi-review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answers: formattedAnswers, timeTaken: overallTimeElapsed }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setAiReview(data.review);
+        setAiScore(data.score);
+        setQuestionReviews(data.question_reviews || []);
+        return data.score as number;
+      } else if (data.quota_exceeded) {
+        setQuotaExceeded(true);
+      } else {
+        setReviewError(data.error || "Could not get AI review.");
+      }
+    } catch {
+      setReviewError("Failed to connect to AI review service.");
+    } finally {
+      setReviewLoading(false);
+    }
+    return 0;
+  };
+
+  // ── Submit result ──────────────────────────────────────────────────────────
+  const submitResult = async () => {
     try {
       setSubmitting(true);
-      const timeTaken = Math.round((Date.now() - startTime) / 1000);
-      const dateTaken = new Date().toISOString();
+      setStage("results"); // Update view immediately to show submitting state
+      
+      const formattedAnswers = questions.map((q) => ({
+        question_id: q.question_id,
+        question: q.question,
+        answer: answers[q.question_id] || "",
+        expectation: q.expectation
+      }));
 
-      const response = await fetch("/api/piquestions/result", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          questions: questions.map(q => ({ id: q.question_id, text: q.question })),
-          answers,
-          timeTaken,
-          dateTaken,
-        }),
+      let aiCalculatedScore = 0;
+      if (questions.length > 0) {
+        aiCalculatedScore = await fetchAiReview(formattedAnswers) || 0;
+      }
+
+      await apiClient.post("/piquestions/result", {
+        testName: "Personal Interview",
+        score: aiCalculatedScore,
+        timeTaken: overallTimeElapsed,
+        dateTaken: new Date().toISOString(),
       });
-
-      if (!response.ok) throw new Error("Failed to submit result");
-      router.push("/alltest");
+      
     } catch (error) {
       setError(error instanceof Error ? error.message : "Failed to submit result");
     } finally {
@@ -118,349 +173,370 @@ export default function DisplayPiQuestion() {
     }
   };
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  if (stage === "loading") {
-    return (
-      <div className="flex items-center justify-center min-h-screen" style={{ background: `linear-gradient(160deg,${B.iceBlue},${B.iceMid})` }}>
-        <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-2xl p-10 text-center border border-white">
-          <div className="w-12 h-12 border-4 rounded-full animate-spin border-[#124D9622] border-t-[#124D96] mx-auto mb-6"></div>
-          <p className="text-lg font-black tracking-tight" style={{ color: B.textDark }}>Loading Interview Questions...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen" style={{ background: `linear-gradient(160deg,${B.iceBlue},${B.iceMid})` }}>
-        <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-10 text-center max-w-md border border-rose-100">
-          <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-rose-100">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={B.rose} strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
-          </div>
-          <h2 className="text-2xl font-black mb-4" style={{ color: B.rose }}>Access Denied</h2>
-          <p className="text-slate-600 font-medium mb-8 leading-relaxed">{error}</p>
-          <button
-            onClick={() => router.push("/alltest")}
-            className="w-full px-6 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-black transition-all shadow-xl active:scale-95"
-          >
-            Return to Dashboard
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (stage === "review") {
-    const timeTaken = Math.round((Date.now() - startTime) / 1000);
-    const completedPct = Math.round((Object.keys(answers).length / questions.length) * 100);
-
-    return (
-      <div className="min-h-screen flex flex-col pt-10 pb-16 px-4" style={{ background: `linear-gradient(160deg,${B.iceBlue} 0%,${B.iceMid} 100%)` }}>
-        <div className="max-w-4xl mx-auto w-full">
-          {/* Score Hero */}
-          <div className="rounded-[2.5rem] p-10 relative overflow-hidden mb-8 shadow-2xl"
-            style={{ background: `linear-gradient(135deg, ${B.navyDark}, ${B.navyDeep})` }}>
-            <div className="absolute top-0 right-0 w-1/3 h-full opacity-10 pointer-events-none">
-              <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M100 0 L0 100 L100 100 Z" fill="white" /></svg>
-            </div>
-
-            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-              <div className="text-center md:text-left">
-                <span className="inline-block px-3 py-1 bg-white/10 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300 mb-4">Post-Interview Review</span>
-                <h1 className="text-3xl md:text-5xl font-black text-white mb-2 leading-tight">Interview <span className="text-cyan-400">Analysis</span></h1>
-                <p className="text-slate-300 font-medium max-w-sm">Review your responses and compare with the expected guidance.</p>
-              </div>
-
-              <div className="bg-white/10 backdrop-blur-md rounded-[2.5rem] p-8 border border-white/20 text-center min-w-[180px]">
-                <p className="text-[10px] font-black uppercase tracking-widest text-[#BEE3F8] mb-1">Completion Rate</p>
-                <div className="text-6xl font-black text-white">{completedPct}<span className="text-2xl opacity-40">%</span></div>
-                <div className="mt-2 h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-cyan-400 transition-all duration-1000" style={{ width: `${completedPct}%` }} />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-            {[
-              { label: 'Total Time', val: formatTime(timeTaken), color: B.blueMid, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg> },
-              { label: 'Total Questions', val: questions.length, color: B.navy, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="9" y1="3" x2="9" y2="21" /></svg> },
-              { label: 'Answered', val: Object.keys(answers).length, color: B.emerald, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg> },
-              { label: 'Pending', val: questions.length - Object.keys(answers).length, color: B.amber, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg> }
-            ].map((stat, i) => (
-              <div key={i} className="bg-white/60 backdrop-blur-md rounded-2xl p-6 border border-white shadow-lg">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4 shadow-md" style={{ background: `${stat.color}15`, color: stat.color }}>
-                  {stat.icon}
-                </div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{stat.label}</p>
-                <p className="text-lg font-black text-slate-800 line-clamp-1">{stat.val}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="space-y-8">
-            <h2 className="text-xl font-black text-slate-900 mb-2 pl-2">Your Responses</h2>
-            {questions.map((q, idx) => (
-              <div key={q.question_id} className="bg-white/80 backdrop-blur-xl rounded-3xl p-8 border border-white shadow-xl">
-                <div className="flex items-center gap-3 mb-6">
-                  <span className="inline-block px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-black uppercase tracking-widest">
-                    Q{idx + 1}/{questions.length}
-                  </span>
-                  <h3 className="text-lg font-black text-slate-900">{q.question}</h3>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Your Answer */}
-                  <div className="p-6 rounded-2xl bg-indigo-50/50 border border-indigo-100 min-h-[120px]">
-                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-3">Your Answer</p>
-                    <p className="text-slate-700 leading-relaxed font-medium">
-                      {answers[q.question_id] || <span className="italic text-slate-400">No answer provided.</span>}
-                    </p>
-                  </div>
-                  
-                  {/* Expected Answer */}
-                  <div className="p-6 rounded-2xl bg-emerald-50/50 border border-emerald-100 min-h-[120px]">
-                    <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-3">Expected Guidance</p>
-                    <p className="text-slate-700 leading-relaxed font-medium">{q.expectation}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-6">
-              <button onClick={() => setStage("questions")} className="flex-1 py-4 px-8 rounded-2xl bg-white border-2 border-slate-900 text-slate-900 font-black text-sm transition-all hover:bg-slate-50 active:scale-95 group flex items-center justify-center gap-2">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 12H5" /><path d="M12 19l-7-7 7-7" /></svg>
-                Edit Responses
-              </button>
-              <button onClick={submitResult} disabled={submitting} className="flex-[0.8] py-4 px-8 rounded-2xl bg-emerald-600 text-white font-black text-sm shadow-xl hover:bg-emerald-700 disabled:opacity-50 transition-all active:scale-95 group flex items-center justify-center gap-2">
-                {submitting ? "Deploying Data..." : "Commit Results"}
-                {!submitting && <svg className="transition-transform group-hover:translate-x-1" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14" /><path d="M12 5l7 7-7 7" /></svg>}
-              </button>
-            </div>
-            
-            <button
-              onClick={() => router.push("/alltest")}
-              className="w-full py-4 px-8 rounded-2xl bg-slate-100 text-slate-600 font-black text-sm transition-all hover:bg-slate-200 active:scale-95 text-center mt-2"
-            >
-              Back to Tests
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   const currentQuestion = questions[currentIndex];
+  const progressPct = ((currentIndex) / (questions.length || 1)) * 100;
   const answeredCount = Object.keys(answers).length;
-  // Calculate time elapsed
-  const timeElapsed = Math.round((Date.now() - startTime) / 1000);
+  const currentAnswer = currentQuestion ? (answers[currentQuestion.question_id] || "") : "";
+  const wordCount = currentAnswer.trim() === "" ? 0 : currentAnswer.trim().split(/\s+/).length;
 
+  // ── Loading / Error states ─────────────────────────────────────────────────
+  const Centered = ({ children }: { children: React.ReactNode }) => (
+    <div className="flex items-center justify-center min-h-screen"
+      style={{ background: `linear-gradient(160deg,${B.iceBlue},${B.iceMid})` }}>
+      {children}
+    </div>
+  );
+
+  if (error) return (
+    <Centered>
+      <div className="max-w-md w-full p-8 rounded-2xl text-center"
+        style={{ background: 'rgba(255,255,255,0.82)', border: '1.5px solid rgba(220,38,38,0.22)', backdropFilter: 'blur(12px)' }}>
+        <p className="font-semibold mb-5 text-red-600">{error}</p>
+        <button onClick={() => router.push("/alltest")}
+          className="px-6 py-2.5 rounded-xl font-bold text-sm text-white"
+          style={{ background: `linear-gradient(90deg,${B.navyDark},${B.navy})` }}>
+          Go to All Tests
+        </button>
+      </div>
+    </Centered>
+  );
+
+  if (stage === "loading" || questions.length === 0) return (
+    <Centered>
+      <div className="flex flex-col items-center gap-4 p-10 rounded-2xl"
+        style={{ background: 'rgba(255,255,255,0.78)', border: '1.5px solid rgba(18,77,150,0.13)', backdropFilter: 'blur(12px)' }}>
+        <div className="w-12 h-12 border-4 rounded-full animate-spin"
+          style={{ borderColor: B.iceMid, borderTopColor: B.navy }} />
+        <p className="text-sm font-semibold" style={{ color: B.textMuted }}>Loading Interview Questions…</p>
+      </div>
+    </Centered>
+  );
+
+  // ── Main render ────────────────────────────────────────────────────────────
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 flex flex-col">
-        {/* Header */}
-        <header className="sticky top-0 z-50 backdrop-blur-xl border-b border-white/40 shadow-sm" style={{ background: `linear-gradient(135deg, ${B.navyDark}CC, ${B.navyDeep}CC)` }}>
-          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="lg:hidden p-2 bg-white/10 text-white rounded-xl transition-colors hover:bg-white/20"
-              >
-                {sidebarOpen ? (
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
-                ) : (
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h16M4 18h16" /></svg>
-                )}
-              </button>
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400 block mb-0.5">Evaluation Module</span>
-                <h1 className="text-xl md:text-2xl font-black text-white leading-none">Personal Interview</h1>
-              </div>
-            </div>
+      <div className="sticky top-0 z-40 px-4 py-3"
+        style={{ background: `linear-gradient(135deg,${B.navyDeep},${B.navy})`, boxShadow: '0 4px 20px rgba(10,42,85,0.35)' }}>
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-black tracking-widest uppercase" style={{ color: 'rgba(190,227,248,0.65)' }}>Evaluation Module</p>
+            <h1 className="text-lg font-black text-white leading-tight">Personal Interview (PI)</h1>
+          </div>
 
-            <div className="flex items-center gap-6 text-white">
-              <div className="hidden sm:block text-right">
-                <p className="text-[10px] font-black uppercase tracking-widest text-[#BEE3F8] mb-1">Session Progress</p>
-                <p className="text-2xl font-black tabular-nums leading-none tracking-tighter">{currentIndex + 1}/{questions.length}</p>
-              </div>
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-white/10 border border-white/20 shadow-inner">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16h16v-8" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><circle cx="12" cy="13" r="2" /></svg>
-              </div>
+          <div className="hidden sm:flex flex-col items-center gap-1 flex-1 max-w-xs">
+            <div className="flex justify-between w-full text-xs font-bold" style={{ color: 'rgba(190,227,248,0.70)' }}>
+              <span>Question {currentIndex + 1} of {questions.length}</span>
+              <span>{Math.round(progressPct)}%</span>
+            </div>
+            <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.15)' }}>
+              <div className="h-full rounded-full transition-all duration-500"
+                style={{ width: `${progressPct}%`, background: '#4ADE80' }} />
             </div>
           </div>
-        </header>
 
-        <div className="flex-1 flex overflow-hidden">
-          {/* Left Sidebar */}
-          <aside className={`fixed inset-y-0 left-0 z-40 w-72 bg-white/70 backdrop-blur-2xl border-r border-white transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-            <div className="h-full pt-20 lg:pt-8 p-6 space-y-6 overflow-y-auto">
-              {/* Progress Bento */}
-              <div className="rounded-3xl p-6 shadow-xl border border-white" style={{ background: `linear-gradient(135deg, ${B.iceBlue}, ${B.iceMid})` }}>
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6">Completion Target</p>
-                <div className="mb-6">
-                  <p className="text-4xl font-black tracking-tighter text-[#124D96]">
-                    {Math.round(((currentIndex + 1) / questions.length) * 100)}%
-                  </p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />
-                    <p className="text-[11px] font-black text-slate-500 uppercase tracking-wider">Session Active</p>
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="text-right mr-2">
+              <p className="text-[10px] font-black uppercase tracking-wider" style={{ color: 'rgba(190,227,248,0.6)' }}>Total Elapsed</p>
+              <p className="text-sm font-black text-white">{fmtTime(overallTimeElapsed)}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="min-h-screen px-4 py-6" style={{ background: `linear-gradient(160deg,${B.iceBlue},${B.iceMid},#c8e8f8)` }}>
+        {(stage === "review" || stage === "results") ? (
+          <div className="max-w-7xl mx-auto space-y-5">
+            {/* Hero score card */}
+            <div className="rounded-2xl p-8 relative overflow-hidden text-center"
+              style={{ background: `linear-gradient(135deg,${B.navyDeep},${B.navy})`, boxShadow: '0 12px 40px rgba(18,77,150,0.28)' }}>
+              <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full pointer-events-none"
+                style={{ background: 'rgba(37,99,235,0.18)', filter: 'blur(30px)' }} />
+              <p className="text-xs font-black tracking-widest uppercase mb-2" style={{ color: 'rgba(190,227,248,0.65)' }}>Personal Interview</p>
+              
+              {stage === "results" ? (
+                <>
+                  <div className="py-4">
+                    {aiScore !== null ? (
+                      <>
+                        <p className="text-6xl font-black text-white mb-1">{aiScore}<span className="text-3xl opacity-50">/10</span></p>
+                        <p className="text-base font-bold mb-3" style={{ color: 'rgba(190,227,248,0.80)' }}>AI Score</p>
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3"
+                          style={{ background: 'rgba(74,222,128,0.20)', border: '2px solid rgba(74,222,128,0.40)' }}>
+                          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
+                        </div>
+                        <h2 className="text-2xl font-black text-white mb-1">Interview Completed!</h2>
+                      </>
+                    )}
                   </div>
+                </>
+              ) : (
+                <div className="py-4">
+                  <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3"
+                    style={{ background: 'rgba(255,255,255,0.20)', border: '2px solid rgba(255,255,255,0.40)' }}>
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFF" strokeWidth="2.5"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
+                  </div>
+                  <h2 className="text-2xl font-black text-white mb-1">Preview Responses</h2>
+                </div>
+              )}
+
+              <p className="text-sm font-medium" style={{ color: 'rgba(190,227,248,0.70)' }}>
+                Total Time: <span className="text-white font-black">{fmtTime(overallTimeElapsed)}</span>
+                <span className="mx-3 opacity-30">|</span>
+                Questions Answered: <span className="text-white font-black">{answeredCount} / {questions.length}</span>
+              </p>
+            </div>
+
+            {stage === "review" && (
+              <div className="flex flex-col sm:flex-row gap-4 pt-2 pb-2">
+                <button onClick={() => setStage("questions")} className="flex-1 py-4 px-8 rounded-xl bg-white border border-slate-300 text-slate-700 font-black text-sm transition-all hover:bg-slate-50 active:scale-95 group flex items-center justify-center gap-2">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 12H5" /><path d="M12 19l-7-7 7-7" /></svg>
+                  Edit Responses
+                </button>
+                <button onClick={submitResult} disabled={submitting} className="flex-[1.5] py-4 px-8 rounded-xl text-white font-black text-sm shadow-xl hover:opacity-90 disabled:opacity-50 transition-all active:scale-95 group flex items-center justify-center gap-2"
+                  style={{ background: `linear-gradient(90deg,${B.navyDark},${B.navy})`, boxShadow: '0 6px 20px rgba(18,77,150,0.25)' }}>
+                  {submitting ? "Submitting..." : "Submit to AI Review"}
+                  {!submitting && <svg className="transition-transform group-hover:translate-x-1" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14" /><path d="M12 5l7 7-7 7" /></svg>}
+                </button>
+              </div>
+            )}
+
+            {/* AI Review Card (Only in Result Stage) */}
+            {stage === "results" && (
+              <div className="rounded-2xl p-6" style={{ background: 'rgba(255,255,255,0.78)', backdropFilter: 'blur(12px)', border: '1.5px solid rgba(245,158,11,0.22)' }}>
+                <div className="flex items-center gap-3 mb-4 pb-4" style={{ borderBottom: '1px solid rgba(18,77,150,0.08)' }}>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: 'rgba(245,158,11,0.12)', border: '1.5px solid rgba(245,158,11,0.30)' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 8v4l3 3"/><path d="M18 2l4 4-4 4"/><path d="M22 2l-4 4"/></svg>
+                  </div>
+                  <h3 className="font-extrabold" style={{ color: B.textDark }}>
+                    {reviewLoading ? "AI is Reviewing Interview..." : "Psychological Assessment"}
+                  </h3>
+
+                  {aiScore !== null && (
+                    <span className="ml-auto px-3 py-1 rounded-full text-sm font-black"
+                      style={{
+                        background: aiScore >= 7 ? 'rgba(5,150,105,0.12)' : aiScore >= 4 ? 'rgba(217,119,6,0.12)' : 'rgba(220,38,38,0.12)',
+                        color: aiScore >= 7 ? '#059669' : aiScore >= 4 ? '#D97706' : '#DC2626',
+                        border: `1.5px solid ${aiScore >= 7 ? 'rgba(5,150,105,0.30)' : aiScore >= 4 ? 'rgba(217,119,6,0.30)' : 'rgba(220,38,38,0.30)'}`
+                      }}>
+                      ⭐ {aiScore} / 10
+                    </span>
+                  )}
                 </div>
 
-                <div className="pt-6 border-t border-white/40">
-                  <div className="flex justify-between items-end mb-2">
-                    <span className="text-[10px] font-black uppercase text-slate-400">Answered</span>
-                    <span className="text-xs font-black text-slate-900">{answeredCount}/{questions.length}</span>
+                {reviewLoading && (
+                  <div className="rounded-xl px-5 py-4 flex flex-col gap-2 mb-2" style={{ background: 'linear-gradient(135deg, rgba(217,119,6,0.06), rgba(217,119,6,0.02))', border: '1.5px dashed rgba(217,119,6,0.40)' }}>
+                    <div className="flex items-center gap-3">
+                      <div className="w-5 h-5 border-2 rounded-full animate-spin shrink-0" style={{ borderColor: 'rgba(217,119,6,0.20)', borderTopColor: '#D97706' }} />
+                      <p className="text-sm font-black text-[#D97706]">Analysing your interview with AI…</p>
+                    </div>
                   </div>
-                  <div className="h-2 w-full bg-white/40 rounded-full overflow-hidden">
-                    <div className="h-full bg-[#124D96] transition-all duration-1000" style={{ width: `${(answeredCount / questions.length) * 100}%` }} />
+                )}
+
+                {quotaExceeded && !reviewLoading && (
+                  <div className="rounded-xl px-5 py-4 flex items-start gap-4" style={{ background: 'linear-gradient(135deg, rgba(37,99,235,0.06), rgba(18,77,150,0.04))', border: '1.5px dashed rgba(37,99,235,0.25)' }}>
+                    <div>
+                      <p className="text-sm font-black mb-1" style={{ color: B.navy }}>AI Review Capacity Reached</p>
+                      <p className="text-xs font-medium leading-relaxed" style={{ color: B.textMuted }}>Our AI quota exceeded. Responses saved.</p>
+                    </div>
+                  </div>
+                )}
+
+                {reviewError && !reviewLoading && !quotaExceeded && (
+                  <div className="rounded-xl p-4 text-sm font-medium" style={{ background: 'rgba(220,38,38,0.06)', border: '1.5px solid rgba(220,38,38,0.18)', color: '#DC2626' }}>{reviewError}</div>
+                )}
+
+                {aiReview && !reviewLoading && (
+                  <div className="rounded-xl p-4 text-sm leading-relaxed" style={{ background: 'rgba(245,158,11,0.04)', border: '1.5px solid rgba(245,158,11,0.18)', color: B.textDark, whiteSpace: 'pre-wrap' }}>
+                    {aiReview}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Per-question review */}
+            <div className="space-y-5">
+              {questions.map((q, idx) => {
+                const isAnswered = answers[q.question_id]?.trim().length > 0;
+                const specificReview = questionReviews.find(r => r.question_id === q.question_id)?.review;
+                return (
+                  <div key={idx} className="rounded-2xl p-6"
+                    style={{ background: 'rgba(255,255,255,0.78)', backdropFilter: 'blur(12px)', border: '1.5px solid rgba(18,77,150,0.13)' }}>
+                    <div className="flex items-center gap-3 mb-5 pb-4" style={{ borderBottom: '1px solid rgba(18,77,150,0.08)' }}>
+                      <span className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black text-white shrink-0"
+                        style={{ background: B.navy }}>{idx + 1}</span>
+                      <h3 className="font-extrabold text-sm md:text-base" style={{ color: B.textDark }}>{q.question}</h3>
+                      {specificReview && (
+                        <span className="ml-auto text-xs font-bold px-2 py-1 rounded-lg" style={{ background: 'rgba(139,92,246,0.08)', color: '#8B5CF6' }}>
+                          AI Note ✓
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex flex-col gap-4">
+                      <div>
+                        <p className="text-xs font-black uppercase mb-2 tracking-widest" style={{ color: B.textLight }}>Your Answer</p>
+                        <div className="rounded-xl p-4 text-sm leading-relaxed" style={{ background: 'rgba(18,77,150,0.04)', border: '1px solid rgba(18,77,150,0.15)', color: B.textDark, whiteSpace: 'pre-wrap' }}>
+                          {answers[q.question_id] || <span className="italic text-gray-400">No answer provided.</span>}
+                        </div>
+                      </div>
+
+                      {specificReview && (
+                        <div className="rounded-xl p-3 flex items-start gap-2" style={{ background: 'rgba(139,92,246,0.05)', border: '1.5px solid rgba(139,92,246,0.18)' }}>
+                          <span className="text-[#8B5CF6] mt-0.5 shrink-0">💡</span>
+                          <p className="text-sm font-medium leading-relaxed" style={{ color: B.textDark }}>{specificReview}</p>
+                        </div>
+                      )}
+
+                      {(stage === "review" || stage === "results") && (
+                        <div>
+                          <p className="text-xs font-black uppercase mb-2 tracking-widest text-emerald-600">Expected Guidance</p>
+                          <div className="rounded-xl p-4 text-sm leading-relaxed" style={{ background: 'rgba(5,150,105,0.05)', border: '1px solid rgba(5,150,105,0.2)', color: B.textDark }}>
+                            {q.expectation}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {stage === "review" && (
+              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                <button onClick={() => setStage("questions")} className="flex-1 py-4 px-8 rounded-xl bg-white border border-slate-300 text-slate-700 font-black text-sm transition-all hover:bg-slate-50 active:scale-95 group flex items-center justify-center gap-2">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 12H5" /><path d="M12 19l-7-7 7-7" /></svg>
+                  Edit Responses
+                </button>
+                <button onClick={submitResult} disabled={submitting} className="flex-[1.5] py-4 px-8 rounded-xl text-white font-black text-sm shadow-xl hover:opacity-90 disabled:opacity-50 transition-all active:scale-95 group flex items-center justify-center gap-2"
+                  style={{ background: `linear-gradient(90deg,${B.navyDark},${B.navy})`, boxShadow: '0 6px 20px rgba(18,77,150,0.25)' }}>
+                  {submitting ? "Submitting..." : "Submit to AI Review"}
+                  {!submitting && <svg className="transition-transform group-hover:translate-x-1" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14" /><path d="M12 5l7 7-7 7" /></svg>}
+                </button>
+              </div>
+            )}
+            
+            {stage === "results" && !reviewLoading && (
+              <button
+                onClick={() => router.push("/alltest")}
+                className="w-full py-4 px-8 rounded-xl bg-slate-100/50 text-slate-600 font-bold text-sm transition-all hover:bg-slate-200 active:scale-95 text-center mt-4 border"
+              >
+                Back to All Tests
+              </button>
+            )}
+          </div>
+        ) : (
+          /* ── Flex + Sidebar Layout for Active Test phase ── */
+          <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-5">
+            {/* Main content */}
+            <div className="flex-1 min-w-0 space-y-5">
+              <div className="rounded-2xl overflow-hidden"
+                style={{ background: 'rgba(255,255,255,0.78)', backdropFilter: 'blur(14px)', border: '1.5px solid rgba(18,77,150,0.13)', boxShadow: '0 4px 20px rgba(18,77,150,0.09)' }}>
+
+                <div className="px-6 pt-6 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2" style={{ borderBottom: '1px solid rgba(18,77,150,0.08)' }}>
+                  <div>
+                    <span className="text-xs font-black tracking-widest uppercase px-2.5 py-1 rounded-full"
+                      style={{ background: 'rgba(18,77,150,0.08)', color: B.navy }}>
+                      Question Response
+                    </span>
+                  </div>
+                  <p className="text-xs font-bold" style={{ color: B.textLight }}>Question {currentIndex + 1} / {questions.length}</p>
+                </div>
+
+                <div className="p-6">
+                  <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight leading-relaxed mb-6">
+                    {currentQuestion?.question}
+                  </h2>
+                  
+                  <div className="space-y-4">
+                    <textarea value={currentAnswer} onChange={e => handleAnswerChange(e.target.value)}
+                      placeholder="Type your answer here..."
+                      className="w-full h-80 px-5 py-4 rounded-xl resize-none text-sm leading-relaxed transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 border-2"
+                      style={{ background: 'rgba(237,249,255,0.70)', borderColor: 'rgba(18,77,150,0.14)', color: B.textDark, fontFamily: 'inherit' }} />
+
+                    <div className="pt-4 mt-4 border-t border-slate-100">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="w-1.5 h-4 bg-emerald-500 rounded-full" />
+                        <h3 className="text-xs font-black tracking-widest uppercase text-emerald-600">Expected Guidance</h3>
+                      </div>
+                      <div className="p-5 rounded-xl bg-gradient-to-br from-emerald-50 to-white border border-emerald-100">
+                        <p className="text-slate-700 font-medium text-sm leading-relaxed">{currentQuestion?.expectation}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-4">
+                      <div className="flex gap-4 text-xs font-semibold" style={{ color: B.textMuted }}>
+                        <span>{wordCount} <span style={{ color: B.textLight }}>words</span></span>
+                        <span>{currentAnswer.length} <span style={{ color: B.textLight }}>chars</span></span>
+                      </div>
+                      <button onClick={goToNext}
+                        className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-sm text-white transition-all hover:opacity-90 active:scale-95 shadow-lg"
+                        style={{ background: `linear-gradient(90deg,${B.navyDark},${B.navy})`, boxShadow: '0 4px 14px rgba(18,77,150,0.25)' }}>
+                        {currentIndex + 1 === questions.length ? "Finish & Preview" : "Next Question"}
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Sidebar */}
+            <div className="lg:w-64 shrink-0 flex flex-col gap-4">
+              <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(10px)', border: '1.5px solid rgba(18,77,150,0.12)' }}>
+                <p className="text-xs font-black tracking-widest uppercase mb-4" style={{ color: B.textLight }}>Question Progress</p>
+                <div className="flex flex-col gap-2">
+                  <div className="flex justify-between items-center text-sm font-bold text-emerald-600 bg-emerald-50 px-3 py-2 rounded-lg border border-emerald-100">
+                    <span>Answered</span>
+                    <span>{answeredCount}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm font-bold text-amber-600 bg-amber-50 px-3 py-2 rounded-lg border border-amber-100">
+                    <span>Remaining</span>
+                    <span>{questions.length - answeredCount}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Status Card */}
-              <div className="rounded-3xl p-6 bg-white/40 border border-white shadow-xl">
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6">Tracker Status</p>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center p-3 rounded-2xl bg-emerald-50/50 border border-emerald-100 shadow-sm">
-                    <span className="text-xs font-bold text-slate-500">Answered</span>
-                    <span className="text-lg font-black text-emerald-600">{answeredCount}</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 rounded-2xl bg-amber-50/50 border border-amber-100 shadow-sm">
-                    <span className="text-xs font-bold text-slate-500">Remaining</span>
-                    <span className="text-lg font-black text-amber-600">{questions.length - answeredCount}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Navigator */}
-              <div className="rounded-3xl p-6 bg-white/40 border border-white shadow-xl">
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">Question Matrix</p>
-                <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
-                  {questions.map((q, idx) => {
-                    const isCurrent = idx === currentIndex;
-                    const isAnswered = answers[q.question_id];
-                    let btnClass = "aspect-square rounded-xl text-xs font-black transition-all flex items-center justify-center shadow-sm";
-                    
-                    if (isCurrent) {
-                      btnClass += " bg-slate-900 text-white shadow-md scale-110";
-                    } else if (isAnswered) {
-                      btnClass += " bg-emerald-500 text-white";
-                    } else {
-                      btnClass += " bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 hover:border-slate-300";
-                    }
-                    
+              <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(10px)', border: '1.5px solid rgba(18,77,150,0.12)' }}>
+                <p className="text-xs font-black tracking-widest uppercase mb-3" style={{ color: B.textLight }}>Navigation Matrix</p>
+                <div className="grid grid-cols-4 gap-2">
+                  {questions.map((q, i) => {
+                    const active = i === currentIndex;
+                    const done = answers[q.question_id]?.trim().length > 0;
                     return (
-                      <button
-                        key={q.question_id}
-                        onClick={() => setCurrentIndex(idx)}
-                        className={btnClass}
+                      <button key={i} onClick={() => setCurrentIndex(i)}
+                        className={`aspect-square rounded-lg flex items-center justify-center text-xs font-black transition-all ${
+                          active 
+                            ? 'bg-slate-900 text-white shadow-md scale-110' 
+                            : done 
+                              ? 'bg-emerald-500 text-white' 
+                              : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                        }`}
                       >
-                        {idx + 1}
+                        {i + 1}
                       </button>
                     );
                   })}
                 </div>
               </div>
 
-              {/* Control Deck */}
-              <div className="pt-2">
-                <button
-                  onClick={handleFinish}
-                  className="w-full px-6 py-5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-black text-sm rounded-2xl shadow-2xl transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 overflow-hidden relative group"
-                >
-                  <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
-                  Execute Submission
+              <div className="flex flex-col gap-2">
+                <button onClick={goToPrevious} disabled={currentIndex === 0}
+                  className="w-full py-3 rounded-xl font-bold text-sm transition-all hover:bg-white bg-white/50 border disabled:opacity-30"
+                  style={{ color: B.textMid, borderColor: 'rgba(18,77,150,0.15)' }}>
+                  ← Previous
+                </button>
+                <button onClick={stopTest}
+                  className="w-full py-3 rounded-xl font-bold text-sm transition-all hover:bg-emerald-50 group"
+                  style={{ color: '#059669', background: 'rgba(5,150,105,0.05)', border: '1.5px solid rgba(5,150,105,0.15)' }}>
+                  Finish & Preview <span className="group-hover:translate-x-1 inline-block transition-transform">→</span>
                 </button>
               </div>
             </div>
-          </aside>
-
-          {/* Main Workspace */}
-          <main className="flex-1 overflow-y-auto relative z-10 px-6 py-8">
-            <div className="max-w-4xl mx-auto space-y-8 pb-12">
-
-              {/* Challenge Card */}
-              <div className="bg-white/70 backdrop-blur-2xl rounded-[2.5rem] p-6 md:p-10 shadow-2xl border border-white">
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8 pb-8 border-b border-slate-100">
-                  <div className="w-full flex-1">
-                    <span className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest mb-4">
-                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
-                      Question {currentIndex + 1} of {questions.length}
-                    </span>
-                    <h2 className="text-2xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight max-w-3xl">
-                      {currentQuestion?.question || "Loading Question..."}
-                    </h2>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-10">
-                  {/* Response Port */}
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Response Capture Engine</label>
-                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 bg-slate-100 px-2 py-1 rounded-md">
-                        {((answers[currentQuestion?.question_id] || "").length).toLocaleString()} Chars
-                      </span>
-                    </div>
-                    <div className="relative group">
-                      <textarea
-                        value={answers[currentQuestion?.question_id] || ""}
-                        onChange={handleAnswerChange}
-                        placeholder="Establish your response here. Articulate clearly and concisely..."
-                        className="w-full min-h-[240px] p-6 rounded-3xl bg-slate-50/80 border-2 border-slate-200 focus:border-[#124D96] focus:bg-white focus:ring-4 focus:ring-[#124D96]/10 outline-none resize-y text-slate-800 font-medium leading-relaxed transition-all shadow-inner"
-                      />
-                      <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-10 transition-opacity pointer-events-none text-[#124D96]">
-                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Expected Guidance Overlay */}
-                  <div className="pt-8 border-t border-slate-100">
-                    <div className="flex items-center gap-2 mb-6">
-                      <span className="w-6 h-[2px] bg-emerald-500 rounded-full" />
-                      <h3 className="text-[10px] font-black tracking-widest uppercase text-slate-400">Expected Vector Guidelines</h3>
-                    </div>
-                    <div className="p-8 rounded-3xl bg-gradient-to-br from-emerald-50 to-white border border-emerald-100 shadow-sm relative overflow-hidden group">
-                      <div className="absolute top-0 right-0 p-8 opacity-5">
-                        <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
-                      </div>
-                      <p className="text-slate-800 font-bold leading-relaxed relative z-10">{currentQuestion?.expectation}</p>
-                    </div>
-                  </div>
-
-                  {/* Action Nav */}
-                  <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-slate-100">
-                    <button
-                      onClick={handlePrevious}
-                      disabled={currentIndex === 0}
-                      className="flex-1 py-4 px-8 rounded-2xl bg-white border-2 border-slate-200 text-slate-700 font-black text-sm transition-all hover:bg-slate-50 hover:border-slate-300 active:scale-95 disabled:opacity-50 disabled:pointer-events-none group flex items-center justify-center gap-2"
-                    >
-                      <svg className="transition-transform group-hover:-translate-x-1" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 12H5" /><path d="M12 19l-7-7 7-7" /></svg>
-                      Previous Vector
-                    </button>
-                    <button
-                      onClick={handleNext}
-                      disabled={currentIndex === questions.length - 1}
-                      className="flex-[1.5] py-4 px-8 rounded-2xl bg-slate-900 text-white font-black text-sm shadow-xl hover:bg-black transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none group flex items-center justify-center gap-2"
-                    >
-                      Next Vector
-                      <svg className="transition-transform group-hover:translate-x-1" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14" /><path d="M12 5l7 7-7 7" /></svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </main>
-        </div>
+          </div>
+        )}
       </div>
     </>
   );

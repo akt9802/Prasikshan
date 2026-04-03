@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import apiClient from "@/lib/axios";
 
 // ── Brand palette ─────────────────────────────────────────────────────────────
 const B = {
@@ -75,24 +76,22 @@ export default function DisplayOirQuestion() {
     const performSubmit = async () => {
       try {
         setSubmitting(true);
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-        if (token) {
-          const score = calcScore();
-          const timeTaken = 40 * 60 - timeLeft;
-          const responses = questions.map((q, i) => ({
-            _id: q._id, question: q.question,
-            selectedAnswer: answers[i] || null,
-            correctAnswer: q.answer,
-            isCorrect: answers[i] === q.answer,
-          }));
-          await fetch("/api/oirquestions/result", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ testName: "OIR", score, timeTaken, dateTaken: new Date().toISOString(), responses }),
-          });
-        }
+        const correctCount = calcScore();
+        const scoreOutOf10 = Number((correctCount * 0.4).toFixed(2));
+        const timeTaken = 40 * 60 - timeLeft;
+        
+        await apiClient.post("/oirquestions/result", {
+          testName: "OIR",
+          score: scoreOutOf10,
+          timeTaken,
+          dateTaken: new Date().toISOString()
+        });
+        
         setSubmitted(true);
-      } catch { setSubmitted(true); }
+      } catch (err) { 
+        console.error("Failed to submit OIR result:", err);
+        setSubmitted(true); 
+      }
       finally { setSubmitting(false); }
     };
     performSubmit();
@@ -161,7 +160,8 @@ export default function DisplayOirQuestion() {
               <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full pointer-events-none"
                 style={{ background: 'rgba(37,99,235,0.18)', filter: 'blur(30px)' }} />
               <p className="text-xs font-black tracking-widest uppercase mb-2" style={{ color: 'rgba(190,227,248,0.65)' }}>OIR — Officer Intelligence Rating</p>
-              <p className="text-6xl font-black text-white mb-1">{score}<span className="text-3xl opacity-50">/{questions.length}</span></p>
+              <p className="text-6xl font-black text-white mb-1">{(score * 0.4).toFixed(1)}<span className="text-3xl opacity-50">/10</span></p>
+              <p className="text-sm font-bold mb-3" style={{ color: 'rgba(190,227,248,0.85)' }}>{score} correct of {questions.length}</p>
               <p className="text-2xl font-black mb-3" style={{ color: passed ? '#4ADE80' : '#F87171' }}>{pct}%</p>
               <div className="flex justify-center gap-6 mt-4">
                 <div className="text-center">

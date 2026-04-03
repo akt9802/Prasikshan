@@ -7,21 +7,30 @@ export async function POST(request: NextRequest) {
   try {
     // Verify JWT token
     const authHeader = request.headers.get("authorization");
-    const token = authHeader?.split(" ")[1];
-
-    if (!token) {
+    
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return NextResponse.json(
-        { success: false, error: "No token provided" },
+        { success: false, error: "No authorization token provided" },
         { status: 401 }
       );
     }
+    
+    const token = authHeader.slice(7);
 
     let userId: string;
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret") as {
+      const secret = process.env.JWT_SECRET || 'default_secret';
+      const decoded = jwt.verify(token, secret) as {
         userId: string;
       };
       userId = decoded.userId;
+
+      if (!userId) {
+        return NextResponse.json(
+          { success: false, error: "Invalid token payload" },
+          { status: 403 }
+        );
+      }
     } catch {
       return NextResponse.json(
         { success: false, error: "Invalid token" },
@@ -32,8 +41,7 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     // Get request body
-    const { questions, answers, timeTaken, dateTaken } =
-      await request.json();
+    const { testName, score, timeTaken, dateTaken } = await request.json();
 
     // Find user
     const user = await User.findById(userId);
@@ -44,13 +52,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create test result object
+    // Create test result object matching TAT/SRT
     const testResult = {
-      testName: "PI",
+      testName: testName || "PI",
+      score,
       timeTaken,
       dateTaken,
-      questions,
-      answers, // Array of user responses to PI questions
       createdAt: new Date(),
     };
 
