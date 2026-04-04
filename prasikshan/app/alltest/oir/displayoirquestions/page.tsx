@@ -322,7 +322,15 @@ export default function DisplayOirQuestion() {
               {q.options.map((opt, idx) => {
                 const sel = answers[currentQ] === opt;
                 return (
-                  <button key={idx} onClick={() => { const a = [...answers]; a[currentQ] = opt; setAnswers(a); }}
+                  <button key={idx} onClick={() => { 
+                    const a = [...answers]; 
+                    if (a[currentQ] === opt) {
+                      a[currentQ] = null;
+                    } else {
+                      a[currentQ] = opt; 
+                    }
+                    setAnswers(a); 
+                  }}
                     className="w-full text-left flex items-center gap-4 px-5 py-4 rounded-xl font-semibold text-sm transition-all duration-200"
                     style={{
                       background: sel ? `rgba(18,77,150,0.07)` : 'rgba(237,249,255,0.75)',
