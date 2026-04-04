@@ -1,52 +1,73 @@
 import connectDB from "@/lib/db";
 import PpdtQuestion from "@/models/PpdtQuestion";
-import { NextResponse } from "next/server";
+import UserResult from "@/models/UserResult";
+import { NextRequest, NextResponse } from "next/server";
+import jwt from "jsonwebtoken";
 
-// Global variables to maintain state across API calls
-let currentId = 1;
-const MAX_ID = 15; // Total PPDT questions available
-
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    console.log("🔍 PPDT API: Starting fetch...");
-    const conn = await connectDB();
-    console.log("✅ PPDT API: Database connected");
-    console.log(`📊 PPDT API: Fetching question with ID: ${currentId}`);
+    // 1. Get userId from token
+    const authHeader = request.headers.get("authorization");
+    let userId: string | null = null;
+    
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.slice(7);
+      try {
+        const secret = process.env.JWT_SECRET || 'default_secret';
+        const decoded = jwt.verify(token, secret) as { userId: string };
+        userId = decoded.userId;
+      } catch (e) {
+        console.warn('Invalid token for PPDT questions fetch');
+      }
+    }
 
-    // Fetch question by current ID
-    const question = await PpdtQuestion.findOne({ _id: currentId });
+    await connectDB();
 
-    if (!question) {
-      console.warn(`PPDT question with id ${currentId} not found`);
-      return NextResponse.json(
-        {
-          success: false,
-          error: `PPDT question with id ${currentId} not found`,
-          data: null,
-        },
-        { status: 404 }
-      );
+    let selectedQuestion;
+
+    if (userId) {
+      // 2. Sequential Logic for User
+      const userResult = await UserResult.findOne({ userId });
+      const completedSetNames = userResult ? userResult.ppdt.map((o: any) => o.setName).filter(Boolean) : [];
+      
+      const allQuestions = await PpdtQuestion.find({}).sort({ _id: 1 }).select('_id');
+      
+      // Find the first question not yet completed
+      selectedQuestion = null;
+      for (const q of allQuestions) {
+        const idStr = q._id!.toString();
+        if (!completedSetNames.includes(idStr)) {
+          selectedQuestion = await PpdtQuestion.findOne({ _id: q._id });
+          break;
+        }
+      }
+
+      // 3. Fallback: If all completed, return a random one
+      if (!selectedQuestion && allQuestions.length > 0) {
+        const randomIndex = Math.floor(Math.random() * allQuestions.length);
+        selectedQuestion = await PpdtQuestion.findOne({ _id: allQuestions[randomIndex]._id });
+      }
+    } else {
+      // Fetch a random question if guest
+      const total = await PpdtQuestion.countDocuments();
+      if (total === 0) return NextResponse.json({ success: false, error: "No questions found" }, { status: 404 });
+      const randomIndex = Math.floor(Math.random() * total);
+      selectedQuestion = await PpdtQuestion.findOne().skip(randomIndex);
+    }
+
+    if (!selectedQuestion) {
+      return NextResponse.json({ success: false, error: "No question found" }, { status: 404 });
     }
 
     // Prepare the response with fixed image URL
     const fixedQuestion = {
-      ...question.toObject(),
-      image: question.image, // Keep as-is (GitHub link or other URL)
+      ...selectedQuestion.toObject(),
+      image: selectedQuestion.image,
     };
-
-    // Prepare for next call - cycle through IDs 1-15
-    currentId++;
-    if (currentId > MAX_ID) {
-      currentId = 1;
-    }
-
-    console.log(`✅ PPDT API: Successfully fetched question ${fixedQuestion._id}`);
-    console.log(`📋 PPDT API: Next question ID will be: ${currentId}`);
 
     return NextResponse.json({
       success: true,
       data: fixedQuestion,
-      nextQuestionId: currentId,
     });
   } catch (error) {
     console.error("❌ PPDT API Error:", error);

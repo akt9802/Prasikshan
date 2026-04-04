@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { topic, score, duration } = await request.json();
+    const { topic, score, duration, topic_id } = await request.json();
 
     if (!topic) {
       return NextResponse.json(
@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
     // Create test result
     const testData = {
       testName: "LECTURETTE",
+      setName: topic_id?.toString(),
       topic,
       score: score || 0,
       duration: duration || 0,

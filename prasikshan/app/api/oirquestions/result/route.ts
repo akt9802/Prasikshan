@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     // Get request body
     const body = await request.json();
-    const { testName, score, timeTaken, dateTaken } = body;
+    const { testName, score, timeTaken, dateTaken, setName } = body;
 
     // Find or create UserResult
     let userResult = await UserResult.findOne({ userId });
@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
     // Create test result object
     const testData = {
       testName: testName || "OIR",
+      setName,
       score,
       timeTaken,
       dateTaken,

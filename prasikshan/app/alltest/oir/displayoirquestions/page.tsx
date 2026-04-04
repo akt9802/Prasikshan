@@ -43,8 +43,7 @@ export default function DisplayOirQuestion() {
     const fetchQuestions = async () => {
       try {
         setLoading(true);
-        const res = await fetch("/api/oirquestions");
-        const data = await res.json();
+        const { data } = await apiClient.get("/oirquestions");
         if (data.success && data.data?.length > 0) {
           setQuestions(data.data);
           setSetName(data.setName || null);
@@ -82,6 +81,7 @@ export default function DisplayOirQuestion() {
         
         await apiClient.post("/oirquestions/result", {
           testName: "OIR",
+          setName: setName,
           score: scoreOutOf10,
           timeTaken,
           dateTaken: new Date().toISOString()

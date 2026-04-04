@@ -1,64 +1,71 @@
 import connectDB from '@/lib/db';
 import WatSet from '@/models/WatSet';
+import UserResult from '@/models/UserResult';
 import { NextRequest, NextResponse } from 'next/server';
+import jwt from "jsonwebtoken";
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('🔌 WAT API: Connecting to database...');
+    // 1. Get userId from token
+    const authHeader = request.headers.get("authorization");
+    let userId: string | null = null;
+    
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.slice(7);
+      try {
+        const secret = process.env.JWT_SECRET || 'default_secret';
+        const decoded = jwt.verify(token, secret) as { userId: string };
+        userId = decoded.userId;
+      } catch (e) {
+        console.warn('Invalid token for WAT questions fetch');
+      }
+    }
+
     await connectDB();
-    console.log('✅ WAT API: Database connected');
 
-    // Optional query param: ?setName=Set%201
-    const { searchParams } = new URL(request.url);
-    const setName = searchParams.get('setName');
+    let selectedSet;
 
-    let watSet;
+    if (userId) {
+      // 2. Sequential Logic for User
+      const userResult = await UserResult.findOne({ userId });
+      const completedSetNames = userResult ? userResult.wat.map((o: any) => o.setName).filter(Boolean) : [];
+      
+      const allSets = await WatSet.find({}).select('setName');
+      
+      // Sort sets numerically if they follow "Set X" pattern
+      allSets.sort((a, b) => a.setName.localeCompare(b.setName, undefined, { numeric: true, sensitivity: 'base' }));
 
-    if (setName) {
-      // Fetch a specific set by name
-      watSet = await WatSet.findOne({ setName });
-    } else {
-      // Fetch a random set
-      const totalSets = await WatSet.countDocuments();
-
-      if (totalSets === 0) {
-        return NextResponse.json(
-          {
-            success: false,
-            error:
-              'No WAT sets available. Please run the createWatSets script first.',
-            data: [],
-            count: 0,
-          },
-          { status: 424 }
-        );
+      // Find the first set not yet completed
+      selectedSet = null;
+      for (const s of allSets) {
+        if (!completedSetNames.includes(s.setName)) {
+          selectedSet = await WatSet.findOne({ setName: s.setName });
+          break;
+        }
       }
 
+      // 3. Fallback: If all sets completed, return a random one
+      if (!selectedSet && allSets.length > 0) {
+        const randomIndex = Math.floor(Math.random() * allSets.length);
+        selectedSet = await WatSet.findOne({ setName: allSets[randomIndex].setName });
+      }
+    } else {
+      // Fetch a random set if guest
+      const totalSets = await WatSet.countDocuments();
+      if (totalSets === 0) return NextResponse.json({ success: false, error: "No WAT sets found" }, { status: 424 });
       const randomIndex = Math.floor(Math.random() * totalSets);
-      watSet = await WatSet.findOne().skip(randomIndex);
+      selectedSet = await WatSet.findOne().skip(randomIndex);
     }
 
-    if (!watSet) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Requested WAT set not found.',
-          data: [],
-          count: 0,
-        },
-        { status: 404 }
-      );
+    if (!selectedSet) {
+      return NextResponse.json({ success: false, error: "No WAT set found" }, { status: 404 });
     }
-
-    console.log(
-      `✅ WAT API: Fetched ${watSet.questions.length} questions from "${watSet.setName}"`
-    );
 
     return NextResponse.json({
       success: true,
-      data: watSet.questions,   // [{ word, sentences }, ...]
-      setName: watSet.setName,
-      count: watSet.questions.length,
+      data: selectedSet.questions,
+      setName: selectedSet.setName,
+      count: selectedSet.questions.length,
     });
   } catch (error) {
     console.error('❌ WAT API Error:', error);

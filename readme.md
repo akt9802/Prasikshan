@@ -29,6 +29,7 @@ Transform your SSB preparation journey with comprehensive test modules, real-tim
 | Axios Automatic Token Retries | Score Trends | Streak Counters | Question Upload |
 | Server-side API Protection | Percentile Analysis | Leaderboards | Result Monitoring |
 | Redis Dual-Layer Rate Limiting | Time Management | Activity Patterns | Activity Audit |
+| Sequential Test Delivery | Next-Set Prioritization | Completion Tracking | Content Sequencing |
 
 </div>
 
@@ -602,6 +603,11 @@ Prasikshan is proudly open source because we believe:
 - **Cloudinary Global CDN Migration**: Offloaded high-resolution core assets and test images directly to Cloudinary's Global CDN. This massively unblocks Next.js server threads, reduces bandwidth costs, and turbo-charges initial page load speeds!
 - **Advanced Threat Protection**: Implemented a robust dual-layer Redis rate limiting architecture (Sliding Window IP tracking & Account Lockout mechanisms) to neutralize distributed brute-force attacks and protect backend compute resources.
 - **High-Performance UserResult Sharding**: Decoupled 100% of test history from the core `User` model into a dedicated `UserResult` collection. Implemented type-specific result arrays (`oir`, `ppdt`, `tat`, etc.) for sub-millisecond query performance and cleaner data isolation. Added a robust TypeScript migration engine to bridge legacy test records seamlessly.
+- **Sequential Test Delivery Engine**: Implemented an advanced progress-tracking system across OIR, PPDT, TAT, WAT, SRT, and Lecturette.
+  - **Dynamic Sequencing**: Automatically identifies and prioritizes "uncompleted" test sets/topics for each specific user.
+  - **Numerical Ordering**: Ensures content is delivered in a logical, numbered sequence (Set 1 → Set 2 → Set 3) to mirror standard training cycles.
+  - **Random Fallback**: Once all sets are exhausted, the system defaults to random selection, ensuring practice never halts while prioritizing any newly added admin content.
+  - **JWT Integrated**: Leverages secure token-based identification to maintain unique progress states across multiple devices.
 
 
 ### 🎯 Upcoming Features (Q2 2026)

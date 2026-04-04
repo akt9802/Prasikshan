@@ -143,6 +143,7 @@ export default function DisplayPPDTQuestion() {
     try {
       await apiClient.post("/ppdtquestions/result", {
         testName: "PPDT Test", 
+        setName: question?._id?.toString(),
         score: finalScore, 
         timeTaken: 270 - overallTimeLeft,
         dateTaken: new Date().toISOString(), 

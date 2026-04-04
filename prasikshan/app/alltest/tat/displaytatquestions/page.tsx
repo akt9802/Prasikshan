@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { getAuthToken } from "@/lib/auth";
 import { useRouter } from "next/navigation";
+import apiClient from "@/lib/axios";
 
 // ── Brand palette ─────────────────────────────────────────────────────────────
 const B = {
@@ -52,6 +53,7 @@ export default function DisplayTatQuestion() {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [setName, setSetName] = useState<string | null>(null);
 
   const [userStories, setUserStories] = useState<string[]>([]);
   const [currentStory, setCurrentStory] = useState("");
@@ -68,12 +70,11 @@ export default function DisplayTatQuestion() {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await fetch('/api/tatquestions');
-        if (!response.ok) throw new Error('Failed to fetch TAT questions');
-        const result = await response.json();
+        const { data: result } = await apiClient.get('/tatquestions');
 
         if (result.success && result.data.length > 0) {
           setQuestions(result.data);
+          setSetName(result.setName || null);
           setUserStories(new Array(result.data.length).fill(""));
           setStage("viewImage");
         } else {
@@ -199,15 +200,12 @@ export default function DisplayTatQuestion() {
     const aiScore = await fetchAiReview(finalStories, questions);
 
     try {
-      await fetch('/api/tatquestions/result', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({
-          testName: "TAT Test",
-          score: aiScore,
-          timeTaken: overallTimeElapsed,
-          dateTaken: new Date().toISOString(),
-        }),
+      await apiClient.post('/tatquestions/result', {
+        testName: "TAT Test",
+        setName: setName,
+        score: aiScore,
+        timeTaken: overallTimeElapsed,
+        dateTaken: new Date().toISOString(),
       });
     } catch { /* silent */ }
   };

@@ -50,8 +50,7 @@ export default function DisplayWATQuestion() {
     const fetchQuestions = async () => {
       try {
         setLoading(true);
-        const response = await fetch("/api/watquestions");
-        const data = await response.json();
+        const { data: data } = await apiClient.get("/watquestions");
         if (data.success && data.data && data.data.length > 0) {
           setQuestions(data.data);
           setResponses(new Array(data.data.length).fill(""));
@@ -60,8 +59,8 @@ export default function DisplayWATQuestion() {
         } else {
           setError(data.error || "Failed to fetch WAT questions");
         }
-      } catch (err) {
-        setError("Error fetching questions: " + (err instanceof Error ? err.message : "Unknown error"));
+      } catch (err: any) {
+        setError("Error fetching questions: " + (err.response?.data?.error || err.message || "Unknown error"));
       } finally {
         setLoading(false);
       }
@@ -182,6 +181,7 @@ export default function DisplayWATQuestion() {
       if (questions.length > 0) {
         const testData = {
           testName: "WAT",
+          setName,
           score: aiCalculatedScore,
           timeTaken: 15 * 60 - overallTimeLeft,
           dateTaken: new Date().toISOString(),

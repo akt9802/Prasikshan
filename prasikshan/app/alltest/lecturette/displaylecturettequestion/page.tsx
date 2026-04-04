@@ -86,9 +86,7 @@ export default function DisplayLecturetteQuestion() {
   useEffect(() => {
     const fetchQuestion = async () => {
       try {
-        const response = await fetch("/api/lecturettequestions");
-        if (!response.ok) throw new Error("Failed to fetch question");
-        const data = await response.json();
+        const { data: data } = await apiClient.get("/lecturettequestions");
         setQuestion(data.data);
         setStage("showTopic");
       } catch (err) {
@@ -248,18 +246,11 @@ export default function DisplayLecturetteQuestion() {
 
       const aiCalculatedScore = await fetchAiReview(transcript, question.topic, duration);
 
-      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-      await fetch("/api/lecturettequestions/result", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          topic: question.topic,
-          score: aiCalculatedScore,
-          duration,
-        }),
+      await apiClient.post("/lecturettequestions/result", {
+        topic: question.topic,
+        topic_id: question.topic_id,
+        score: aiCalculatedScore,
+        duration,
       });
     } catch (err) {
       setReviewError("Failed to save result.");

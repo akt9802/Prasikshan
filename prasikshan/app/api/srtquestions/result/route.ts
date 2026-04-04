@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 
 interface SRTTestRequest {
   testName: string;
+  setName: string;
   score: number;
   timeTaken: number;
   dateTaken: string;
@@ -52,7 +53,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body: SRTTestRequest = await request.json();
-    const { testName, score, timeTaken, dateTaken, responses = [] } = body;
+    const { testName, setName, score, timeTaken, dateTaken, responses = [] } = body;
 
     // Connect to database
     await connectDB();
@@ -76,6 +77,7 @@ export async function POST(request: NextRequest) {
     // Create test result
     const testData = {
       testName: testName || "SRT",
+      setName,
       score,
       timeTaken,
       dateTaken: new Date(dateTaken),

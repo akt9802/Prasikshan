@@ -50,8 +50,7 @@ export default function DisplaySrtQuestion() {
     const fetchQuestions = async () => {
       try {
         setLoading(true);
-        const response = await fetch("/api/srtquestions");
-        const data = await response.json();
+        const { data: data } = await apiClient.get("/srtquestions");
         if (data.success && data.data && data.data.length > 0) {
           setQuestions(data.data);
           setResponses(new Array(data.data.length).fill(""));
@@ -60,8 +59,8 @@ export default function DisplaySrtQuestion() {
         } else {
           setError(data.error || "Failed to fetch SRT questions");
         }
-      } catch (err) {
-        setError("Error fetching questions: " + (err instanceof Error ? err.message : "Unknown error"));
+      } catch (err: any) {
+        setError("Error fetching questions: " + (err.response?.data?.error || err.message || "Unknown error"));
       } finally {
         setLoading(false);
       }
@@ -179,6 +178,7 @@ export default function DisplaySrtQuestion() {
       if (questions.length > 0) {
         const testData = {
           testName: "SRT",
+          setName,
           score: aiCalculatedScore,
           timeTaken: 30 * 60 - overallTimeLeft,
           dateTaken: new Date().toISOString(),
