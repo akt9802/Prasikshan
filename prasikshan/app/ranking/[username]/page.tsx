@@ -47,8 +47,11 @@ export default function RankingUserPage() {
         setError(null);
         
         const decoded = decodeURIComponent(username);
+        const token = localStorage.getItem('token');
         // Fetch specific user data from the new public-profile endpoint
-        const res = await fetch(`/api/ranking/user?name=${encodeURIComponent(decoded)}`);
+        const res = await fetch(`/api/ranking/user?name=${encodeURIComponent(decoded)}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         
         if (!res.ok) {
           if (res.status === 404) throw new Error('User not found');
