@@ -215,8 +215,11 @@ export default function RankingPage() {
     async function load() {
       try {
         setLoading(true); setError(null);
+        const token = localStorage.getItem('token');
         // Load initial page 1
-        const res = await fetch(`/api/ranking?page=1&limit=20`);
+        const res = await fetch(`/api/ranking?page=1&limit=20`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const body = await res.json();
         if (!body?.success || !Array.isArray(body.data)) throw new Error('Unexpected response');
@@ -247,7 +250,10 @@ export default function RankingPage() {
     try {
       setLoadingMore(true);
       const nextPage = page + 1;
-      const res = await fetch(`/api/ranking?page=${nextPage}&limit=20`);
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/ranking?page=${nextPage}&limit=20`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const body = await res.json();
       if (!body?.success || !Array.isArray(body.data)) throw new Error('Unexpected response');
