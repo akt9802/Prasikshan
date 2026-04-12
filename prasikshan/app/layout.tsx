@@ -24,10 +24,10 @@ export const metadata: Metadata = {
     siteName: "Prasikshan",
     images: [
       {
-        url: "https://www.prasikshan.akt9802.in/favicon.png",
-        width: 512,
-        height: 512,
-        alt: "Prasikshan Logo",
+        url: "https://www.prasikshan.akt9802.in/home-hero.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Prasikshan Display Banner",
       },
     ],
     locale: "en_IN",
