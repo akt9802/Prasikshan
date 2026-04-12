@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     siteName: "Prasikshan",
     images: [
       {
-        url: "https://www.prasikshan.akt9802.in/home-hero.jpg",
+        url: "https://www.prasikshan.akt9802.in/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "Prasikshan Display Banner",
