@@ -14,11 +14,30 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Prashikshan - SSB Exam Preparation",
-  description: "Your trusted platform for SSB interview preparation.",
+  title: "Prasikshan - Ultimate SSB Exam Preparation Platform",
+  description: "Your trusted platform for SSB interview preparation. Practice OIR tests, psychological tests, and improve your chances of CDS, NDA, and AFCAT selection with Prasikshan.",
+  keywords: ["Prasikshan", "Prashikshan", "SSB", "SSB interview", "CDS", "NDA", "AFCAT", "OIR Test", "SSB Preparation", "Mock Tests", "Defence Exams"],
+  openGraph: {
+    title: "Prasikshan - SSB Exam Preparation Platform",
+    description: "Join Prasikshan for expert SSB interview preparation. Practice mock tests and improve your skills with AI-powered insights.",
+    url: "https://www.prasikshan.akt9802.in/",
+    siteName: "Prasikshan",
+    images: [
+      {
+        url: "https://www.prasikshan.akt9802.in/favicon.png",
+        width: 512,
+        height: 512,
+        alt: "Prasikshan Logo",
+      },
+    ],
+    locale: "en_IN",
+    type: "website",
+  },
   icons: {
     icon: "/favicon.png",
+    apple: "/favicon.png",
   },
+  metadataBase: new URL("https://www.prasikshan.akt9802.in/"),
 };
 
 export default function RootLayout({
