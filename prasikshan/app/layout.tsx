@@ -22,14 +22,6 @@ export const metadata: Metadata = {
     description: "Join Prasikshan for expert SSB interview preparation. Practice mock tests and improve your skills with AI-powered insights.",
     url: "https://www.prasikshan.akt9802.in/",
     siteName: "Prasikshan",
-    images: [
-      {
-        url: "https://www.prasikshan.akt9802.in/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Prasikshan Display Banner",
-      },
-    ],
     locale: "en_IN",
     type: "website",
   },
